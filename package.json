@@ -1,9 +1,12 @@
 {
-  "name": "cloudron",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "name": "@blackthorne/mcp-cloudron",
+  "version": "0.1.0",
+  "description": "Cloudron MCP Server - Automation for Cloudron instances",
+  "type": "module",
+  "main": "dist/index.js",
   "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
