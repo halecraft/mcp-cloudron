@@ -143,9 +143,11 @@ export class CloudronClient {
    * @returns Array of installed applications
    */
   async listApps(_input: ListAppsInput): Promise<App[]> {
-    // TODO: Implement actual API call
-    // return await this.fetchWithRetry('GET', '/api/v1/apps');
-    return [];
+    const response = (await this.fetchWithRetry(
+      'GET',
+      '/api/v1/apps'
+    )) as { apps: App[] };
+    return response.apps || [];
   }
 
   /**
@@ -154,15 +156,11 @@ export class CloudronClient {
    * @returns Current system status
    */
   async getStatus(_input: GetStatusInput): Promise<SystemStatus> {
-    // TODO: Implement actual API call
-    // return await this.fetchWithRetry('GET', '/api/v1/cloudron/status');
-    return {
-      version: '7.10.0',
-      uptime: 0,
-      diskUsage: 0,
-      memoryUsage: 0,
-      health: 'healthy',
-    };
+    const response = (await this.fetchWithRetry(
+      'GET',
+      '/api/v1/cloudron/status'
+    )) as SystemStatus;
+    return response;
   }
 
   /**
@@ -171,9 +169,7 @@ export class CloudronClient {
    * @returns Success status
    */
   async restartApp(input: RestartAppInput): Promise<void> {
-    // TODO: Implement actual API call
-    // return await this.fetchWithRetry('POST', `/api/v1/apps/${input.appId}/restart`);
-    void input; // Suppress unused parameter warning
+    await this.fetchWithRetry('POST', `/api/v1/apps/${input.appId}/restart`);
   }
 
   /**
