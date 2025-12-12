@@ -1,12 +1,12 @@
 {
-  "name": "@blackthorne/mcp-cloudron",
+  "name": "@anthropic/mcp-cloudron",
   "version": "0.1.0",
-  "description": "Cloudron MCP Server - Automation for Cloudron instances",
+  "description": "MCP server for Cloudron instance management - list apps, get status, and manage your self-hosted applications",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "cloudron-mcp": "dist/server.js"
+    "mcp-cloudron": "dist/server.js"
   },
   "files": [
     "dist"
@@ -17,11 +17,33 @@
     "dev": "tsx watch src/index.ts",
     "test": "tsx src/test.ts",
     "lint": "tsc --noEmit",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run build"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "mcp",
+    "cloudron",
+    "model-context-protocol",
+    "ai",
+    "automation",
+    "self-hosted",
+    "server-management",
+    "claude",
+    "anthropic"
+  ],
+  "author": "Serenichron <vlad@serenichron.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/serenichron/mcp-cloudron.git"
+  },
+  "bugs": {
+    "url": "https://github.com/serenichron/mcp-cloudron/issues"
+  },
+  "homepage": "https://github.com/serenichron/mcp-cloudron#readme",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "devDependencies": {
     "@types/node": "^24.10.2",
     "tsx": "^4.21.0",

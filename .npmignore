@@ -1,0 +1,31 @@
+# Source files
+src/
+tsconfig.json
+
+# Development files
+.env
+.env.example
+.mcp.json
+.claude/
+.serena/
+
+# Documentation (keep README)
+TESTING.md
+QUICK_START.md
+PHASE_2_3_SUMMARY.md
+
+# Test files
+**/*.test.ts
+**/test*.ts
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+
+# Temp
+tmp/
+*.log
