@@ -13,6 +13,7 @@ export type {
   AppManifest,
   AppsResponse,
   AppResponse,
+  SystemStatus,
 } from './types.js';
 
 // Errors

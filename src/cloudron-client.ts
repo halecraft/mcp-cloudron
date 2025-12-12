@@ -4,8 +4,8 @@
  * DI-enabled for testing
  */
 
-import type { CloudronClientConfig, App, AppsResponse, AppResponse } from './types';
-import { CloudronError, CloudronAuthError, createErrorFromStatus } from './errors';
+import type { CloudronClientConfig, App, AppsResponse, AppResponse, SystemStatus } from './types.js';
+import { CloudronError, CloudronAuthError, createErrorFromStatus } from './errors.js';
 
 const DEFAULT_TIMEOUT = 30000;
 
@@ -121,5 +121,13 @@ export class CloudronClient {
       throw new CloudronError('appId is required');
     }
     return await this.makeRequest<App>('GET', `/api/v1/apps/${encodeURIComponent(appId)}`);
+  }
+
+  /**
+   * Get Cloudron system status
+   * GET /api/v1/cloudron/status
+   */
+  async getStatus(): Promise<SystemStatus> {
+    return await this.makeRequest<SystemStatus>('GET', '/api/v1/cloudron/status');
   }
 }

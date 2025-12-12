@@ -5,11 +5,15 @@
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "bin": {
+    "cloudron-mcp": "dist/server.js"
+  },
   "files": [
     "dist"
   ],
   "scripts": {
     "build": "tsc",
+    "start": "node dist/server.js",
     "dev": "tsx watch src/index.ts",
     "test": "tsx src/test.ts",
     "lint": "tsc --noEmit",

@@ -8,8 +8,8 @@
  * - Cloudron instance must be accessible
  */
 
-import { CloudronClient } from './src/cloudron-client.js';
-import type { CloudronConfig } from './src/types.js';
+import { CloudronClient } from './cloudron-client.js';
+import type { CloudronClientConfig } from './types.js';
 
 // Color codes for terminal output
 const colors = {
@@ -94,7 +94,7 @@ async function main(): Promise<void> {
   // Initialize client
   let client: CloudronClient;
   try {
-    const config: CloudronConfig = {
+    const config: CloudronClientConfig = {
       baseUrl,
       token,
       timeout: 30000,

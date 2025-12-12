@@ -58,3 +58,15 @@ export interface AppsResponse {
 export interface AppResponse {
   app: App;
 }
+
+/**
+ * System status response from /api/v1/cloudron/status
+ */
+export interface SystemStatus {
+  version: string;
+  apiServerOrigin: string;
+  adminFqdn: string;
+  provider: string;
+  cloudronName: string;
+  isDemo: boolean;
+}
