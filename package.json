@@ -1,5 +1,5 @@
 {
-  "name": "@anthropic/mcp-cloudron",
+  "name": "@serenichron/mcp-cloudron",
   "version": "0.1.0",
   "description": "MCP server for Cloudron instance management - list apps, get status, and manage your self-hosted applications",
   "type": "module",
