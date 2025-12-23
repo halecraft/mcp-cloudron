@@ -4,7 +4,7 @@
  * DI-enabled for testing
  */
 
-import type { CloudronClientConfig, App, AppsResponse, AppResponse, SystemStatus } from './types.js';
+import type { CloudronClientConfig, App, AppsResponse, AppResponse, SystemStatus, TaskStatus, StorageInfo } from './types.js';
 import { CloudronError, CloudronAuthError, createErrorFromStatus } from './errors.js';
 
 const DEFAULT_TIMEOUT = 30000;
@@ -129,5 +129,53 @@ export class CloudronClient {
    */
   async getStatus(): Promise<SystemStatus> {
     return await this.makeRequest<SystemStatus>('GET', '/api/v1/cloudron/status');
+  }
+
+  /**
+   * Get task status for async operations
+   * GET /api/v1/tasks/:taskId
+   */
+  async getTaskStatus(taskId: string): Promise<TaskStatus> {
+    if (!taskId) {
+      throw new CloudronError('taskId is required');
+    }
+    return await this.makeRequest<TaskStatus>('GET', `/api/v1/tasks/${encodeURIComponent(taskId)}`);
+  }
+
+  /**
+   * Check available disk space for pre-flight validation
+   * GET /api/v1/cloudron/status (reuses existing endpoint)
+   * @param requiredMB - Optional required disk space in MB
+   * @returns Storage info with availability and threshold checks
+   */
+  async checkStorage(requiredMB?: number): Promise<StorageInfo> {
+    const status = await this.getStatus();
+
+    if (!status.disk) {
+      throw new CloudronError('Disk information not available in system status');
+    }
+
+    // Convert bytes to MB
+    const available_mb = Math.floor(status.disk.free / 1024 / 1024);
+    const total_mb = Math.floor(status.disk.total / 1024 / 1024);
+    const used_mb = Math.floor(status.disk.used / 1024 / 1024);
+
+    // Check if sufficient space available (if requiredMB provided)
+    const sufficient = requiredMB !== undefined ? available_mb >= requiredMB : true;
+
+    // Warning threshold: available < 10% of total
+    const warning = available_mb < (total_mb * 0.1);
+
+    // Critical threshold: available < 5% of total
+    const critical = available_mb < (total_mb * 0.05);
+
+    return {
+      available_mb,
+      total_mb,
+      used_mb,
+      sufficient,
+      warning,
+      critical,
+    };
   }
 }

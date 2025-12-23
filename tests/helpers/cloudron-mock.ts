@@ -2,7 +2,7 @@
  * Mock Cloudron API responses for testing
  */
 
-import { App, CloudronStatus } from '../../src/types';
+import { App, CloudronStatus, TaskStatus } from '../../src/types';
 
 export const mockApps: App[] = [
   {
@@ -90,6 +90,42 @@ export const mockCloudronStatus: CloudronStatus = {
   backup: {
     lastBackupTime: '2024-12-22T02:00:00Z',
     lastBackupId: 'backup-20241222-020000'
+  }
+};
+
+export const mockTaskStatusPending: TaskStatus = {
+  id: 'task-123',
+  state: 'pending',
+  progress: 0,
+  message: 'Task queued'
+};
+
+export const mockTaskStatusRunning: TaskStatus = {
+  id: 'task-123',
+  state: 'running',
+  progress: 45,
+  message: 'Processing backup...'
+};
+
+export const mockTaskStatusSuccess: TaskStatus = {
+  id: 'task-123',
+  state: 'success',
+  progress: 100,
+  message: 'Backup completed successfully',
+  result: {
+    backupId: 'backup-20241223-140000',
+    size: 1024000000
+  }
+};
+
+export const mockTaskStatusError: TaskStatus = {
+  id: 'task-123',
+  state: 'error',
+  progress: 60,
+  message: 'Backup failed',
+  error: {
+    message: 'Insufficient disk space',
+    code: 'DISK_FULL'
   }
 };
 

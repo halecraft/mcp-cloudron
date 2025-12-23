@@ -69,4 +69,58 @@ export interface SystemStatus {
   provider: string;
   cloudronName: string;
   isDemo: boolean;
+  disk?: {
+    total: number;
+    used: number;
+    free: number;
+    percent: number;
+  };
+}
+
+/**
+ * Extended Cloudron status with full system information (for testing)
+ */
+export interface CloudronStatus extends SystemStatus {
+  boxVersionsUrl?: string;
+  webServerOrigin?: string;
+  fqdn?: string;
+  isCustomDomain?: boolean;
+  memory?: {
+    total: number;
+    used: number;
+    free: number;
+    percent: number;
+  };
+  update?: any;
+  backup?: {
+    lastBackupTime: string;
+    lastBackupId: string;
+  };
+}
+
+/**
+ * Storage information for pre-flight disk space checks
+ */
+export interface StorageInfo {
+  available_mb: number;
+  total_mb: number;
+  used_mb: number;
+  sufficient: boolean;
+  warning: boolean;
+  critical: boolean;
+}
+
+/**
+ * Task status for async operations
+ */
+export interface TaskStatus {
+  id: string;
+  state: 'pending' | 'running' | 'success' | 'error';
+  progress: number; // 0-100
+  message: string;
+  result?: unknown;
+  error?: {
+    message: string;
+    code?: string;
+  };
 }
