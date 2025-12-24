@@ -249,3 +249,89 @@ export const mockCloudronStatusInsufficientDisk: CloudronStatus = {
     percent: 99.5
   }
 };
+
+/**
+ * Create a mock success response
+ */
+export function mockSuccessResponse(data: any, status: number = 200): Response {
+  return {
+    ok: true,
+    status,
+    statusText: 'OK',
+    headers: new Headers(),
+    json: async () => data,
+    text: async () => JSON.stringify(data),
+    blob: async () => new Blob([JSON.stringify(data)]),
+    arrayBuffer: async () => new ArrayBuffer(0),
+    formData: async () => new FormData(),
+    body: null,
+    bodyUsed: false,
+    clone: () => mockSuccessResponse(data, status),
+    redirected: false,
+    type: 'basic',
+    url: '',
+  } as Response;
+}
+
+/**
+ * Create a mock error response
+ */
+export function mockErrorResponse(status: number, message: string): Response {
+  return {
+    ok: false,
+    status,
+    statusText: message,
+    headers: new Headers(),
+    json: async () => ({ message }),
+    text: async () => JSON.stringify({ message }),
+    blob: async () => new Blob([JSON.stringify({ message })]),
+    arrayBuffer: async () => new ArrayBuffer(0),
+    formData: async () => new FormData(),
+    body: null,
+    bodyUsed: false,
+    clone: () => mockErrorResponse(status, message),
+    redirected: false,
+    type: 'basic',
+    url: '',
+  } as Response;
+}
+
+/**
+ * Create a mock app with custom properties
+ */
+export function mockApp(overrides: Partial<App> = {}): App {
+  return {
+    id: 'app-test',
+    appStoreId: 'io.test.cloudronapp',
+    installationState: 'installed',
+    installationProgress: '',
+    runState: 'running',
+    health: 'healthy',
+    location: 'test',
+    domain: 'example.com',
+    fqdn: 'test.example.com',
+    manifest: {
+      id: 'io.test.cloudronapp',
+      title: 'Test App',
+      author: 'Cloudron',
+      description: 'Test application',
+      version: '1.0.0'
+    },
+    accessRestriction: null,
+    portBindings: null,
+    iconUrl: null,
+    memoryLimit: 268435456,
+    creationTime: '2024-01-01T00:00:00Z',
+    ...overrides
+  };
+}
+
+/**
+ * Create a mock system status
+ */
+export function mockSystemStatus(overrides: Partial<CloudronStatus> = {}): CloudronStatus {
+  return {
+    ...mockCloudronStatus,
+    ...overrides
+  };
+}

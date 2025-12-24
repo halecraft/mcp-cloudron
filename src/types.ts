@@ -139,3 +139,63 @@ export interface ValidationResult {
   warnings: string[];
   recommendations: string[];
 }
+
+/**
+ * Backup metadata from Cloudron backup system
+ */
+export interface Backup {
+  id: string;
+  creationTime: string;
+  version: string;
+  type: 'app' | 'box';
+  state: 'creating' | 'created' | 'uploading' | 'uploaded' | 'error';
+  size?: number; // Size in bytes
+  appCount?: number; // Number of apps in backup
+  dependsOn?: string[]; // Backup dependencies
+  errorMessage?: string;
+}
+
+/**
+ * API response wrapper for listing backups
+ */
+export interface BackupsResponse {
+  backups: Backup[];
+}
+
+/**
+ * App Store search result
+ */
+export interface AppStoreApp {
+  id: string;
+  name: string;
+  description: string;
+  version: string;
+  iconUrl: string | null;
+  installCount?: number;
+  relevanceScore?: number;
+}
+
+/**
+ * API response wrapper for App Store search
+ */
+export interface AppStoreResponse {
+  apps: AppStoreApp[];
+}
+
+/**
+ * Cloudron User representation
+ */
+export interface User {
+  id: string;
+  email: string;
+  username: string;
+  role: 'admin' | 'user' | 'guest';
+  createdAt: string;
+}
+
+/**
+ * API response wrapper for listing users
+ */
+export interface UsersResponse {
+  users: User[];
+}

@@ -13,7 +13,7 @@ import {
 
 import { CloudronClient } from './cloudron-client.js';
 import { isCloudronError } from './errors.js';
-import type { App, SystemStatus, TaskStatus, StorageInfo, ValidatableOperation, ValidationResult } from './types.js';
+import type { App, SystemStatus, TaskStatus, StorageInfo, ValidatableOperation, ValidationResult, Backup, User } from './types.js';
 
 // Tool definitions
 const TOOLS = [
@@ -94,6 +94,57 @@ const TOOLS = [
         },
       },
       required: ['operation', 'resourceId'],
+    },
+  },
+  {
+    name: 'cloudron_control_app',
+    description: 'Control app lifecycle (start, stop, restart). Returns 202 Accepted with task ID for async operation tracking via cloudron_task_status.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        appId: {
+          type: 'string',
+          description: 'The unique identifier of the application to control',
+        },
+        action: {
+          type: 'string',
+          enum: ['start', 'stop', 'restart'],
+          description: 'Action to perform on the app',
+        },
+      },
+      required: ['appId', 'action'],
+    },
+  },
+  {
+    name: 'cloudron_list_backups',
+    description: 'List all backups available on the Cloudron instance. Returns backup details including ID, timestamp, size, app count, and status. Backups are sorted by timestamp (newest first).',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {},
+      required: [],
+    },
+  },
+  {
+    name: 'cloudron_list_users',
+    description: 'List all users on the Cloudron instance. Returns user details including ID, email, username, role, and creation date. Users are sorted by role (admin, user, guest) then email.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {},
+      required: [],
+    },
+  },
+  {
+    name: 'cloudron_search_apps',
+    description: 'Search the Cloudron App Store for available applications. Returns app details including name, description, version, icon URL, and install count. Results are sorted by relevance score. Empty query returns all available apps.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        query: {
+          type: 'string',
+          description: 'Search query to filter apps (optional - empty returns all apps)',
+        },
+      },
+      required: [],
     },
   },
 ];
@@ -287,6 +338,121 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             {
               type: 'text' as const,
               text: statusText,
+            },
+          ],
+        };
+      }
+
+      case 'cloudron_control_app': {
+        const { appId, action } = args as { appId: string; action: 'start' | 'stop' | 'restart' };
+
+        // Validate action enum
+        if (!['start', 'stop', 'restart'].includes(action)) {
+          return {
+            content: [
+              {
+                type: 'text' as const,
+                text: `Invalid action: ${action}. Valid options: start, stop, restart`,
+              },
+            ],
+            isError: true,
+          };
+        }
+
+        // Execute action
+        let result: { taskId: string };
+        switch (action) {
+          case 'start':
+            result = await cloudron.startApp(appId);
+            break;
+          case 'stop':
+            result = await cloudron.stopApp(appId);
+            break;
+          case 'restart':
+            result = await cloudron.restartApp(appId);
+            break;
+        }
+
+        return {
+          content: [
+            {
+              type: 'text' as const,
+              text: `App ${action} initiated successfully.
+  App ID: ${appId}
+  Task ID: ${result.taskId}
+
+Use cloudron_task_status with taskId '${result.taskId}' to track completion.`,
+            },
+          ],
+        };
+      }
+
+      case 'cloudron_list_backups': {
+        const backups = await cloudron.listBackups();
+
+        if (backups.length === 0) {
+          return {
+            content: [
+              {
+                type: 'text' as const,
+                text: 'No backups found.',
+              },
+            ],
+          };
+        }
+
+        const formatted = backups.map((backup, i) => {
+          const timestamp = new Date(backup.creationTime).toLocaleString();
+          const size = backup.size ? `${Math.round(backup.size / 1024 / 1024)} MB` : 'N/A';
+          const appCount = backup.appCount !== undefined ? backup.appCount : 'N/A';
+
+          return `${i + 1}. Backup ${backup.id}
+  Timestamp: ${timestamp}
+  Version: ${backup.version}
+  Type: ${backup.type}
+  State: ${backup.state}
+  Size: ${size}
+  App Count: ${appCount}${backup.errorMessage ? `\n  Error: ${backup.errorMessage}` : ''}`;
+        }).join('\n\n');
+
+        return {
+          content: [
+            {
+              type: 'text' as const,
+              text: `Found ${backups.length} backup(s):\n\n${formatted}`,
+            },
+          ],
+        };
+      }
+
+      case 'cloudron_list_users': {
+        const users = await cloudron.listUsers();
+
+        if (users.length === 0) {
+          return {
+            content: [
+              {
+                type: 'text' as const,
+                text: 'No users found.',
+              },
+            ],
+          };
+        }
+
+        const formatted = users.map((user, i) => {
+          const createdAt = new Date(user.createdAt).toLocaleString();
+
+          return `${i + 1}. ${user.username} (${user.email})
+  ID: ${user.id}
+  Role: ${user.role}
+  Created: ${createdAt}`;
+        }).join('\n\n');
+
+        return {
+          content: [
+            {
+              type: 'text' as const,
+              text: `Found ${users.length} user(s):\n\n${formatted}`,
             },
           ],
         };

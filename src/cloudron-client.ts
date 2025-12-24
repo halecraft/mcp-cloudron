@@ -4,7 +4,7 @@
  * DI-enabled for testing
  */
 
-import type { CloudronClientConfig, App, AppsResponse, AppResponse, SystemStatus, TaskStatus, StorageInfo, ValidatableOperation, ValidationResult } from './types.js';
+import type { CloudronClientConfig, App, AppsResponse, AppResponse, SystemStatus, TaskStatus, StorageInfo, ValidatableOperation, ValidationResult, Backup, BackupsResponse, AppStoreApp, AppStoreResponse, User, UsersResponse } from './types.js';
 import { CloudronError, CloudronAuthError, createErrorFromStatus } from './errors.js';
 
 const DEFAULT_TIMEOUT = 30000;
@@ -129,6 +129,102 @@ export class CloudronClient {
    */
   async getStatus(): Promise<SystemStatus> {
     return await this.makeRequest<SystemStatus>('GET', '/api/v1/cloudron/status');
+  }
+
+  /**
+   * List all backups
+   * GET /api/v1/backups
+   * @returns Array of backups sorted by timestamp (newest first)
+   */
+  async listBackups(): Promise<Backup[]> {
+    const response = await this.makeRequest<BackupsResponse>('GET', '/api/v1/backups');
+
+    // Sort backups by creationTime (newest first)
+    const backups = response.backups || [];
+    return backups.sort((a, b) => {
+      const timeA = new Date(a.creationTime).getTime();
+      const timeB = new Date(b.creationTime).getTime();
+      return timeB - timeA; // Descending order (newest first)
+    });
+  }
+
+  /**
+   * List all users on Cloudron instance
+   * GET /api/v1/users
+   * @returns Array of users sorted by role then email
+   */
+  async listUsers(): Promise<User[]> {
+    const response = await this.makeRequest<UsersResponse>('GET', '/api/v1/users');
+
+    // Sort users by role then email
+    const users = response.users || [];
+    return users.sort((a, b) => {
+      // Sort by role first (admin > user > guest)
+      const roleOrder = { admin: 0, user: 1, guest: 2 };
+      const roleCompare = roleOrder[a.role] - roleOrder[b.role];
+      if (roleCompare !== 0) return roleCompare;
+
+      // Then by email alphabetically
+      return a.email.localeCompare(b.email);
+    });
+  }
+
+  /**
+   * Search Cloudron App Store for available applications
+   * GET /api/v1/appstore?search={query}
+   * @param query - Optional search query (empty returns all apps)
+   * @returns Array of app store apps sorted by relevance score
+   */
+  async searchApps(query?: string): Promise<AppStoreApp[]> {
+    const endpoint = query
+      ? `/api/v1/appstore?search=${encodeURIComponent(query)}`
+      : '/api/v1/appstore';
+
+    const response = await this.makeRequest<AppStoreResponse>('GET', endpoint);
+
+    // Sort results by relevance score (highest first) if available
+    const apps = response.apps || [];
+    return apps.sort((a, b) => {
+      const scoreA = a.relevanceScore ?? 0;
+      const scoreB = b.relevanceScore ?? 0;
+      return scoreB - scoreA; // Descending order (highest relevance first)
+    });
+  }
+
+  /**
+   * Start an app
+   * POST /api/v1/apps/:appId/start
+   * @returns 202 Accepted response with task ID
+   */
+  async startApp(appId: string): Promise<{ taskId: string }> {
+    if (!appId) {
+      throw new CloudronError('appId is required');
+    }
+    return await this.makeRequest<{ taskId: string }>('POST', `/api/v1/apps/${encodeURIComponent(appId)}/start`);
+  }
+
+  /**
+   * Stop an app
+   * POST /api/v1/apps/:appId/stop
+   * @returns 202 Accepted response with task ID
+   */
+  async stopApp(appId: string): Promise<{ taskId: string }> {
+    if (!appId) {
+      throw new CloudronError('appId is required');
+    }
+    return await this.makeRequest<{ taskId: string }>('POST', `/api/v1/apps/${encodeURIComponent(appId)}/stop`);
+  }
+
+  /**
+   * Restart an app
+   * POST /api/v1/apps/:appId/restart
+   * @returns 202 Accepted response with task ID
+   */
+  async restartApp(appId: string): Promise<{ taskId: string }> {
+    if (!appId) {
+      throw new CloudronError('appId is required');
+    }
+    return await this.makeRequest<{ taskId: string }>('POST', `/api/v1/apps/${encodeURIComponent(appId)}/restart`);
   }
 
   /**
