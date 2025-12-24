@@ -2,7 +2,7 @@
  * Mock Cloudron API responses for testing
  */
 
-import { App, CloudronStatus, TaskStatus } from '../../src/types';
+import { App, CloudronStatus, TaskStatus, ValidationResult } from '../../src/types';
 
 export const mockApps: App[] = [
   {
@@ -187,3 +187,65 @@ export function cleanupTestEnv() {
   delete process.env.CLOUDRON_BASE_URL;
   delete process.env.CLOUDRON_API_TOKEN;
 }
+
+/**
+ * Mock app for validation tests - installed state
+ */
+export const mockAppInstalled: App = {
+  id: 'app-valid',
+  appStoreId: 'io.wordpress.cloudronapp',
+  installationState: 'installed',
+  installationProgress: '',
+  runState: 'running',
+  health: 'healthy',
+  location: 'blog',
+  domain: 'example.com',
+  fqdn: 'blog.example.com',
+  manifest: {
+    id: 'io.wordpress.cloudronapp',
+    title: 'WordPress',
+    author: 'Cloudron',
+    description: 'Blog and website platform',
+    version: '6.4.2'
+  },
+  accessRestriction: null,
+  portBindings: null,
+  iconUrl: null,
+  memoryLimit: 268435456,
+  creationTime: '2024-01-15T10:00:00Z'
+};
+
+/**
+ * Mock app for validation tests - pending uninstall state
+ */
+export const mockAppPendingUninstall: App = {
+  ...mockAppInstalled,
+  id: 'app-pending',
+  installationState: 'pending_uninstall'
+};
+
+/**
+ * Mock Cloudron status with low disk space (critical - under 5%)
+ */
+export const mockCloudronStatusCriticalDisk: CloudronStatus = {
+  ...mockCloudronStatus,
+  disk: {
+    total: 107374182400,
+    used: 102542024704, // 95.5% used
+    free: 4832157696,   // 4.5% free (under critical threshold)
+    percent: 95.5
+  }
+};
+
+/**
+ * Mock Cloudron status with very low disk space (insufficient for restore)
+ */
+export const mockCloudronStatusInsufficientDisk: CloudronStatus = {
+  ...mockCloudronStatus,
+  disk: {
+    total: 107374182400,
+    used: 106837319680, // 99.5% used
+    free: 536862720,    // 512 MB free (less than 1024 MB required)
+    percent: 99.5
+  }
+};

@@ -13,7 +13,7 @@ import {
 
 import { CloudronClient } from './cloudron-client.js';
 import { isCloudronError } from './errors.js';
-import type { App, SystemStatus, TaskStatus, StorageInfo } from './types.js';
+import type { App, SystemStatus, TaskStatus, StorageInfo, ValidatableOperation, ValidationResult } from './types.js';
 
 // Tool definitions
 const TOOLS = [
@@ -75,6 +75,25 @@ const TOOLS = [
         },
       },
       required: [],
+    },
+  },
+  {
+    name: 'cloudron_validate_operation',
+    description: 'Pre-flight validation for destructive operations (uninstall app, delete user, restore backup). Returns validation result with blocking errors, warnings, and recommendations.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        operation: {
+          type: 'string',
+          enum: ['uninstall_app', 'delete_user', 'restore_backup'],
+          description: 'Type of destructive operation to validate',
+        },
+        resourceId: {
+          type: 'string',
+          description: 'ID of the resource being operated on (appId, userId, or backupId)',
+        },
+      },
+      required: ['operation', 'resourceId'],
     },
   },
 ];
@@ -217,6 +236,50 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           statusText += '\n  ⚠️  CRITICAL: Less than 5% disk space remaining!';
         } else if (storageInfo.warning) {
           statusText += '\n  ⚠️  WARNING: Less than 10% disk space remaining';
+        }
+
+        return {
+          content: [
+            {
+              type: 'text' as const,
+              text: statusText,
+            },
+          ],
+        };
+      }
+
+      case 'cloudron_validate_operation': {
+        const { operation, resourceId } = args as { operation: ValidatableOperation; resourceId: string };
+        const validationResult = await cloudron.validateOperation(operation, resourceId);
+
+        let statusText = `Validation Result for ${operation} on resource '${resourceId}':
+  Valid: ${validationResult.valid ? 'Yes' : 'No'}`;
+
+        if (validationResult.errors.length > 0) {
+          statusText += '\n\nBlocking Errors:';
+          validationResult.errors.forEach((error, i) => {
+            statusText += `\n  ${i + 1}. ${error}`;
+          });
+        }
+
+        if (validationResult.warnings.length > 0) {
+          statusText += '\n\nWarnings:';
+          validationResult.warnings.forEach((warning, i) => {
+            statusText += `\n  ${i + 1}. ${warning}`;
+          });
+        }
+
+        if (validationResult.recommendations.length > 0) {
+          statusText += '\n\nRecommendations:';
+          validationResult.recommendations.forEach((rec, i) => {
+            statusText += `\n  ${i + 1}. ${rec}`;
+          });
+        }
+
+        if (validationResult.valid) {
+          statusText += '\n\n✅ Operation can proceed (warnings should be reviewed)';
+        } else {
+          statusText += '\n\n❌ Operation blocked due to errors listed above';
         }
 
         return {

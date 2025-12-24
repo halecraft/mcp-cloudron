@@ -4,7 +4,7 @@
  * DI-enabled for testing
  */
 
-import type { CloudronClientConfig, App, AppsResponse, AppResponse, SystemStatus, TaskStatus, StorageInfo } from './types.js';
+import type { CloudronClientConfig, App, AppsResponse, AppResponse, SystemStatus, TaskStatus, StorageInfo, ValidatableOperation, ValidationResult } from './types.js';
 import { CloudronError, CloudronAuthError, createErrorFromStatus } from './errors.js';
 
 const DEFAULT_TIMEOUT = 30000;
@@ -178,4 +178,144 @@ export class CloudronClient {
       critical,
     };
   }
+
+  /**
+   * Validate a destructive operation before execution (pre-flight safety check)
+   * @param operation - Type of operation to validate
+   * @param resourceId - ID of the resource being operated on
+   * @returns Validation result with errors, warnings, and recommendations
+   */
+  async validateOperation(operation: ValidatableOperation, resourceId: string): Promise<ValidationResult> {
+    if (!resourceId) {
+      throw new CloudronError('resourceId is required for operation validation');
+    }
+
+    const result: ValidationResult = {
+      valid: true,
+      errors: [],
+      warnings: [],
+      recommendations: [],
+    };
+
+    switch (operation) {
+      case 'uninstall_app':
+        await this.validateUninstallApp(resourceId, result);
+        break;
+      case 'delete_user':
+        await this.validateDeleteUser(resourceId, result);
+        break;
+      case 'restore_backup':
+        await this.validateRestoreBackup(resourceId, result);
+        break;
+      default:
+        throw new CloudronError(`Invalid operation type: ${operation}. Valid options: uninstall_app, delete_user, restore_backup`);
+    }
+
+    // Set valid to false if there are any blocking errors
+    if (result.errors.length > 0) {
+      result.valid = false;
+    }
+
+    return result;
+  }
+
+  /**
+   * Validate uninstall_app operation
+   * Checks: app exists, no dependent apps, backup exists
+   */
+  private async validateUninstallApp(appId: string, result: ValidationResult): Promise<void> {
+    try {
+      // Check if app exists
+      const app = await this.getApp(appId);
+
+      // Check app state - warn if pending operations
+      if (app.installationState !== 'installed') {
+        result.warnings.push(`App is in state '${app.installationState}', not 'installed'. Uninstall may fail or behave unexpectedly.`);
+      }
+
+      // Recommendation: Create backup before uninstall
+      result.recommendations.push('Create a backup before uninstalling to preserve app data and configuration.');
+
+      // TODO: Check for dependent apps (requires app dependency API endpoint)
+      // For now, add as recommendation
+      result.recommendations.push('Verify no other apps depend on this app before uninstalling.');
+
+      // Check if recent backup exists (within last 24 hours)
+      // Note: This requires listBackups() which is F07 (not yet implemented)
+      // For now, add as recommendation
+      result.recommendations.push('Ensure a recent backup exists for disaster recovery.');
+
+    } catch (error) {
+      if (isCloudronError(error) && error.statusCode === 404) {
+        result.errors.push(`App with ID '${appId}' does not exist.`);
+      } else {
+        throw error;
+      }
+    }
+  }
+
+  /**
+   * Validate delete_user operation
+   * Checks: user exists, not last admin, not currently logged in
+   */
+  private async validateDeleteUser(userId: string, result: ValidationResult): Promise<void> {
+    // Note: This requires listUsers() API which is F12 (not yet implemented)
+    // For Phase 1, we provide basic validation structure
+
+    // TODO: Check if user exists (requires GET /api/v1/users/:id endpoint)
+    // TODO: Check if user is last admin (requires GET /api/v1/users with role filtering)
+    // TODO: Check if user is currently logged in (requires session/activity API)
+
+    result.warnings.push('User deletion validation is limited in current implementation.');
+    result.recommendations.push('Verify user is not the last admin before deletion.');
+    result.recommendations.push('Ensure user is not currently logged in before deletion.');
+    result.recommendations.push('Transfer ownership of user data/apps before deletion if needed.');
+  }
+
+  /**
+   * Validate restore_backup operation
+   * Checks: backup exists, backup integrity valid, sufficient storage
+   */
+  private async validateRestoreBackup(backupId: string, result: ValidationResult): Promise<void> {
+    // Note: This requires listBackups() API which is F07 (not yet implemented)
+    // For Phase 1, we focus on storage validation
+
+    try {
+      // Check storage sufficiency
+      // Assume backup requires at least 1GB of free space for safety margin
+      const RESTORE_MIN_STORAGE_MB = 1024;
+      const storageInfo = await this.checkStorage(RESTORE_MIN_STORAGE_MB);
+
+      if (!storageInfo.sufficient) {
+        result.errors.push(`Insufficient disk space for restore. Available: ${storageInfo.available_mb} MB, Required: ${RESTORE_MIN_STORAGE_MB} MB`);
+      }
+
+      if (storageInfo.critical) {
+        result.errors.push('CRITICAL: Less than 5% disk space remaining. Restore operation blocked.');
+      } else if (storageInfo.warning) {
+        result.warnings.push('WARNING: Less than 10% disk space remaining. Monitor disk usage during restore.');
+      }
+
+      // TODO: Check if backup exists (requires GET /api/v1/backups/:id endpoint from F07)
+      // TODO: Check backup integrity (requires backup metadata with checksum/status)
+
+      result.recommendations.push('Verify backup integrity before restore.');
+      result.recommendations.push('Ensure all apps are stopped before restore to prevent data corruption.');
+      result.recommendations.push('Create a new backup of current state before restore for rollback capability.');
+
+    } catch (error) {
+      if (error instanceof CloudronError) {
+        result.errors.push(`Storage check failed: ${error.message}`);
+      } else {
+        throw error;
+      }
+    }
+  }
+}
+
+/**
+ * Type guard for CloudronError
+ */
+function isCloudronError(error: unknown): error is CloudronError {
+  return error instanceof CloudronError;
 }
