@@ -13,7 +13,7 @@ import {
 
 import { CloudronClient } from './cloudron-client.js';
 import { isCloudronError } from './errors.js';
-import type { App, SystemStatus, TaskStatus, StorageInfo, ValidatableOperation, ValidationResult, Backup, User } from './types.js';
+import type { App, SystemStatus, TaskStatus, StorageInfo, ValidatableOperation, ValidationResult, Backup, User, LogType, LogEntry } from './types.js';
 
 // Tool definitions
 const TOOLS = [
@@ -215,6 +215,29 @@ const TOOLS = [
         },
       },
       required: ['email', 'password', 'role'],
+    },
+  },
+  {
+    name: 'cloudron_get_logs',
+    description: 'Get logs for an app or service. Logs are formatted with timestamps and severity levels for readability. Type parameter determines endpoint: "app" calls GET /api/v1/apps/:id/logs, "service" calls GET /api/v1/services/:id/logs.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        resourceId: {
+          type: 'string',
+          description: 'App ID or service ID to retrieve logs for',
+        },
+        type: {
+          type: 'string',
+          enum: ['app', 'service'],
+          description: 'Type of resource: "app" for application logs, "service" for system service logs',
+        },
+        lines: {
+          type: 'number',
+          description: 'Optional: Number of log lines to retrieve (default 100, max 1000)',
+        },
+      },
+      required: ['resourceId', 'type'],
     },
   },
 ];
@@ -666,6 +689,27 @@ ${restartNote}`,
   Username: ${user.username}
   Role: ${user.role}
   Created: ${new Date(user.createdAt).toLocaleString()}`,
+            },
+          ],
+        };
+      }
+
+      case 'cloudron_get_logs': {
+        const { resourceId, type, lines } = args as { resourceId: string; type: LogType; lines?: number };
+        const logEntries = await cloudron.getLogs(resourceId, type, lines);
+
+        // Format logs for display
+        const formattedLogs = logEntries.map(entry =>
+          `[${entry.timestamp}] [${entry.severity}] ${entry.message}`
+        ).join('\n');
+
+        const logType = type === 'app' ? 'Application' : 'Service';
+
+        return {
+          content: [
+            {
+              type: 'text' as const,
+              text: `${logType} logs for ${resourceId} (${logEntries.length} entries):\n\n${formattedLogs}`,
             },
           ],
         };
