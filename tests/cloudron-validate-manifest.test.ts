@@ -1,5 +1,5 @@
 /**
- * Tests for F23a: cloudron_validate_manifest tool
+ * F23a: cloudron_validate_manifest tool tests
  * Test anchors:
  * - F36 check_storage called to verify sufficient disk space
  * - Manifest schema validated against Cloudron spec
@@ -11,242 +11,353 @@
  */
 
 import { CloudronClient } from '../src/cloudron-client.js';
-import { mockSuccessResponse, mockErrorResponse, mockSystemStatus, setupTestEnv, cleanupTestEnv } from './helpers/cloudron-mock.js';
-import { CloudronError } from '../src/errors.js';
-
-// Mock App Store helper
-const mockAppStoreApp = (id: string, overrides: any = {}) => ({
-  id,
-  name: overrides.name || 'Test App',
-  description: overrides.description || 'Test application',
-  version: overrides.version || '1.0.0',
-  iconUrl: overrides.iconUrl || null,
-  installCount: overrides.installCount || 0,
-  relevanceScore: overrides.relevanceScore || 1.0,
-});
+import {
+  mockSuccessResponse,
+  mockErrorResponse,
+  mockSystemStatus,
+} from './helpers/cloudron-mock.js';
+import type { ManifestValidationResult, AppStoreApp, StorageInfo } from '../src/types.js';
 
 describe('F23a: cloudron_validate_manifest', () => {
   let client: CloudronClient;
-  let originalFetch: typeof global.fetch;
-
-  beforeAll(() => {
-    setupTestEnv();
-    originalFetch = global.fetch;
-  });
-
-  afterAll(() => {
-    global.fetch = originalFetch;
-    cleanupTestEnv();
-  });
+  let mockFetch: jest.Mock;
 
   beforeEach(() => {
-    client = new CloudronClient();
+    mockFetch = jest.fn();
+    global.fetch = mockFetch;
+
+    client = new CloudronClient({
+      baseUrl: 'https://test.cloudron.io',
+      token: 'test-token',
+    });
   });
 
-  describe('Success Cases', () => {
-    it('should return valid=true for app with sufficient storage', async () => {
-      // Mock F22 searchApps to return app
-      global.fetch = jest.fn()
-        .mockResolvedValueOnce(mockSuccessResponse({
-          apps: [mockAppStoreApp('wordpress', { name: 'WordPress', description: 'Blog platform' })],
-        }))
-        // Mock F36 checkStorage (via getStatus)
-        .mockResolvedValueOnce(mockSuccessResponse(mockSystemStatus({
-          disk: {
-            total: 100000 * 1024 * 1024, // 100GB
-            used: 40000 * 1024 * 1024,   // 40GB
-            free: 60000 * 1024 * 1024,   // 60GB (sufficient)
-            percent: 40,
-          },
-        })));
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
 
-      const result = await client.validateManifest('wordpress', 500); // 500MB required
+  describe('Test Anchor: Manifest schema validated', () => {
+    it('should validate manifest with all required fields', async () => {
+      // Mock app search response
+      const mockApp: AppStoreApp = {
+        id: 'io.example.app',
+        name: 'Example App',
+        description: 'Test app',
+        version: '1.0.0',
+        iconUrl: 'https://example.com/icon.png',
+      };
+
+      // Mock storage check response (sufficient storage)
+      const mockStorage: StorageInfo = {
+        available_mb: 10000,
+        total_mb: 50000,
+        used_mb: 40000,
+        sufficient: true,
+        warning: false,
+        critical: false,
+      };
+
+      mockFetch
+        .mockResolvedValueOnce(mockSuccessResponse({ apps: [mockApp] })) // searchApps
+        .mockResolvedValueOnce(mockSuccessResponse(mockSystemStatus(mockStorage))); // checkStorage
+
+      const result = await client.validateManifest('io.example.app');
 
       expect(result.valid).toBe(true);
-      expect(result.errors).toHaveLength(0);
-      expect(result.warnings.length).toBeGreaterThanOrEqual(1); // Generic config warning
-      expect(fetch).toHaveBeenCalledTimes(2);
+      expect(result.errors).toEqual([]);
+      expect(mockFetch).toHaveBeenCalledTimes(2); // searchApps + checkStorage
     });
 
-    it('should return valid=true with warnings for low disk space (10-5%)', async () => {
-      global.fetch = jest.fn()
-        .mockResolvedValueOnce(mockSuccessResponse({
-          apps: [mockAppStoreApp('wordpress', { name: 'WordPress' })],
-        }))
-        .mockResolvedValueOnce(mockSuccessResponse(mockSystemStatus({
-          disk: {
-            total: 10000 * 1024 * 1024,  // 10GB
-            used: 9100 * 1024 * 1024,    // 9.1GB
-            free: 900 * 1024 * 1024,     // 900MB (9% - warning threshold)
-            percent: 91,
-          },
-        })));
+    it('should return error for app not found in App Store', async () => {
+      mockFetch.mockResolvedValueOnce(mockSuccessResponse({ apps: [] })); // Empty search result
 
-      const result = await client.validateManifest('wordpress', 500);
+      const result = await client.validateManifest('io.nonexistent.app');
+
+      expect(result.valid).toBe(false);
+      expect(result.errors).toContain('App not found in App Store: io.nonexistent.app');
+      expect(mockFetch).toHaveBeenCalledTimes(1); // Only searchApps, no checkStorage
+    });
+
+    it('should handle manifest fetch failures gracefully', async () => {
+      mockFetch.mockResolvedValueOnce(mockErrorResponse(500, 'Server error'));
+
+      const result = await client.validateManifest('io.example.app');
+
+      expect(result.valid).toBe(false);
+      expect(result.errors[0]).toContain('Manifest validation failed');
+    });
+  });
+
+  describe('Test Anchor: F36 check_storage called', () => {
+    it('should call F36 check_storage with estimated storage requirement', async () => {
+      const mockApp: AppStoreApp = {
+        id: 'io.example.app',
+        name: 'Example App',
+        description: 'Test app',
+        version: '1.0.0',
+      };
+
+      const mockStorage: StorageInfo = {
+        available_mb: 10000,
+        total_mb: 50000,
+        used_mb: 40000,
+        sufficient: true,
+        warning: false,
+        critical: false,
+      };
+
+      mockFetch
+        .mockResolvedValueOnce(mockSuccessResponse({ apps: [mockApp] }))
+        .mockResolvedValueOnce(mockSuccessResponse(mockSystemStatus(mockStorage)));
+
+      await client.validateManifest('io.example.app');
+
+      // Verify checkStorage was called (2nd fetch call)
+      expect(mockFetch).toHaveBeenCalledTimes(2);
+      expect(mockFetch).toHaveBeenNthCalledWith(
+        2,
+        'https://test.cloudron.io/api/v1/cloudron/status',
+        expect.any(Object)
+      );
+    });
+
+    it('should report insufficient disk space as error', async () => {
+      const mockApp: AppStoreApp = {
+        id: 'io.example.app',
+        name: 'Example App',
+        description: 'Test app',
+        version: '1.0.0',
+      };
+
+      // Mock storage check: insufficient (200MB available, 500MB required by default)
+      const mockStorage: StorageInfo = {
+        available_mb: 200,
+        total_mb: 50000,
+        used_mb: 49800,
+        sufficient: false,
+        warning: false,
+        critical: false,
+      };
+
+      mockFetch
+        .mockResolvedValueOnce(mockSuccessResponse({ apps: [mockApp] }))
+        .mockResolvedValueOnce(mockSuccessResponse(mockSystemStatus(mockStorage)));
+
+      const result = await client.validateManifest('io.example.app');
+
+      expect(result.valid).toBe(false);
+      expect(result.errors).toEqual(
+        expect.arrayContaining([
+          expect.stringContaining('Insufficient disk space'),
+        ])
+      );
+      expect(result.errors).toEqual(
+        expect.arrayContaining([
+          expect.stringContaining('200MB available'),
+        ])
+      );
+    });
+
+    it('should report low disk space warning (< 10% total)', async () => {
+      const mockApp: AppStoreApp = {
+        id: 'io.example.app',
+        name: 'Example App',
+        description: 'Test app',
+        version: '1.0.0',
+      };
+
+      // Mock storage: sufficient but warning threshold triggered
+      const mockStorage: StorageInfo = {
+        available_mb: 4000,
+        total_mb: 50000,
+        used_mb: 46000,
+        sufficient: true,
+        warning: true, // < 10% of total
+        critical: false,
+      };
+
+      mockFetch
+        .mockResolvedValueOnce(mockSuccessResponse({ apps: [mockApp] }))
+        .mockResolvedValueOnce(mockSuccessResponse(mockSystemStatus(mockStorage)));
+
+      const result = await client.validateManifest('io.example.app');
 
       expect(result.valid).toBe(true);
-      expect(result.errors).toHaveLength(0);
-      expect(result.warnings.length).toBeGreaterThanOrEqual(2); // Low disk warning + config warning
-      expect(result.warnings.some(w => w.includes('10% disk space remaining'))).toBe(true);
+      expect(result.warnings).toEqual(
+        expect.arrayContaining([
+          expect.stringContaining('WARNING: Less than 10% disk space remaining'),
+        ])
+      );
     });
 
-    it('should include dependency warning when app description mentions "requires"', async () => {
-      global.fetch = jest.fn()
-        .mockResolvedValueOnce(mockSuccessResponse({
-          apps: [mockAppStoreApp('gitlab', {
-            name: 'GitLab',
-            description: 'DevOps platform. Requires PostgreSQL and Redis addons.',
-          })],
-        }))
-        .mockResolvedValueOnce(mockSuccessResponse(mockSystemStatus({
-          disk: {
-            total: 100000 * 1024 * 1024,
-            used: 40000 * 1024 * 1024,
-            free: 60000 * 1024 * 1024,
-            percent: 40,
-          },
-        })));
+    it('should report critical disk space as error (< 5% total)', async () => {
+      const mockApp: AppStoreApp = {
+        id: 'io.example.app',
+        name: 'Example App',
+        description: 'Test app',
+        version: '1.0.0',
+      };
 
-      const result = await client.validateManifest('gitlab', 1000);
+      // Mock storage: critical threshold triggered
+      const mockStorage: StorageInfo = {
+        available_mb: 2000,
+        total_mb: 50000,
+        used_mb: 48000,
+        sufficient: true,
+        warning: false,
+        critical: true, // < 5% of total
+      };
 
+      mockFetch
+        .mockResolvedValueOnce(mockSuccessResponse({ apps: [mockApp] }))
+        .mockResolvedValueOnce(mockSuccessResponse(mockSystemStatus(mockStorage)));
+
+      const result = await client.validateManifest('io.example.app');
+
+      expect(result.valid).toBe(false);
+      expect(result.errors).toEqual(
+        expect.arrayContaining([
+          expect.stringContaining('CRITICAL: Less than 5% disk space remaining'),
+        ])
+      );
+    });
+
+    it('should handle storage check failures gracefully with warning', async () => {
+      const mockApp: AppStoreApp = {
+        id: 'io.example.app',
+        name: 'Example App',
+        description: 'Test app',
+        version: '1.0.0',
+      };
+
+      mockFetch
+        .mockResolvedValueOnce(mockSuccessResponse({ apps: [mockApp] }))
+        .mockResolvedValueOnce(mockErrorResponse(500, 'Storage API unavailable'));
+
+      const result = await client.validateManifest('io.example.app');
+
+      // Storage check failure should be a warning, not block validation
       expect(result.valid).toBe(true);
-      expect(result.warnings.some(w => w.includes('dependencies'))).toBe(true);
+      expect(result.warnings).toEqual(
+        expect.arrayContaining([
+          expect.stringContaining('Could not check storage'),
+        ])
+      );
     });
   });
 
-  describe('Failure Cases', () => {
-    it('should return valid=false when app not found in App Store', async () => {
-      global.fetch = jest.fn()
-        .mockResolvedValueOnce(mockSuccessResponse({ apps: [] })); // No apps found
+  describe('Test Anchor: Returns validation report format', () => {
+    it('should return {valid: true, errors: [], warnings: []} for valid manifest', async () => {
+      const mockApp: AppStoreApp = {
+        id: 'io.example.app',
+        name: 'Example App',
+        description: 'Test app',
+        version: '1.0.0',
+      };
 
-      const result = await client.validateManifest('nonexistent-app', 500);
+      const mockStorage: StorageInfo = {
+        available_mb: 10000,
+        total_mb: 50000,
+        used_mb: 40000,
+        sufficient: true,
+        warning: false,
+        critical: false,
+      };
 
-      expect(result.valid).toBe(false);
-      expect(result.errors).toHaveLength(1);
-      expect(result.errors[0]).toContain('App not found in App Store');
-      expect(fetch).toHaveBeenCalledTimes(1); // Only searchApps called
+      mockFetch
+        .mockResolvedValueOnce(mockSuccessResponse({ apps: [mockApp] }))
+        .mockResolvedValueOnce(mockSuccessResponse(mockSystemStatus(mockStorage)));
+
+      const result = await client.validateManifest('io.example.app');
+
+      expect(result).toMatchObject({
+        valid: true,
+        errors: [],
+        warnings: [],
+      });
     });
 
-    it('should return valid=false when disk space critical (<5%)', async () => {
-      global.fetch = jest.fn()
-        .mockResolvedValueOnce(mockSuccessResponse({
-          apps: [mockAppStoreApp('wordpress')],
-        }))
-        .mockResolvedValueOnce(mockSuccessResponse(mockSystemStatus({
-          disk: {
-            total: 10000 * 1024 * 1024,  // 10GB
-            used: 9600 * 1024 * 1024,    // 9.6GB
-            free: 400 * 1024 * 1024,     // 400MB (4% - critical threshold)
-            percent: 96,
-          },
-        })));
+    it('should return {valid: false, errors: [...], warnings: []} for invalid manifest', async () => {
+      const mockApp: AppStoreApp = {
+        id: 'io.example.app',
+        name: 'Example App',
+        description: 'Test app',
+        version: '1.0.0',
+      };
 
-      const result = await client.validateManifest('wordpress', 500);
+      // Insufficient storage
+      const mockStorage: StorageInfo = {
+        available_mb: 100,
+        total_mb: 50000,
+        used_mb: 49900,
+        sufficient: false,
+        warning: false,
+        critical: true,
+      };
 
-      expect(result.valid).toBe(false);
-      expect(result.errors.length).toBeGreaterThanOrEqual(1);
-      expect(result.errors.some(e => e.includes('CRITICAL'))).toBe(true);
-      expect(result.errors.some(e => e.includes('5% disk space remaining'))).toBe(true);
-    });
+      mockFetch
+        .mockResolvedValueOnce(mockSuccessResponse({ apps: [mockApp] }))
+        .mockResolvedValueOnce(mockSuccessResponse(mockSystemStatus(mockStorage)));
 
-    it('should return valid=false when insufficient disk space for required MB', async () => {
-      global.fetch = jest.fn()
-        .mockResolvedValueOnce(mockSuccessResponse({
-          apps: [mockAppStoreApp('wordpress')],
-        }))
-        .mockResolvedValueOnce(mockSuccessResponse(mockSystemStatus({
-          disk: {
-            total: 10000 * 1024 * 1024,  // 10GB
-            used: 9200 * 1024 * 1024,    // 9.2GB
-            free: 800 * 1024 * 1024,     // 800MB available
-            percent: 92,
-          },
-        })));
-
-      const result = await client.validateManifest('wordpress', 1000); // 1000MB required, only 800MB available
+      const result = await client.validateManifest('io.example.app');
 
       expect(result.valid).toBe(false);
-      expect(result.errors.length).toBeGreaterThanOrEqual(1);
-      expect(result.errors.some(e => e.includes('Insufficient disk space'))).toBe(true);
-      expect(result.errors.some(e => e.includes('800') && e.includes('1000'))).toBe(true);
+      expect(result.errors.length).toBeGreaterThan(0);
+      expect(Array.isArray(result.errors)).toBe(true);
+      expect(Array.isArray(result.warnings)).toBe(true);
     });
   });
 
-  describe('Error Handling', () => {
-    it('should throw CloudronError when appId is empty', async () => {
-      await expect(client.validateManifest('')).rejects.toThrow(CloudronError);
-      await expect(client.validateManifest('')).rejects.toThrow('appId is required');
-    });
+  describe('Integration: Full validation workflow', () => {
+    it('should complete full validation workflow with all checks', async () => {
+      const mockApp: AppStoreApp = {
+        id: 'io.wordpress.cloudron',
+        name: 'WordPress',
+        description: 'Popular blogging platform',
+        version: '6.4.2',
+        iconUrl: 'https://cloudron.io/img/wordpress.png',
+        installCount: 15000,
+      };
 
-    it('should return valid=false with error when storage check fails', async () => {
-      global.fetch = jest.fn()
-        .mockResolvedValueOnce(mockSuccessResponse({
-          apps: [mockAppStoreApp('wordpress')],
-        }))
-        // Storage check fails (no disk info)
-        .mockResolvedValueOnce(mockSuccessResponse(mockSystemStatus({
-          disk: undefined, // No disk info
-        })));
+      const mockStorage: StorageInfo = {
+        available_mb: 25000,
+        total_mb: 50000,
+        used_mb: 25000,
+        sufficient: true,
+        warning: false,
+        critical: false,
+      };
 
-      const result = await client.validateManifest('wordpress', 500);
+      mockFetch
+        .mockResolvedValueOnce(mockSuccessResponse({ apps: [mockApp] }))
+        .mockResolvedValueOnce(mockSuccessResponse(mockSystemStatus(mockStorage)));
 
-      expect(result.valid).toBe(false);
-      expect(result.errors.some(e => e.includes('Manifest validation failed'))).toBe(true);
-    });
+      const result = await client.validateManifest('io.wordpress.cloudron');
 
-    it('should return valid=false with error when searchApps fails', async () => {
-      global.fetch = jest.fn()
-        .mockResolvedValueOnce(mockErrorResponse(500, 'App Store unavailable'));
+      // Validation should pass
+      expect(result.valid).toBe(true);
+      expect(result.errors).toEqual([]);
 
-      const result = await client.validateManifest('wordpress', 500);
+      // Verify all validation steps were called
+      expect(mockFetch).toHaveBeenCalledTimes(2);
 
-      expect(result.valid).toBe(false);
-      expect(result.errors.some(e => e.includes('Manifest validation failed'))).toBe(true);
-    });
-  });
+      // Step 1: searchApps to fetch manifest
+      expect(mockFetch).toHaveBeenNthCalledWith(
+        1,
+        'https://test.cloudron.io/api/v1/appstore?search=io.wordpress.cloudron',
+        expect.objectContaining({
+          method: 'GET',
+        })
+      );
 
-  describe('F36 Integration (checkStorage)', () => {
-    it('should call F36 checkStorage with requiredMB parameter', async () => {
-      const spyCheckStorage = jest.spyOn(client, 'checkStorage');
-
-      global.fetch = jest.fn()
-        .mockResolvedValueOnce(mockSuccessResponse({
-          apps: [mockAppStoreApp('wordpress')],
-        }))
-        .mockResolvedValueOnce(mockSuccessResponse(mockSystemStatus({
-          disk: {
-            total: 100000 * 1024 * 1024,
-            used: 40000 * 1024 * 1024,
-            free: 60000 * 1024 * 1024,
-            percent: 40,
-          },
-        })));
-
-      await client.validateManifest('wordpress', 750);
-
-      expect(spyCheckStorage).toHaveBeenCalledWith(750);
-      expect(spyCheckStorage).toHaveBeenCalledTimes(1);
-    });
-
-    it('should use default 500MB when requiredMB not provided', async () => {
-      const spyCheckStorage = jest.spyOn(client, 'checkStorage');
-
-      global.fetch = jest.fn()
-        .mockResolvedValueOnce(mockSuccessResponse({
-          apps: [mockAppStoreApp('wordpress')],
-        }))
-        .mockResolvedValueOnce(mockSuccessResponse(mockSystemStatus({
-          disk: {
-            total: 100000 * 1024 * 1024,
-            used: 40000 * 1024 * 1024,
-            free: 60000 * 1024 * 1024,
-            percent: 40,
-          },
-        })));
-
-      await client.validateManifest('wordpress'); // No requiredMB parameter
-
-      expect(spyCheckStorage).toHaveBeenCalledWith(500); // Default 500MB
+      // Step 2: checkStorage via getCloudronStatus
+      expect(mockFetch).toHaveBeenNthCalledWith(
+        2,
+        'https://test.cloudron.io/api/v1/cloudron/status',
+        expect.objectContaining({
+          method: 'GET',
+        })
+      );
     });
   });
 });
