@@ -458,6 +458,48 @@ Use cloudron_task_status with taskId '${result.taskId}' to track completion.`,
         };
       }
 
+      case 'cloudron_search_apps': {
+        const { query } = args as { query?: string };
+        const apps = await cloudron.searchApps(query);
+
+        if (apps.length === 0) {
+          return {
+            content: [
+              {
+                type: 'text' as const,
+                text: query
+                  ? `No apps found matching query: "${query}"`
+                  : 'No apps available in the App Store.',
+              },
+            ],
+          };
+        }
+
+        const formatted = apps.map((app, i) => {
+          const installCount = app.installCount !== undefined ? app.installCount : 'N/A';
+          const iconUrl = app.iconUrl || 'N/A';
+          const score = app.relevanceScore !== undefined ? app.relevanceScore.toFixed(2) : 'N/A';
+
+          return `${i + 1}. ${app.name} (${app.id})
+  Version: ${app.version}
+  Description: ${app.description}
+  Install Count: ${installCount}
+  Icon URL: ${iconUrl}
+  Relevance Score: ${score}`;
+        }).join('\n\n');
+
+        const searchInfo = query ? `Search results for "${query}"` : 'All available apps';
+
+        return {
+          content: [
+            {
+              type: 'text' as const,
+              text: `${searchInfo}:\n\nFound ${apps.length} app(s):\n\n${formatted}`,
+            },
+          ],
+        };
+      }
+
       default:
         return {
           content: [{ type: 'text' as const, text: `Unknown tool: ${name}` }],

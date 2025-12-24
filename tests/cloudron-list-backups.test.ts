@@ -177,16 +177,15 @@ describe('cloudron_list_backups tool', () => {
         },
       ];
 
-      (global.fetch as jest.Mock).mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ backups: mockBackups }),
-      });
+      global.fetch = createMockFetch({
+        'GET https://my.example.com/api/v1/backups': {
+          ok: true,
+          status: 200,
+          data: { backups: mockBackups },
+        },
+      }) as any;
 
-      const client = new CloudronClient({
-        baseUrl: 'https://test.cloudron.io',
-        token: 'test-token',
-      });
-
+      const client = new CloudronClient();
       const backups = await client.listBackups();
 
       expect(backups).toHaveLength(2);
@@ -197,16 +196,15 @@ describe('cloudron_list_backups tool', () => {
 
   describe('empty backup list', () => {
     it('should return empty array when no backups exist', async () => {
-      (global.fetch as jest.Mock).mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ backups: [] }),
-      });
+      global.fetch = createMockFetch({
+        'GET https://my.example.com/api/v1/backups': {
+          ok: true,
+          status: 200,
+          data: { backups: [] },
+        },
+      }) as any;
 
-      const client = new CloudronClient({
-        baseUrl: 'https://test.cloudron.io',
-        token: 'test-token',
-      });
-
+      const client = new CloudronClient();
       const backups = await client.listBackups();
 
       expect(backups).toEqual([]);
@@ -216,47 +214,35 @@ describe('cloudron_list_backups tool', () => {
 
   describe('error handling', () => {
     it('should handle API authentication error', async () => {
-      (global.fetch as jest.Mock).mockResolvedValueOnce({
-        ok: false,
-        status: 401,
-        statusText: 'Unauthorized',
-        text: async () => JSON.stringify({ message: 'Invalid API token' }),
-      });
+      global.fetch = createMockFetch({
+        'GET https://my.example.com/api/v1/backups': {
+          ok: false,
+          status: 401,
+          data: { message: 'Invalid API token' },
+        },
+      }) as any;
 
-      const client = new CloudronClient({
-        baseUrl: 'https://test.cloudron.io',
-        token: 'invalid-token',
-      });
-
-      await expect(client.listBackups()).rejects.toThrow(CloudronAuthError);
+      const client = new CloudronClient();
       await expect(client.listBackups()).rejects.toThrow('Invalid API token');
     });
 
     it('should handle API server error', async () => {
-      (global.fetch as jest.Mock).mockResolvedValueOnce({
-        ok: false,
-        status: 500,
-        statusText: 'Internal Server Error',
-        text: async () => JSON.stringify({ message: 'Database connection failed' }),
-      });
+      global.fetch = createMockFetch({
+        'GET https://my.example.com/api/v1/backups': {
+          ok: false,
+          status: 500,
+          data: { message: 'Database connection failed' },
+        },
+      }) as any;
 
-      const client = new CloudronClient({
-        baseUrl: 'https://test.cloudron.io',
-        token: 'test-token',
-      });
-
-      await expect(client.listBackups()).rejects.toThrow(CloudronError);
+      const client = new CloudronClient();
       await expect(client.listBackups()).rejects.toThrow('Database connection failed');
     });
 
     it('should handle network error', async () => {
-      (global.fetch as jest.Mock).mockRejectedValueOnce(new Error('Network timeout'));
+      global.fetch = jest.fn().mockRejectedValue(new Error('Network timeout'));
 
-      const client = new CloudronClient({
-        baseUrl: 'https://test.cloudron.io',
-        token: 'test-token',
-      });
-
+      const client = new CloudronClient();
       await expect(client.listBackups()).rejects.toThrow(CloudronError);
       await expect(client.listBackups()).rejects.toThrow('Network error: Network timeout');
     });

@@ -3,19 +3,28 @@
  */
 
 import { CloudronClient } from '../src/cloudron-client.js';
-import { mockCloudronAPI, resetMockAPI } from './helpers/cloudron-mock.js';
-import { assertMCPResponse } from './helpers/mcp-assert.js';
+import {
+  createMockFetch,
+  setupTestEnv,
+  cleanupTestEnv,
+} from './helpers/cloudron-mock.js';
 import type { User } from '../src/types.js';
 
 describe('cloudron_list_users tool', () => {
-  let client: CloudronClient;
+  let originalFetch: typeof global.fetch;
+
+  beforeAll(() => {
+    setupTestEnv();
+    originalFetch = global.fetch;
+  });
+
+  afterAll(() => {
+    cleanupTestEnv();
+    global.fetch = originalFetch;
+  });
 
   beforeEach(() => {
-    resetMockAPI();
-    client = new CloudronClient({
-      baseUrl: 'https://test.cloudron.example',
-      token: 'test-token',
-    });
+    jest.clearAllMocks();
   });
 
   it('should list all users successfully', async () => {
@@ -43,8 +52,15 @@ describe('cloudron_list_users tool', () => {
       },
     ];
 
-    mockCloudronAPI('GET', '/api/v1/users', 200, { users: mockUsers });
+    global.fetch = createMockFetch({
+      'GET https://my.example.com/api/v1/users': {
+        ok: true,
+        status: 200,
+        data: { users: mockUsers },
+      },
+    }) as any;
 
+    const client = new CloudronClient();
     const users = await client.listUsers();
 
     expect(users).toHaveLength(3);
@@ -55,11 +71,19 @@ describe('cloudron_list_users tool', () => {
   });
 
   it('should return empty array when no users exist', async () => {
-    mockCloudronAPI('GET', '/api/v1/users', 200, { users: [] });
+    global.fetch = createMockFetch({
+      'GET https://my.example.com/api/v1/users': {
+        ok: true,
+        status: 200,
+        data: { users: [] },
+      },
+    }) as any;
 
+    const client = new CloudronClient();
     const users = await client.listUsers();
 
-    expect(users).toEqual([]);
+    expect(Array.isArray(users)).toBe(true);
+    expect(users.length).toBe(0);
   });
 
   it('should sort users by role then email', async () => {
@@ -101,8 +125,15 @@ describe('cloudron_list_users tool', () => {
       },
     ];
 
-    mockCloudronAPI('GET', '/api/v1/users', 200, { users: mockUsers });
+    global.fetch = createMockFetch({
+      'GET https://my.example.com/api/v1/users': {
+        ok: true,
+        status: 200,
+        data: { users: mockUsers },
+      },
+    }) as any;
 
+    const client = new CloudronClient();
     const users = await client.listUsers();
 
     // Should be sorted: admins (alphabetically), then users (alphabetically), then guests
@@ -115,35 +146,58 @@ describe('cloudron_list_users tool', () => {
   });
 
   it('should handle API authentication error', async () => {
-    mockCloudronAPI('GET', '/api/v1/users', 401, {
-      message: 'Invalid token',
-    });
+    global.fetch = createMockFetch({
+      'GET https://my.example.com/api/v1/users': {
+        ok: false,
+        status: 401,
+        data: { message: 'Invalid token' },
+      },
+    }) as any;
+
+    const client = new CloudronClient();
 
     await expect(client.listUsers()).rejects.toThrow('Invalid token');
   });
 
   it('should handle API server error', async () => {
-    mockCloudronAPI('GET', '/api/v1/users', 500, {
-      message: 'Internal server error',
-    });
+    global.fetch = createMockFetch({
+      'GET https://my.example.com/api/v1/users': {
+        ok: false,
+        status: 500,
+        data: { message: 'Internal server error' },
+      },
+    }) as any;
+
+    const client = new CloudronClient();
 
     await expect(client.listUsers()).rejects.toThrow();
   });
 
   it('should handle network error', async () => {
-    // Don't mock any response - will cause network error
+    global.fetch = jest.fn(() =>
+      Promise.reject(new Error('Network connection failed'))
+    ) as any;
+
+    const client = new CloudronClient();
+
     await expect(client.listUsers()).rejects.toThrow('Network error');
   });
 
   it('should require CLOUDRON_BASE_URL', () => {
-    expect(() => {
-      new CloudronClient({ token: 'test' });
-    }).toThrow('CLOUDRON_BASE_URL not set');
+    const originalBaseUrl = process.env.CLOUDRON_BASE_URL;
+    delete process.env.CLOUDRON_BASE_URL;
+
+    expect(() => new CloudronClient()).toThrow('CLOUDRON_BASE_URL not set');
+
+    process.env.CLOUDRON_BASE_URL = originalBaseUrl;
   });
 
   it('should require CLOUDRON_API_TOKEN', () => {
-    expect(() => {
-      new CloudronClient({ baseUrl: 'https://test.example' });
-    }).toThrow('CLOUDRON_API_TOKEN not set');
+    const originalToken = process.env.CLOUDRON_API_TOKEN;
+    delete process.env.CLOUDRON_API_TOKEN;
+
+    expect(() => new CloudronClient()).toThrow('CLOUDRON_API_TOKEN not set');
+
+    process.env.CLOUDRON_API_TOKEN = originalToken;
   });
 });
