@@ -4,7 +4,7 @@
  * DI-enabled for testing
  */
 
-import type { CloudronClientConfig, App, AppsResponse, AppResponse, SystemStatus, TaskStatus, StorageInfo, ValidatableOperation, ValidationResult, Backup, BackupsResponse, AppStoreApp, AppStoreResponse, User, UsersResponse } from './types.js';
+import type { CloudronClientConfig, App, AppsResponse, AppResponse, SystemStatus, TaskStatus, StorageInfo, ValidatableOperation, ValidationResult, Backup, BackupsResponse, AppStoreApp, AppStoreResponse, User, UsersResponse, LogType, LogEntry, LogsResponse, AppConfig, ConfigureAppResponse } from './types.js';
 import { CloudronError, CloudronAuthError, createErrorFromStatus } from './errors.js';
 
 const DEFAULT_TIMEOUT = 30000;
@@ -192,6 +192,60 @@ export class CloudronClient {
   }
 
   /**
+   * Create a new user with role assignment (atomic operation)
+   * POST /api/v1/users
+   * @param email - User email address
+   * @param password - User password (must meet strength requirements)
+   * @param role - User role: 'admin', 'user', or 'guest'
+   * @returns Created user object
+   */
+  async createUser(email: string, password: string, role: 'admin' | 'user' | 'guest'): Promise<User> {
+    // Validate email format
+    if (!email || !this.isValidEmail(email)) {
+      throw new CloudronError('Invalid email format');
+    }
+
+    // Validate password strength (8+ chars, 1 uppercase, 1 number)
+    if (!this.isValidPassword(password)) {
+      throw new CloudronError('Password must be at least 8 characters long and contain at least 1 uppercase letter and 1 number');
+    }
+
+    // Validate role enum
+    if (!['admin', 'user', 'guest'].includes(role)) {
+      throw new CloudronError(`Invalid role: ${role}. Valid options: admin, user, guest`);
+    }
+
+    return await this.makeRequest<User>('POST', '/api/v1/users', {
+      email,
+      password,
+      role,
+    });
+  }
+
+  /**
+   * Validate email format using RFC 5322 simplified regex
+   * @param email - Email to validate
+   * @returns true if email format is valid
+   */
+  private isValidEmail(email: string): boolean {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  }
+
+  /**
+   * Validate password strength
+   * Requirements: 8+ characters, 1 uppercase letter, 1 number
+   * @param password - Password to validate
+   * @returns true if password meets strength requirements
+   */
+  private isValidPassword(password: string): boolean {
+    if (password.length < 8) return false;
+    if (!/[A-Z]/.test(password)) return false; // At least 1 uppercase
+    if (!/[0-9]/.test(password)) return false; // At least 1 number
+    return true;
+  }
+
+  /**
    * Start an app
    * POST /api/v1/apps/:appId/start
    * @returns 202 Accepted response with task ID
@@ -228,6 +282,47 @@ export class CloudronClient {
   }
 
   /**
+   * Configure app settings (env vars, memory limits, access control)
+   * PUT /api/v1/apps/:appId/configure
+   * @param appId - The app ID to configure
+   * @param config - Configuration object with env vars, memoryLimit, accessRestriction
+   * @returns Response with updated app and restart requirement flag
+   */
+  async configureApp(appId: string, config: AppConfig): Promise<ConfigureAppResponse> {
+    if (!appId) {
+      throw new CloudronError('appId is required');
+    }
+
+    // Validate config object has at least one field
+    if (!config || Object.keys(config).length === 0) {
+      throw new CloudronError('config object cannot be empty');
+    }
+
+    // Validate config fields if present
+    if (config.env !== undefined && typeof config.env !== 'object') {
+      throw new CloudronError('env must be an object of key-value pairs');
+    }
+
+    if (config.memoryLimit !== undefined) {
+      if (typeof config.memoryLimit !== 'number' || config.memoryLimit <= 0) {
+        throw new CloudronError('memoryLimit must be a positive number (in MB)');
+      }
+    }
+
+    if (config.accessRestriction !== undefined && config.accessRestriction !== null) {
+      if (typeof config.accessRestriction !== 'string') {
+        throw new CloudronError('accessRestriction must be a string or null');
+      }
+    }
+
+    return await this.makeRequest<ConfigureAppResponse>(
+      'PUT',
+      `/api/v1/apps/${encodeURIComponent(appId)}/configure`,
+      config
+    );
+  }
+
+  /**
    * Get task status for async operations
    * GET /api/v1/tasks/:taskId
    */
@@ -236,6 +331,18 @@ export class CloudronClient {
       throw new CloudronError('taskId is required');
     }
     return await this.makeRequest<TaskStatus>('GET', `/api/v1/tasks/${encodeURIComponent(taskId)}`);
+  }
+
+  /**
+   * Cancel a running async operation (kill switch)
+   * DELETE /api/v1/tasks/:taskId
+   * @returns Updated task status with 'cancelled' state
+   */
+  async cancelTask(taskId: string): Promise<TaskStatus> {
+    if (!taskId) {
+      throw new CloudronError('taskId is required');
+    }
+    return await this.makeRequest<TaskStatus>('DELETE', `/api/v1/tasks/${encodeURIComponent(taskId)}`);
   }
 
   /**

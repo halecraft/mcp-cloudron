@@ -115,7 +115,7 @@ export interface StorageInfo {
  */
 export interface TaskStatus {
   id: string;
-  state: 'pending' | 'running' | 'success' | 'error';
+  state: 'pending' | 'running' | 'success' | 'error' | 'cancelled';
   progress: number; // 0-100
   message: string;
   result?: unknown;
@@ -198,4 +198,43 @@ export interface User {
  */
 export interface UsersResponse {
   users: User[];
+}
+
+/**
+ * Log type enum for cloudron_get_logs
+ */
+export type LogType = 'app' | 'service';
+
+/**
+ * Log entry with parsed timestamp and severity
+ */
+export interface LogEntry {
+  timestamp: string;
+  severity: string;
+  message: string;
+}
+
+/**
+ * API response wrapper for logs
+ */
+export interface LogsResponse {
+  logs: string[];
+}
+
+/**
+ * App configuration object for updating app settings
+ */
+export interface AppConfig {
+  env?: Record<string, string>; // Environment variables
+  memoryLimit?: number; // Memory limit in MB
+  accessRestriction?: string | null; // Access control settings
+  [key: string]: unknown; // Allow additional config fields
+}
+
+/**
+ * API response for app configuration
+ */
+export interface ConfigureAppResponse {
+  app: App;
+  restartRequired: boolean; // Whether app needs restart for config to take effect
 }

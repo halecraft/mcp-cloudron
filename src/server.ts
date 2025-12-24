@@ -51,13 +51,27 @@ const TOOLS = [
   },
   {
     name: 'cloudron_task_status',
-    description: 'Get the status of an async operation (backup, install, restore, etc.) by task ID. Returns state (pending/running/success/error), progress (0-100%), and message.',
+    description: 'Get the status of an async operation (backup, install, restore, etc.) by task ID. Returns state (pending/running/success/error/cancelled), progress (0-100%), and message.',
     inputSchema: {
       type: 'object' as const,
       properties: {
         taskId: {
           type: 'string',
           description: 'The unique identifier of the task to check',
+        },
+      },
+      required: ['taskId'],
+    },
+  },
+  {
+    name: 'cloudron_cancel_task',
+    description: 'Cancel a running async operation (kill switch). Returns updated task status with state "cancelled". Already completed tasks cannot be cancelled. Cancelled tasks cleanup resources (e.g., partial backups deleted).',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        taskId: {
+          type: 'string',
+          description: 'The unique identifier of the task to cancel',
         },
       },
       required: ['taskId'],
@@ -116,6 +130,39 @@ const TOOLS = [
     },
   },
   {
+    name: 'cloudron_configure_app',
+    description: 'Update application configuration including environment variables, memory limits, and access control settings. Returns 200 OK with updated app config and restart requirement flag.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        appId: {
+          type: 'string',
+          description: 'The unique identifier of the application to configure',
+        },
+        config: {
+          type: 'object',
+          description: 'Configuration object with env vars, memoryLimit, and/or accessRestriction',
+          properties: {
+            env: {
+              type: 'object',
+              description: 'Environment variables as key-value pairs (optional)',
+              additionalProperties: { type: 'string' },
+            },
+            memoryLimit: {
+              type: 'number',
+              description: 'Memory limit in MB (optional)',
+            },
+            accessRestriction: {
+              type: ['string', 'null'],
+              description: 'Access control settings (optional)',
+            },
+          },
+        },
+      },
+      required: ['appId', 'config'],
+    },
+  },
+  {
     name: 'cloudron_list_backups',
     description: 'List all backups available on the Cloudron instance. Returns backup details including ID, timestamp, size, app count, and status. Backups are sorted by timestamp (newest first).',
     inputSchema: {
@@ -145,6 +192,29 @@ const TOOLS = [
         },
       },
       required: [],
+    },
+  },
+  {
+    name: 'cloudron_create_user',
+    description: 'Create a new user on the Cloudron instance with role assignment (atomic operation). Password must be at least 8 characters long and contain at least 1 uppercase letter and 1 number. Returns 201 Created with user object.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        email: {
+          type: 'string',
+          description: 'User email address (must be valid format)',
+        },
+        password: {
+          type: 'string',
+          description: 'User password (8+ characters, 1 uppercase, 1 number)',
+        },
+        role: {
+          type: 'string',
+          enum: ['admin', 'user', 'guest'],
+          description: 'User role: admin (full access), user (standard access), or guest (limited access)',
+        },
+      },
+      required: ['email', 'password', 'role'],
     },
   },
 ];
@@ -258,6 +328,37 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             statusText += `\n  Error Code: ${taskStatus.error.code}`;
           }
         }
+
+        if (taskStatus.state === 'cancelled') {
+          statusText += '\n  ℹ️  Task was cancelled by user request';
+        }
+
+        return {
+          content: [
+            {
+              type: 'text' as const,
+              text: statusText,
+            },
+          ],
+        };
+      }
+
+      case 'cloudron_cancel_task': {
+        const taskId = (args as { taskId: string }).taskId;
+        const taskStatus = await cloudron.cancelTask(taskId);
+
+        let statusText = `Task Cancellation:
+  Task ID: ${taskStatus.id}
+  New State: ${taskStatus.state}
+  Message: ${taskStatus.message}`;
+
+        if (taskStatus.state === 'cancelled') {
+          statusText += '\n\n✅ Task successfully cancelled. Resources have been cleaned up.';
+        } else {
+          statusText += `\n\n⚠️  Task is in state '${taskStatus.state}' (expected 'cancelled'). Cancellation may not have completed.`;
+        }
+
+        statusText += `\n\nUse cloudron_task_status with taskId '${taskId}' to verify final state.`;
 
         return {
           content: [
@@ -387,6 +488,57 @@ Use cloudron_task_status with taskId '${result.taskId}' to track completion.`,
         };
       }
 
+      case 'cloudron_configure_app': {
+        const { appId, config } = args as { appId: string; config: Record<string, unknown> };
+
+        // Validate config object is provided and not empty
+        if (!config || Object.keys(config).length === 0) {
+          return {
+            content: [
+              {
+                type: 'text' as const,
+                text: 'Config object is required and cannot be empty. Provide at least one of: env, memoryLimit, accessRestriction',
+              },
+            ],
+            isError: true,
+          };
+        }
+
+        const result = await cloudron.configureApp(appId, config);
+
+        // Format config changes summary
+        const configChanges = Object.keys(config).map(key => {
+          if (key === 'env') {
+            const envCount = Object.keys(config.env as object).length;
+            return `  - Environment variables: ${envCount} variable(s) updated`;
+          } else if (key === 'memoryLimit') {
+            return `  - Memory limit: ${config.memoryLimit} MB`;
+          } else if (key === 'accessRestriction') {
+            return `  - Access restriction: ${config.accessRestriction ?? 'none'}`;
+          } else {
+            return `  - ${key}: updated`;
+          }
+        }).join('\n');
+
+        const restartNote = result.restartRequired
+          ? '\n⚠️  App restart required for configuration changes to take effect. Use cloudron_control_app with action "restart".'
+          : '\n✓ Configuration applied. No restart required.';
+
+        return {
+          content: [
+            {
+              type: 'text' as const,
+              text: `App configuration updated successfully.
+App ID: ${appId}
+
+Configuration changes:
+${configChanges}
+${restartNote}`,
+            },
+          ],
+        };
+      }
+
       case 'cloudron_list_backups': {
         const backups = await cloudron.listBackups();
 
@@ -495,6 +647,25 @@ Use cloudron_task_status with taskId '${result.taskId}' to track completion.`,
             {
               type: 'text' as const,
               text: `${searchInfo}:\n\nFound ${apps.length} app(s):\n\n${formatted}`,
+            },
+          ],
+        };
+      }
+
+      case 'cloudron_create_user': {
+        const { email, password, role } = args as { email: string; password: string; role: 'admin' | 'user' | 'guest' };
+        const user = await cloudron.createUser(email, password, role);
+
+        return {
+          content: [
+            {
+              type: 'text' as const,
+              text: `User created successfully:
+  ID: ${user.id}
+  Email: ${user.email}
+  Username: ${user.username}
+  Role: ${user.role}
+  Created: ${new Date(user.createdAt).toLocaleString()}`,
             },
           ],
         };
