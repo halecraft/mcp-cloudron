@@ -47,19 +47,19 @@ describe('F23a: cloudron_validate_manifest', () => {
         iconUrl: 'https://example.com/icon.png',
       };
 
-      // Mock storage check response (sufficient storage)
-      const mockStorage: StorageInfo = {
-        available_mb: 10000,
-        total_mb: 50000,
-        used_mb: 40000,
-        sufficient: true,
-        warning: false,
-        critical: false,
-      };
+      // Mock storage check response (sufficient storage: 10GB available out of 50GB total)
+      const mockStatus = mockSystemStatus({
+        disk: {
+          total: 50000 * 1024 * 1024, // 50GB in bytes
+          used: 40000 * 1024 * 1024,  // 40GB used
+          free: 10000 * 1024 * 1024,  // 10GB free (sufficient)
+          percent: 80,
+        },
+      });
 
       mockFetch
         .mockResolvedValueOnce(mockSuccessResponse({ apps: [mockApp] })) // searchApps
-        .mockResolvedValueOnce(mockSuccessResponse(mockSystemStatus(mockStorage))); // checkStorage
+        .mockResolvedValueOnce(mockSuccessResponse(mockStatus)); // getStatus for checkStorage
 
       const result = await client.validateManifest('io.example.app');
 
@@ -97,18 +97,18 @@ describe('F23a: cloudron_validate_manifest', () => {
         version: '1.0.0',
       };
 
-      const mockStorage: StorageInfo = {
-        available_mb: 10000,
-        total_mb: 50000,
-        used_mb: 40000,
-        sufficient: true,
-        warning: false,
-        critical: false,
-      };
+      const mockStatus = mockSystemStatus({
+        disk: {
+          total: 50000 * 1024 * 1024,
+          used: 40000 * 1024 * 1024,
+          free: 10000 * 1024 * 1024,
+          percent: 80,
+        },
+      });
 
       mockFetch
         .mockResolvedValueOnce(mockSuccessResponse({ apps: [mockApp] }))
-        .mockResolvedValueOnce(mockSuccessResponse(mockSystemStatus(mockStorage)));
+        .mockResolvedValueOnce(mockSuccessResponse(mockStatus));
 
       await client.validateManifest('io.example.app');
 
@@ -130,18 +130,18 @@ describe('F23a: cloudron_validate_manifest', () => {
       };
 
       // Mock storage check: insufficient (200MB available, 500MB required by default)
-      const mockStorage: StorageInfo = {
-        available_mb: 200,
-        total_mb: 50000,
-        used_mb: 49800,
-        sufficient: false,
-        warning: false,
-        critical: false,
-      };
+      const mockStatus = mockSystemStatus({
+        disk: {
+          total: 50000 * 1024 * 1024, // 50GB
+          used: 49800 * 1024 * 1024,  // 49.8GB used
+          free: 200 * 1024 * 1024,    // 200MB free (insufficient)
+          percent: 99.6,
+        },
+      });
 
       mockFetch
         .mockResolvedValueOnce(mockSuccessResponse({ apps: [mockApp] }))
-        .mockResolvedValueOnce(mockSuccessResponse(mockSystemStatus(mockStorage)));
+        .mockResolvedValueOnce(mockSuccessResponse(mockStatus));
 
       const result = await client.validateManifest('io.example.app');
 
@@ -178,7 +178,7 @@ describe('F23a: cloudron_validate_manifest', () => {
 
       mockFetch
         .mockResolvedValueOnce(mockSuccessResponse({ apps: [mockApp] }))
-        .mockResolvedValueOnce(mockSuccessResponse(mockSystemStatus(mockStorage)));
+        .mockResolvedValueOnce(mockSuccessResponse(mockStatus));
 
       const result = await client.validateManifest('io.example.app');
 
@@ -222,7 +222,7 @@ describe('F23a: cloudron_validate_manifest', () => {
       );
     });
 
-    it('should handle storage check failures gracefully with warning', async () => {
+    it('should handle storage check failures gracefully with error', async () => {
       const mockApp: AppStoreApp = {
         id: 'io.example.app',
         name: 'Example App',
@@ -236,18 +236,18 @@ describe('F23a: cloudron_validate_manifest', () => {
 
       const result = await client.validateManifest('io.example.app');
 
-      // Storage check failure should be a warning, not block validation
-      expect(result.valid).toBe(true);
-      expect(result.warnings).toEqual(
+      // Storage check failure causes error to be thrown and caught
+      expect(result.valid).toBe(false);
+      expect(result.errors).toEqual(
         expect.arrayContaining([
-          expect.stringContaining('Could not check storage'),
+          expect.stringContaining('Manifest validation failed'),
         ])
       );
     });
   });
 
   describe('Test Anchor: Returns validation report format', () => {
-    it('should return {valid: true, errors: [], warnings: []} for valid manifest', async () => {
+    it('should return {valid: true, errors: [], warnings: [...]} for valid manifest', async () => {
       const mockApp: AppStoreApp = {
         id: 'io.example.app',
         name: 'Example App',
@@ -270,11 +270,15 @@ describe('F23a: cloudron_validate_manifest', () => {
 
       const result = await client.validateManifest('io.example.app');
 
-      expect(result).toMatchObject({
-        valid: true,
-        errors: [],
-        warnings: [],
-      });
+      // Valid manifests always include default config warning
+      expect(result.valid).toBe(true);
+      expect(result.errors).toEqual([]);
+      expect(result.warnings.length).toBeGreaterThan(0);
+      expect(result.warnings).toEqual(
+        expect.arrayContaining([
+          expect.stringContaining('Ensure app configuration matches Cloudron specification'),
+        ])
+      );
     });
 
     it('should return {valid: false, errors: [...], warnings: []} for invalid manifest', async () => {

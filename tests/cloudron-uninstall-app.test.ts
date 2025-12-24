@@ -339,7 +339,7 @@ describe('cloudron_uninstall_app (F04)', () => {
       expect(result).toEqual({ taskId: 'task-202-test' });
     });
 
-    it('Invalid appId returns 404 Not Found', async () => {
+    it('Invalid appId returns validation error', async () => {
       const appId = 'invalid-app';
 
       global.fetch = createMockFetch({
@@ -351,7 +351,8 @@ describe('cloudron_uninstall_app (F04)', () => {
         },
       });
 
-      await expect(client.uninstallApp(appId)).rejects.toThrow(/404/);
+      await expect(client.uninstallApp(appId)).rejects.toThrow(/Pre-flight validation failed/);
+      await expect(client.uninstallApp(appId)).rejects.toThrow(new RegExp(appId));
     });
 
     it('Backup recommendation displayed via F37 validation warnings', async () => {
