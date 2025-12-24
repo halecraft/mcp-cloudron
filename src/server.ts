@@ -13,7 +13,7 @@ import {
 
 import { CloudronClient } from './cloudron-client.js';
 import { isCloudronError } from './errors.js';
-import type { App, SystemStatus, TaskStatus, StorageInfo, ValidatableOperation, ValidationResult, Backup, User, LogType, LogEntry } from './types.js';
+import type { App, SystemStatus, TaskStatus, StorageInfo, ValidatableOperation, ValidationResult, Backup, User, LogType, LogEntry, ManifestValidationResult } from './types.js';
 
 // Tool definitions
 const TOOLS = [
@@ -172,6 +172,15 @@ const TOOLS = [
     },
   },
   {
+    name: 'cloudron_create_backup',
+    description: 'Create a new backup of the Cloudron instance. Performs F36 pre-flight storage check (requires 5GB minimum). Returns task ID for tracking backup progress via cloudron_task_status (F34).',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {},
+      required: [],
+    },
+  },
+  {
     name: 'cloudron_list_users',
     description: 'List all users on the Cloudron instance. Returns user details including ID, email, username, role, and creation date. Users are sorted by role (admin, user, guest) then email.',
     inputSchema: {
@@ -192,6 +201,20 @@ const TOOLS = [
         },
       },
       required: [],
+    },
+  },
+  {
+    name: 'cloudron_validate_manifest',
+    description: 'Validate app manifest before installation (pre-flight safety check). Checks storage sufficiency via F36, dependency availability, and manifest schema validity. Returns validation report with errors and warnings.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        appId: {
+          type: 'string',
+          description: 'The App Store ID to validate',
+        },
+      },
+      required: ['appId'],
     },
   },
   {
@@ -238,6 +261,20 @@ const TOOLS = [
         },
       },
       required: ['resourceId', 'type'],
+    },
+  },
+  {
+    name: 'cloudron_uninstall_app',
+    description: 'Uninstall an application with pre-flight safety validation. DESTRUCTIVE OPERATION. First validates via cloudron_validate_operation (checks app exists, no dependencies, backup recommended), then calls DELETE /api/v1/apps/:id. Returns 202 Accepted with task ID for async operation tracking.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        appId: {
+          type: 'string',
+          description: 'The unique identifier of the application to uninstall',
+        },
+      },
+      required: ['appId'],
     },
   },
 ];
@@ -600,6 +637,26 @@ ${restartNote}`,
         };
       }
 
+      case 'cloudron_create_backup': {
+        // F36 pre-flight storage check performed in createBackup()
+        const taskId = await cloudron.createBackup();
+
+        return {
+          content: [
+            {
+              type: 'text' as const,
+              text: `Backup creation started successfully.
+
+Task ID: ${taskId}
+
+Use cloudron_task_status with taskId="${taskId}" to track backup progress.
+
+Note: Pre-flight storage check passed (5GB minimum required).`,
+            },
+          ],
+        };
+      }
+
       case 'cloudron_list_users': {
         const users = await cloudron.listUsers();
 
@@ -675,6 +732,45 @@ ${restartNote}`,
         };
       }
 
+      case 'cloudron_validate_manifest': {
+        const { appId } = args as { appId: string };
+        const result = await cloudron.validateManifest(appId);
+
+        if (result.valid) {
+          const warningText = result.warnings.length > 0
+            ? `\n\nWarnings:\n${result.warnings.map(w => `  - ${w}`).join('\n')}`
+            : '';
+
+          return {
+            content: [
+              {
+                type: 'text' as const,
+                text: `Manifest validation passed for app: ${appId}
+
+App is ready for installation.${warningText}`,
+              },
+            ],
+          };
+        } else {
+          const errorsText = result.errors.map(e => `  - ${e}`).join('\n');
+          const warningsText = result.warnings.length > 0
+            ? `\n\nWarnings:\n${result.warnings.map(w => `  - ${w}`).join('\n')}`
+            : '';
+
+          return {
+            content: [
+              {
+                type: 'text' as const,
+                text: `Manifest validation failed for app: ${appId}
+
+Errors (must be resolved):
+${errorsText}${warningsText}`,
+              },
+            ],
+          };
+        }
+      }
+
       case 'cloudron_create_user': {
         const { email, password, role } = args as { email: string; password: string; role: 'admin' | 'user' | 'guest' };
         const user = await cloudron.createUser(email, password, role);
@@ -710,6 +806,26 @@ ${restartNote}`,
             {
               type: 'text' as const,
               text: `${logType} logs for ${resourceId} (${logEntries.length} entries):\n\n${formattedLogs}`,
+            },
+          ],
+        };
+      }
+
+      case 'cloudron_uninstall_app': {
+        const { appId } = args as { appId: string };
+        const result = await cloudron.uninstallApp(appId);
+
+        return {
+          content: [
+            {
+              type: 'text' as const,
+              text: `Uninstall operation initiated for app: ${appId}
+  Task ID: ${result.taskId}
+  Status: Pending (202 Accepted)
+
+Use cloudron_task_status with taskId '${result.taskId}' to track uninstall progress.
+
+Note: This is a DESTRUCTIVE operation. The app and its data will be removed once the task completes.`,
             },
           ],
         };

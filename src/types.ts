@@ -22,6 +22,18 @@ export interface AppManifest {
   tagline?: string;
   website?: string;
   author?: string;
+  minBoxVersion?: string; // Minimum Cloudron version required
+  memoryLimit?: number; // Memory requirement in MB
+  addons?: Record<string, unknown>; // Required addons (dependencies)
+}
+
+/**
+ * Manifest validation result for F23a
+ */
+export interface ManifestValidationResult {
+  valid: boolean;
+  errors: string[];
+  warnings: string[];
 }
 
 /**
@@ -237,4 +249,13 @@ export interface AppConfig {
 export interface ConfigureAppResponse {
   app: App;
   restartRequired: boolean; // Whether app needs restart for config to take effect
+}
+
+/**
+ * Validation result for app manifest (pre-flight safety check for installation)
+ */
+export interface ManifestValidationResult {
+  valid: boolean;
+  errors: string[];
+  warnings: string[];
 }

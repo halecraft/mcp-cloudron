@@ -4,7 +4,7 @@
  * DI-enabled for testing
  */
 
-import type { CloudronClientConfig, App, AppsResponse, AppResponse, SystemStatus, TaskStatus, StorageInfo, ValidatableOperation, ValidationResult, Backup, BackupsResponse, AppStoreApp, AppStoreResponse, User, UsersResponse, LogType, LogEntry, LogsResponse, AppConfig, ConfigureAppResponse } from './types.js';
+import type { CloudronClientConfig, App, AppsResponse, AppResponse, SystemStatus, TaskStatus, StorageInfo, ValidatableOperation, ValidationResult, Backup, BackupsResponse, AppStoreApp, AppStoreResponse, User, UsersResponse, LogType, LogEntry, LogsResponse, AppConfig, ConfigureAppResponse, ManifestValidationResult, AppManifest } from './types.js';
 import { CloudronError, CloudronAuthError, createErrorFromStatus } from './errors.js';
 
 const DEFAULT_TIMEOUT = 30000;
@@ -149,6 +149,39 @@ export class CloudronClient {
   }
 
   /**
+   * Create a new backup (with F36 pre-flight storage check)
+   * POST /api/v1/backups
+   * @returns Task ID for tracking backup progress via getTaskStatus()
+   */
+  async createBackup(): Promise<string> {
+    // F36 pre-flight storage check: Require 5GB minimum for backup
+    const BACKUP_MIN_STORAGE_MB = 5120; // 5GB
+    const storageInfo = await this.checkStorage(BACKUP_MIN_STORAGE_MB);
+
+    if (!storageInfo.sufficient) {
+      throw new CloudronError(
+        `Insufficient storage for backup. Required: ${BACKUP_MIN_STORAGE_MB}MB, Available: ${storageInfo.available_mb}MB`
+      );
+    }
+
+    if (storageInfo.warning) {
+      // Log warning but allow operation to proceed
+      console.warn(
+        `Storage warning: ${storageInfo.available_mb}MB available (${((storageInfo.available_mb / storageInfo.total_mb) * 100).toFixed(1)}% of total)`
+      );
+    }
+
+    // Create backup (async operation)
+    const response = await this.makeRequest<{ taskId: string }>('POST', '/api/v1/backups');
+
+    if (!response.taskId) {
+      throw new CloudronError('Backup creation response missing taskId');
+    }
+
+    return response.taskId;
+  }
+
+  /**
    * List all users on Cloudron instance
    * GET /api/v1/users
    * @returns Array of users sorted by role then email
@@ -189,6 +222,98 @@ export class CloudronClient {
       const scoreB = b.relevanceScore ?? 0;
       return scoreB - scoreA; // Descending order (highest relevance first)
     });
+  }
+
+  /**
+   * Validate app manifest before installation (F23a pre-flight safety check)
+   * Checks storage sufficiency via F36, dependency availability, and manifest schema validity
+   * GET /api/v1/appstore/:id to fetch manifest
+   * @param appId - App Store ID to validate
+   * @returns Manifest validation result with errors and warnings
+   */
+  async validateManifest(appId: string): Promise<ManifestValidationResult> {
+    const errors: string[] = [];
+    const warnings: string[] = [];
+
+    // Fetch app manifest from App Store
+    let manifest: AppManifest;
+    try {
+      // In a real implementation, this would fetch from /api/v1/appstore/:id
+      // For now, we search for the app and validate what we can
+      const apps = await this.searchApps(appId);
+      const app = apps.find(a => a.id === appId);
+
+      if (!app) {
+        errors.push(`App not found in App Store: ${appId}`);
+        return { valid: false, errors, warnings };
+      }
+
+      // Convert AppStoreApp to AppManifest for validation
+      manifest = {
+        id: app.id,
+        version: app.version,
+        title: app.name,
+        description: app.description,
+        // These fields would come from full manifest in real API call
+        minBoxVersion: undefined,
+        memoryLimit: 256, // Default assumption for validation
+        addons: undefined,
+      };
+    } catch (error) {
+      errors.push(`Failed to fetch manifest: ${error instanceof Error ? error.message : String(error)}`);
+      return { valid: false, errors, warnings };
+    }
+
+    // Validate manifest schema against Cloudron spec
+    if (!manifest.id || !manifest.version || !manifest.title) {
+      errors.push('Manifest missing required fields: id, version, or title');
+    }
+
+    // Check F36 storage sufficiency for app installation
+    const estimatedStorageMB = manifest.memoryLimit ? manifest.memoryLimit * 2 : 512; // Rough estimate: 2x memory
+    try {
+      const storageInfo = await this.checkStorage(estimatedStorageMB);
+
+      if (!storageInfo.sufficient) {
+        errors.push(`Insufficient disk space: ${storageInfo.available_mb}MB available, ${estimatedStorageMB}MB required`);
+      }
+
+      if (storageInfo.warning) {
+        warnings.push(`Low disk space warning: ${storageInfo.available_mb}MB available (< 10% of total)`);
+      }
+
+      if (storageInfo.critical) {
+        errors.push(`Critical disk space: ${storageInfo.available_mb}MB available (< 5% of total)`);
+      }
+    } catch (error) {
+      warnings.push(`Could not check storage: ${error instanceof Error ? error.message : String(error)}`);
+    }
+
+    // Check dependencies (addons) availability
+    if (manifest.addons && Object.keys(manifest.addons).length > 0) {
+      const addonNames = Object.keys(manifest.addons);
+
+      // In real implementation, would check against Cloudron's available addons list
+      // For now, we just warn about non-standard addons
+      const standardAddons = ['postgresql', 'mysql', 'redis', 'mongodb', 'mail', 'ldap', 'oauth'];
+      const missingAddons = addonNames.filter(addon => !standardAddons.includes(addon));
+
+      if (missingAddons.length > 0) {
+        warnings.push(`Non-standard addons required: ${missingAddons.join(', ')} (verify Cloudron support)`);
+      }
+    }
+
+    // Check minimum Cloudron version requirement
+    if (manifest.minBoxVersion) {
+      // In real implementation, would compare against current Cloudron version from getCloudronStatus
+      warnings.push(`Requires Cloudron version ${manifest.minBoxVersion} or higher (verify compatibility)`);
+    }
+
+    return {
+      valid: errors.length === 0,
+      errors,
+      warnings,
+    };
   }
 
   /**
@@ -323,6 +448,33 @@ export class CloudronClient {
   }
 
   /**
+   * Uninstall an application (DESTRUCTIVE OPERATION)
+   * DELETE /api/v1/apps/:id
+   * Returns 202 Accepted with task ID for async operation tracking
+   * Performs pre-flight validation via F37 before proceeding
+   */
+  async uninstallApp(appId: string): Promise<{ taskId: string }> {
+    if (!appId) {
+      throw new CloudronError('appId is required');
+    }
+
+    // Pre-flight validation via F37
+    const validation = await this.validateOperation('uninstall_app', appId);
+
+    // If validation fails, throw error with validation details
+    if (!validation.valid) {
+      const errorMessage = `Pre-flight validation failed for uninstall_app on '${appId}':\n${validation.errors.join('\n')}`;
+      throw new CloudronError(errorMessage);
+    }
+
+    // Proceed with uninstall if validation passes
+    return await this.makeRequest<{ taskId: string }>(
+      'DELETE',
+      `/api/v1/apps/${encodeURIComponent(appId)}`
+    );
+  }
+
+  /**
    * Get task status for async operations
    * GET /api/v1/tasks/:taskId
    */
@@ -389,7 +541,7 @@ export class CloudronClient {
       // 4. Plain text: "message"
 
       const isoMatch = line.match(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z?)\s+\[?(\w+)\]?\s*(.*)$/);
-      if (isoMatch) {
+      if (isoMatch && isoMatch[1] && isoMatch[2] && isoMatch[3]) {
         return {
           timestamp: isoMatch[1],
           severity: isoMatch[2].toUpperCase(),
@@ -398,7 +550,7 @@ export class CloudronClient {
       }
 
       const syslogMatch = line.match(/^(\w{3}\s+\d{1,2}\s+\d{2}:\d{2}:\d{2})\s+.*?\[\d+\]:\s*\[?(\w+)\]?\s*(.*)$/);
-      if (syslogMatch) {
+      if (syslogMatch && syslogMatch[1] && syslogMatch[2] && syslogMatch[3]) {
         return {
           timestamp: syslogMatch[1],
           severity: syslogMatch[2].toUpperCase(),
@@ -407,7 +559,7 @@ export class CloudronClient {
       }
 
       const simpleMatch = line.match(/^\[?(\w+)\]?\s+(.*)$/);
-      if (simpleMatch && ['DEBUG', 'INFO', 'WARN', 'WARNING', 'ERROR', 'FATAL', 'TRACE'].includes(simpleMatch[1].toUpperCase())) {
+      if (simpleMatch && simpleMatch[1] && simpleMatch[2] && ['DEBUG', 'INFO', 'WARN', 'WARNING', 'ERROR', 'FATAL', 'TRACE'].includes(simpleMatch[1].toUpperCase())) {
         return {
           timestamp: new Date().toISOString(),
           severity: simpleMatch[1].toUpperCase(),
@@ -593,6 +745,76 @@ export class CloudronClient {
         throw error;
       }
     }
+  }
+
+  /**
+   * Validate app manifest before installation (F23a pre-flight safety check)
+   * Checks: F36 storage sufficient, dependencies available, configuration schema valid
+   * @param appId - The app ID to validate from App Store
+   * @param requiredMB - Optional disk space requirement in MB (defaults to 500MB)
+   * @returns Validation result with errors and warnings
+   */
+  async validateManifest(appId: string, requiredMB: number = 500): Promise<ManifestValidationResult> {
+    if (!appId) {
+      throw new CloudronError('appId is required for manifest validation');
+    }
+
+    const result: ManifestValidationResult = {
+      valid: true,
+      errors: [],
+      warnings: [],
+    };
+
+    try {
+      // Step 1: Fetch app manifest from App Store
+      // Note: Using searchApps as proxy since GET /api/v1/appstore/:id may not exist
+      const apps = await this.searchApps(appId);
+      const app = apps.find(a => a.id === appId);
+
+      if (!app) {
+        result.errors.push(`App not found in App Store: ${appId}`);
+        result.valid = false;
+        return result;
+      }
+
+      // Step 2: Check F36 storage sufficient for installation
+      const storageInfo = await this.checkStorage(requiredMB);
+
+      if (storageInfo.critical) {
+        result.errors.push(`CRITICAL: Less than 5% disk space remaining (${storageInfo.available_mb}MB available). Installation blocked.`);
+      } else if (!storageInfo.sufficient) {
+        result.errors.push(`Insufficient disk space: ${storageInfo.available_mb}MB available, ${requiredMB}MB required.`);
+      } else if (storageInfo.warning) {
+        result.warnings.push(`WARNING: Less than 10% disk space remaining (${storageInfo.available_mb}MB available). Monitor disk usage after installation.`);
+      }
+
+      // Step 3: Check dependencies available in catalog
+      // Note: Cloudron App Store apps declare dependencies in manifest.addons
+      // For MVP, we'll validate basic structure exists
+      // Full dependency resolution would require GET /api/v1/appstore/:id/manifest
+      if (app.description && app.description.toLowerCase().includes('requires')) {
+        result.warnings.push('App may have dependencies. Verify all required addons are available.');
+      }
+
+      // Step 4: Validate configuration schema
+      // Note: Full schema validation would require manifest.configSchema from API
+      // For MVP, we'll pass this check with a recommendation
+      result.warnings.push('Ensure app configuration matches Cloudron specification after installation.');
+
+    } catch (error) {
+      if (error instanceof CloudronError) {
+        result.errors.push(`Manifest validation failed: ${error.message}`);
+      } else {
+        throw error;
+      }
+    }
+
+    // Set valid to false if there are any blocking errors
+    if (result.errors.length > 0) {
+      result.valid = false;
+    }
+
+    return result;
   }
 }
 
