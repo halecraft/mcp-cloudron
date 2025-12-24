@@ -129,6 +129,13 @@ export const mockTaskStatusError: TaskStatus = {
   }
 };
 
+export const mockTaskStatusCancelled: TaskStatus = {
+  id: 'task-123',
+  state: 'cancelled',
+  progress: 45,
+  message: 'Task cancelled by user request'
+};
+
 /**
  * Create a mock fetch implementation for testing
  */
