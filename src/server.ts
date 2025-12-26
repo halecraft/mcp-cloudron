@@ -870,13 +870,12 @@ Note: This is a DESTRUCTIVE operation. The app and its data will be removed once
           env?: Record<string, string>;
         };
 
-        const taskId = await cloudron.installApp({
-          manifestId,
-          location,
-          portBindings,
-          accessRestriction,
-          env,
-        });
+        const params: any = { manifestId, location };
+        if (portBindings !== undefined) params.portBindings = portBindings;
+        if (accessRestriction !== undefined) params.accessRestriction = accessRestriction;
+        if (env !== undefined) params.env = env;
+
+        const taskId = await cloudron.installApp(params);
 
         return {
           content: [
