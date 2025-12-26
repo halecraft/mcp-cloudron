@@ -16,7 +16,7 @@ import {
   mockErrorResponse,
   mockSystemStatus,
 } from './helpers/cloudron-mock.js';
-import type { ManifestValidationResult, AppStoreApp, StorageInfo } from '../src/types.js';
+import type { ManifestValidationResult, AppStoreApp } from '../src/types.js';
 
 describe('F23a: cloudron_validate_manifest', () => {
   let client: CloudronClient;
@@ -129,13 +129,14 @@ describe('F23a: cloudron_validate_manifest', () => {
         version: '1.0.0',
       };
 
-      // Mock storage check: insufficient (200MB available, 500MB required by default)
+      // Mock storage check: insufficient (400MB available, 500MB required by default)
+      // 400MB out of 5000MB = 8% (above 5% critical, below 10% warning)
       const mockStatus = mockSystemStatus({
         disk: {
-          total: 50000 * 1024 * 1024, // 50GB
-          used: 49800 * 1024 * 1024,  // 49.8GB used
-          free: 200 * 1024 * 1024,    // 200MB free (insufficient)
-          percent: 99.6,
+          total: 5000 * 1024 * 1024,  // 5GB total (smaller disk for test scenario)
+          used: 4600 * 1024 * 1024,   // 4.6GB used
+          free: 400 * 1024 * 1024,    // 400MB free (insufficient for 500MB required)
+          percent: 92,
         },
       });
 
@@ -153,7 +154,7 @@ describe('F23a: cloudron_validate_manifest', () => {
       );
       expect(result.errors).toEqual(
         expect.arrayContaining([
-          expect.stringContaining('200MB available'),
+          expect.stringContaining('400MB available'),
         ])
       );
     });
@@ -166,15 +167,15 @@ describe('F23a: cloudron_validate_manifest', () => {
         version: '1.0.0',
       };
 
-      // Mock storage: sufficient but warning threshold triggered
-      const mockStorage: StorageInfo = {
-        available_mb: 4000,
-        total_mb: 50000,
-        used_mb: 46000,
-        sufficient: true,
-        warning: true, // < 10% of total
-        critical: false,
-      };
+      // Mock storage: 4GB available out of 50GB total (8% - warning threshold)
+      const mockStatus = mockSystemStatus({
+        disk: {
+          total: 50000 * 1024 * 1024, // 50GB in bytes
+          used: 46000 * 1024 * 1024,  // 46GB used
+          free: 4000 * 1024 * 1024,   // 4GB free (8% - triggers warning)
+          percent: 92,
+        },
+      });
 
       mockFetch
         .mockResolvedValueOnce(mockSuccessResponse({ apps: [mockApp] }))
@@ -198,19 +199,19 @@ describe('F23a: cloudron_validate_manifest', () => {
         version: '1.0.0',
       };
 
-      // Mock storage: critical threshold triggered
-      const mockStorage: StorageInfo = {
-        available_mb: 2000,
-        total_mb: 50000,
-        used_mb: 48000,
-        sufficient: true,
-        warning: false,
-        critical: true, // < 5% of total
-      };
+      // Mock storage: 2GB available out of 50GB total (4% - critical threshold)
+      const mockStatus = mockSystemStatus({
+        disk: {
+          total: 50000 * 1024 * 1024, // 50GB in bytes
+          used: 48000 * 1024 * 1024,  // 48GB used
+          free: 2000 * 1024 * 1024,   // 2GB free (4% - triggers critical)
+          percent: 96,
+        },
+      });
 
       mockFetch
         .mockResolvedValueOnce(mockSuccessResponse({ apps: [mockApp] }))
-        .mockResolvedValueOnce(mockSuccessResponse(mockSystemStatus(mockStorage)));
+        .mockResolvedValueOnce(mockSuccessResponse(mockStatus));
 
       const result = await client.validateManifest('io.example.app');
 
@@ -255,18 +256,19 @@ describe('F23a: cloudron_validate_manifest', () => {
         version: '1.0.0',
       };
 
-      const mockStorage: StorageInfo = {
-        available_mb: 10000,
-        total_mb: 50000,
-        used_mb: 40000,
-        sufficient: true,
-        warning: false,
-        critical: false,
-      };
+      // Mock storage: 10GB available out of 50GB total (20% - healthy)
+      const mockStatus = mockSystemStatus({
+        disk: {
+          total: 50000 * 1024 * 1024, // 50GB in bytes
+          used: 40000 * 1024 * 1024,  // 40GB used
+          free: 10000 * 1024 * 1024,  // 10GB free (20% - healthy)
+          percent: 80,
+        },
+      });
 
       mockFetch
         .mockResolvedValueOnce(mockSuccessResponse({ apps: [mockApp] }))
-        .mockResolvedValueOnce(mockSuccessResponse(mockSystemStatus(mockStorage)));
+        .mockResolvedValueOnce(mockSuccessResponse(mockStatus));
 
       const result = await client.validateManifest('io.example.app');
 
@@ -289,19 +291,19 @@ describe('F23a: cloudron_validate_manifest', () => {
         version: '1.0.0',
       };
 
-      // Insufficient storage
-      const mockStorage: StorageInfo = {
-        available_mb: 100,
-        total_mb: 50000,
-        used_mb: 49900,
-        sufficient: false,
-        warning: false,
-        critical: true,
-      };
+      // Insufficient storage: 100MB available out of 50GB total (0.2% - critical)
+      const mockStatus = mockSystemStatus({
+        disk: {
+          total: 50000 * 1024 * 1024, // 50GB in bytes
+          used: 49900 * 1024 * 1024,  // 49.9GB used
+          free: 100 * 1024 * 1024,    // 100MB free (0.2% - critical)
+          percent: 99.8,
+        },
+      });
 
       mockFetch
         .mockResolvedValueOnce(mockSuccessResponse({ apps: [mockApp] }))
-        .mockResolvedValueOnce(mockSuccessResponse(mockSystemStatus(mockStorage)));
+        .mockResolvedValueOnce(mockSuccessResponse(mockStatus));
 
       const result = await client.validateManifest('io.example.app');
 
@@ -323,18 +325,19 @@ describe('F23a: cloudron_validate_manifest', () => {
         installCount: 15000,
       };
 
-      const mockStorage: StorageInfo = {
-        available_mb: 25000,
-        total_mb: 50000,
-        used_mb: 25000,
-        sufficient: true,
-        warning: false,
-        critical: false,
-      };
+      // Mock storage: 25GB available out of 50GB total (50% - healthy)
+      const mockStatus = mockSystemStatus({
+        disk: {
+          total: 50000 * 1024 * 1024, // 50GB in bytes
+          used: 25000 * 1024 * 1024,  // 25GB used
+          free: 25000 * 1024 * 1024,  // 25GB free (50% - healthy)
+          percent: 50,
+        },
+      });
 
       mockFetch
         .mockResolvedValueOnce(mockSuccessResponse({ apps: [mockApp] }))
-        .mockResolvedValueOnce(mockSuccessResponse(mockSystemStatus(mockStorage)));
+        .mockResolvedValueOnce(mockSuccessResponse(mockStatus));
 
       const result = await client.validateManifest('io.wordpress.cloudron');
 
