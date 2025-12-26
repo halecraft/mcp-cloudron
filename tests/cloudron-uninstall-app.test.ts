@@ -35,7 +35,7 @@ describe('cloudron_uninstall_app (F04)', () => {
   });
 
   describe('Pre-flight validation (F37 integration)', () => {
-    it('should call F37 validate_operation BEFORE DELETE API call', async () => {
+    it('should call F37 validate_operation BEFORE POST uninstall API call', async () => {
       const appId = 'app-test-123';
       const testApp = mockApp({ id: appId, installationState: 'installed' });
 
@@ -46,7 +46,7 @@ describe('cloudron_uninstall_app (F04)', () => {
           status: 200,
           data: testApp,
         },
-        [`DELETE ${baseUrl}/api/v1/apps/${appId}`]: {
+        [`POST ${baseUrl}/api/v1/apps/${appId}/uninstall`]: {
           ok: true,
           status: 202,
           data: { taskId: 'task-uninstall-456' },
@@ -75,11 +75,11 @@ describe('cloudron_uninstall_app (F04)', () => {
         },
       });
 
-      // Uninstall should throw error BEFORE making DELETE call
+      // Uninstall should throw error BEFORE making POST uninstall call
       await expect(client.uninstallApp(appId)).rejects.toThrow(CloudronError);
       await expect(client.uninstallApp(appId)).rejects.toThrow(/Pre-flight validation failed/);
 
-      // Verify only GET was called (validation), no DELETE
+      // Verify only GET was called (validation), no POST uninstall
       expect(global.fetch).toHaveBeenCalledTimes(2); // 2 calls from 2 expect calls above
     });
 
@@ -93,7 +93,7 @@ describe('cloudron_uninstall_app (F04)', () => {
           status: 200,
           data: testApp,
         },
-        [`DELETE ${baseUrl}/api/v1/apps/${appId}`]: {
+        [`POST ${baseUrl}/api/v1/apps/${appId}/uninstall`]: {
           ok: true,
           status: 202,
           data: { taskId: 'task-789' },
@@ -115,7 +115,7 @@ describe('cloudron_uninstall_app (F04)', () => {
           status: 200,
           data: testApp,
         },
-        [`DELETE ${baseUrl}/api/v1/apps/${appId}`]: {
+        [`POST ${baseUrl}/api/v1/apps/${appId}/uninstall`]: {
           ok: true,
           status: 202,
           data: { taskId: 'task-pending-warn' },
@@ -140,7 +140,7 @@ describe('cloudron_uninstall_app (F04)', () => {
           status: 200,
           data: testApp,
         },
-        [`DELETE ${baseUrl}/api/v1/apps/${appId}`]: {
+        [`POST ${baseUrl}/api/v1/apps/${appId}/uninstall`]: {
           ok: true,
           status: 202,
           data: { taskId },
@@ -237,7 +237,7 @@ describe('cloudron_uninstall_app (F04)', () => {
           status: 200,
           data: testApp,
         },
-        [`DELETE ${baseUrl}/api/v1/apps/${appId}`]: {
+        [`POST ${baseUrl}/api/v1/apps/${appId}/uninstall`]: {
           ok: true,
           status: 202,
           data: { taskId },
@@ -251,7 +251,7 @@ describe('cloudron_uninstall_app (F04)', () => {
   });
 
   describe('F04 test anchors validation', () => {
-    it('F37 validate_operation called BEFORE DELETE API call', async () => {
+    it('F37 validate_operation called BEFORE POST uninstall API call', async () => {
       const appId = 'app-anchor-test';
       const testApp = mockApp({ id: appId, installationState: 'installed' });
 
@@ -260,7 +260,7 @@ describe('cloudron_uninstall_app (F04)', () => {
         if (method === 'GET' && url.includes(appId)) {
           return Promise.resolve(mockSuccessResponse(testApp));
         }
-        if (method === 'DELETE' && url.includes(appId)) {
+        if (method === 'POST' && url.includes(`${appId}/uninstall`)) {
           return Promise.resolve(mockSuccessResponse({ taskId: 'task-123' }, 202));
         }
         return Promise.resolve(mockErrorResponse(404, 'Not found'));
@@ -270,11 +270,11 @@ describe('cloudron_uninstall_app (F04)', () => {
 
       await client.uninstallApp(appId);
 
-      // Verify GET was called before DELETE
+      // Verify GET was called before POST uninstall
       expect(fetchSpy).toHaveBeenCalledTimes(2);
       const calls = fetchSpy.mock.calls;
       expect(calls[0][1]?.method || 'GET').toBe('GET'); // First call is validation
-      expect(calls[1][1]?.method).toBe('DELETE'); // Second call is uninstall
+      expect(calls[1][1]?.method).toBe('POST'); // Second call is uninstall
     });
 
     it('F37 validation failure prevents uninstall (returns error, no API call made)', async () => {
@@ -288,14 +288,14 @@ describe('cloudron_uninstall_app (F04)', () => {
 
       await expect(client.uninstallApp(appId)).rejects.toThrow();
 
-      // Only validation call made, no DELETE
-      const deleteCalls = fetchSpy.mock.calls.filter(
-        call => call[1]?.method === 'DELETE'
+      // Only validation call made, no POST uninstall
+      const postCalls = fetchSpy.mock.calls.filter(
+        call => call[1]?.method === 'POST'
       );
-      expect(deleteCalls).toHaveLength(0);
+      expect(postCalls).toHaveLength(0);
     });
 
-    it('F37 validation success proceeds to DELETE /api/v1/apps/:id', async () => {
+    it('F37 validation success proceeds to POST /api/v1/apps/:id/uninstall', async () => {
       const appId = 'app-proceed';
       const testApp = mockApp({ id: appId, installationState: 'installed' });
 
@@ -305,7 +305,7 @@ describe('cloudron_uninstall_app (F04)', () => {
           status: 200,
           data: testApp,
         },
-        [`DELETE ${baseUrl}/api/v1/apps/${appId}`]: {
+        [`POST ${baseUrl}/api/v1/apps/${appId}/uninstall`]: {
           ok: true,
           status: 202,
           data: { taskId: 'task-proceed-123' },
@@ -327,7 +327,7 @@ describe('cloudron_uninstall_app (F04)', () => {
           status: 200,
           data: testApp,
         },
-        [`DELETE ${baseUrl}/api/v1/apps/${appId}`]: {
+        [`POST ${baseUrl}/api/v1/apps/${appId}/uninstall`]: {
           ok: true,
           status: 202,
           data: { taskId: 'task-202-test' },
@@ -368,7 +368,7 @@ describe('cloudron_uninstall_app (F04)', () => {
           status: 200,
           data: testApp,
         },
-        [`DELETE ${baseUrl}/api/v1/apps/${appId}`]: {
+        [`POST ${baseUrl}/api/v1/apps/${appId}/uninstall`]: {
           ok: true,
           status: 202,
           data: { taskId: 'task-backup-rec' },
