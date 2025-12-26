@@ -277,6 +277,36 @@ const TOOLS = [
       required: ['appId'],
     },
   },
+  {
+    name: 'cloudron_install_app',
+    description: 'Install application from Cloudron App Store with pre-flight validation. Calls F23a (cloudron_validate_manifest) to verify app exists and F36 (cloudron_check_storage) to ensure sufficient disk space. Returns task ID for async operation tracking via cloudron_task_status.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        manifestId: {
+          type: 'string',
+          description: 'App manifest ID from App Store',
+        },
+        location: {
+          type: 'string',
+          description: 'Subdomain for app installation',
+        },
+        portBindings: {
+          type: 'object',
+          description: 'Optional port bindings',
+        },
+        accessRestriction: {
+          type: 'string',
+          description: 'Optional access control',
+        },
+        env: {
+          type: 'object',
+          description: 'Environment variables',
+        },
+      },
+      required: ['manifestId', 'location'],
+    },
+  },
 ];
 
 // Create server instance
@@ -826,6 +856,40 @@ ${errorsText}${warningsText}`,
 Use cloudron_task_status with taskId '${result.taskId}' to track uninstall progress.
 
 Note: This is a DESTRUCTIVE operation. The app and its data will be removed once the task completes.`,
+            },
+          ],
+        };
+      }
+
+      case 'cloudron_install_app': {
+        const { manifestId, location, portBindings, accessRestriction, env } = args as {
+          manifestId: string;
+          location: string;
+          portBindings?: Record<string, number>;
+          accessRestriction?: string;
+          env?: Record<string, string>;
+        };
+
+        const taskId = await cloudron.installApp({
+          manifestId,
+          location,
+          portBindings,
+          accessRestriction,
+          env,
+        });
+
+        return {
+          content: [
+            {
+              type: 'text' as const,
+              text: `Installation initiated for app: ${manifestId}
+  Location: ${location}
+  Task ID: ${taskId}
+  Status: Pending (202 Accepted)
+
+Use cloudron_task_status with taskId '${taskId}' to track installation progress.
+
+Note: Pre-flight validation (F23a + F36) passed. Installation is in progress.`,
             },
           ],
         };

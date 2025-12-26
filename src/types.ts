@@ -37,6 +37,17 @@ export interface ManifestValidationResult {
 }
 
 /**
+ * App installation parameters for F23b
+ */
+export interface InstallAppParams {
+  manifestId: string; // App Store app ID to install
+  location: string; // Subdomain for the app
+  portBindings?: Record<string, number>; // Optional port configuration
+  accessRestriction?: string; // Optional access control setting
+  env?: Record<string, string>; // Optional environment variables
+}
+
+/**
  * Cloudron App representation
  */
 export interface App {

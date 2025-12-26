@@ -4,7 +4,7 @@
  * DI-enabled for testing
  */
 
-import type { CloudronClientConfig, App, AppsResponse, AppResponse, SystemStatus, TaskStatus, StorageInfo, ValidatableOperation, ValidationResult, Backup, BackupsResponse, AppStoreApp, AppStoreResponse, User, UsersResponse, LogType, LogEntry, LogsResponse, AppConfig, ConfigureAppResponse, ManifestValidationResult, AppManifest } from './types.js';
+import type { CloudronClientConfig, App, AppsResponse, AppResponse, SystemStatus, TaskStatus, StorageInfo, ValidatableOperation, ValidationResult, Backup, BackupsResponse, AppStoreApp, AppStoreResponse, User, UsersResponse, LogType, LogEntry, LogsResponse, AppConfig, ConfigureAppResponse, ManifestValidationResult, AppManifest, InstallAppParams } from './types.js';
 import { CloudronError, CloudronAuthError, createErrorFromStatus } from './errors.js';
 
 const DEFAULT_TIMEOUT = 30000;
@@ -723,6 +723,51 @@ export class CloudronClient {
     }
 
     return result;
+  }
+
+  /**
+   * Install an application from the App Store (F23b with pre-flight validation)
+   * POST /api/v1/apps/install
+   * @param params - Installation parameters (manifestId, location, optional config)
+   * @returns Task ID for tracking installation progress via getTaskStatus()
+   */
+  async installApp(params: InstallAppParams): Promise<string> {
+    if (!params.manifestId) {
+      throw new CloudronError('manifestId is required for app installation');
+    }
+    if (!params.location) {
+      throw new CloudronError('location (subdomain) is required for app installation');
+    }
+
+    // F23a pre-flight validation: Check manifest validity and storage
+    const validation = await this.validateManifest(params.manifestId);
+    if (!validation.valid) {
+      throw new CloudronError(
+        `Pre-flight validation failed: ${validation.errors.join(', ')}`
+      );
+    }
+
+    // Log warnings but allow installation to proceed
+    if (validation.warnings.length > 0) {
+      console.warn(`Installation warnings: ${validation.warnings.join('; ')}`);
+    }
+
+    // Install app (async operation)
+    const body = {
+      appStoreId: params.manifestId,
+      location: params.location,
+      ...(params.portBindings && { portBindings: params.portBindings }),
+      ...(params.accessRestriction && { accessRestriction: params.accessRestriction }),
+      ...(params.env && { env: params.env }),
+    };
+
+    const response = await this.makeRequest<{ taskId: string }>('POST', '/api/v1/apps/install', body);
+
+    if (!response.taskId) {
+      throw new CloudronError('App installation response missing taskId');
+    }
+
+    return response.taskId;
   }
 }
 
