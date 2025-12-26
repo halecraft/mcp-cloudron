@@ -756,12 +756,13 @@ export class CloudronClient {
     const body = {
       appStoreId: params.manifestId,
       location: params.location,
+      domain: params.domain,
+      accessRestriction: params.accessRestriction,
       ...(params.portBindings && { portBindings: params.portBindings }),
-      ...(params.accessRestriction && { accessRestriction: params.accessRestriction }),
       ...(params.env && { env: params.env }),
     };
 
-    const response = await this.makeRequest<{ taskId: string }>('POST', '/api/v1/apps/install', body);
+    const response = await this.makeRequest<{ taskId: string }>('POST', '/api/v1/apps', body);
 
     if (!response.taskId) {
       throw new CloudronError('App installation response missing taskId');

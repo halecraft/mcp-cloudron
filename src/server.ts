@@ -291,20 +291,24 @@ const TOOLS = [
           type: 'string',
           description: 'Subdomain for app installation',
         },
+        domain: {
+          type: 'string',
+          description: 'Domain where app will be installed (REQUIRED)',
+        },
         portBindings: {
           type: 'object',
           description: 'Optional port bindings',
         },
         accessRestriction: {
-          type: 'string',
-          description: 'Optional access control',
+          type: ['string', 'null'],
+          description: 'Access control setting (can be null for no restriction)',
         },
         env: {
           type: 'object',
           description: 'Environment variables',
         },
       },
-      required: ['manifestId', 'location'],
+      required: ['manifestId', 'location', 'domain', 'accessRestriction'],
     },
   },
 ];
@@ -862,17 +866,17 @@ Note: This is a DESTRUCTIVE operation. The app and its data will be removed once
       }
 
       case 'cloudron_install_app': {
-        const { manifestId, location, portBindings, accessRestriction, env } = args as {
+        const { manifestId, location, domain, portBindings, accessRestriction, env } = args as {
           manifestId: string;
           location: string;
+          domain: string;
           portBindings?: Record<string, number>;
-          accessRestriction?: string;
+          accessRestriction: string | null;
           env?: Record<string, string>;
         };
 
-        const params: any = { manifestId, location };
+        const params: any = { manifestId, location, domain, accessRestriction };
         if (portBindings !== undefined) params.portBindings = portBindings;
-        if (accessRestriction !== undefined) params.accessRestriction = accessRestriction;
         if (env !== undefined) params.env = env;
 
         const taskId = await cloudron.installApp(params);

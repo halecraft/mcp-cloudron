@@ -42,8 +42,9 @@ export interface ManifestValidationResult {
 export interface InstallAppParams {
   manifestId: string; // App Store app ID to install
   location: string; // Subdomain for the app
+  domain: string; // Domain where app will be installed (REQUIRED)
   portBindings?: Record<string, number>; // Optional port configuration
-  accessRestriction?: string; // Optional access control setting
+  accessRestriction: string | null; // Access control setting (can be null for no restriction)
   env?: Record<string, string>; // Optional environment variables
 }
 
