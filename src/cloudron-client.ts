@@ -4,7 +4,7 @@
  * DI-enabled for testing
  */
 
-import type { CloudronClientConfig, App, AppsResponse, AppResponse, SystemStatus, TaskStatus, StorageInfo, ValidatableOperation, ValidationResult, Backup, BackupsResponse, AppStoreApp, AppStoreResponse, User, UsersResponse, LogType, LogEntry, LogsResponse, AppConfig, ConfigureAppResponse, ManifestValidationResult, AppManifest, InstallAppParams } from './types.js';
+import type { CloudronClientConfig, App, AppsResponse, AppResponse, SystemStatus, TaskStatus, StorageInfo, ValidatableOperation, ValidationResult, Backup, BackupsResponse, AppStoreApp, AppStoreResponse, User, UsersResponse, LogType, LogEntry, LogsResponse, AppConfig, ConfigureAppResponse, ManifestValidationResult, AppManifest, InstallAppParams, Domain } from './types.js';
 import { CloudronError, CloudronAuthError, createErrorFromStatus } from './errors.js';
 
 const DEFAULT_TIMEOUT = 30000;
@@ -253,6 +253,16 @@ export class CloudronClient {
       password,
       role,
     });
+  }
+
+  /**
+   * List all configured domains on Cloudron instance
+   * GET /api/v1/domains
+   * @returns Array of domain configurations
+   */
+  async listDomains(): Promise<Domain[]> {
+    const response = await this.makeRequest<{ domains: Domain[] }>('GET', '/api/v1/domains');
+    return response.domains;
   }
 
   /**

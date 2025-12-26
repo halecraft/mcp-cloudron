@@ -165,6 +165,24 @@ export interface ValidationResult {
 }
 
 /**
+ * Domain configuration from Cloudron domain system
+ */
+export interface Domain {
+  domain: string;
+  zoneName: string;
+  provider: string;
+  config: Record<string, unknown>;
+  tlsConfig: {
+    provider: string;
+    wildcard: boolean;
+  };
+  wellKnown: null | unknown;
+  fallbackCertificate: {
+    cert: string;
+  };
+}
+
+/**
  * Backup metadata from Cloudron backup system
  */
 export interface Backup {

@@ -1,6 +1,6 @@
 {
   // Visit https://aka.ms/tsconfig to read more about this file
-  "exclude": ["src/**/*.test.ts", "src/**/*-integration.ts", "dist", "node_modules", "tests", "coverage"],
+  "exclude": ["src/**/*.test.ts", "src/**/*-integration.ts", "dist", "node_modules", "tests", "coverage", "scripts"],
   "compilerOptions": {
     // File Layout
     "rootDir": "src",

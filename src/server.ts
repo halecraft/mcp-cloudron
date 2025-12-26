@@ -241,6 +241,14 @@ const TOOLS = [
     },
   },
   {
+    name: 'cloudron_list_domains',
+    description: 'List all configured domains on the Cloudron instance. Returns domain details including name, provider, verification status, and TLS configuration.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {},
+    },
+  },
+  {
     name: 'cloudron_get_logs',
     description: 'Get logs for an app or service. Logs are formatted with timestamps and severity levels for readability. Type parameter determines endpoint: "app" calls GET /api/v1/apps/:id/logs, "service" calls GET /api/v1/services/:id/logs.',
     inputSchema: {
@@ -819,6 +827,26 @@ ${errorsText}${warningsText}`,
   Username: ${user.username}
   Role: ${user.role}
   Created: ${new Date(user.createdAt).toLocaleString()}`,
+            },
+          ],
+        };
+      }
+
+      case 'cloudron_list_domains': {
+        const domains = await cloudron.listDomains();
+
+        const domainList = domains.map(d =>
+          `Domain: ${d.domain}
+  Zone: ${d.zoneName}
+  Provider: ${d.provider}
+  TLS: ${d.tlsConfig.provider} (wildcard: ${d.tlsConfig.wildcard})`
+        ).join('\n\n');
+
+        return {
+          content: [
+            {
+              type: 'text' as const,
+              text: `Configured domains (${domains.length}):\n\n${domainList}`,
             },
           ],
         };
