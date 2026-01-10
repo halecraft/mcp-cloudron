@@ -1,6 +1,6 @@
 # mcp-cloudron
 
-[![npm version](https://badge.fury.io/js/%40serenichron%2Fmcp-cloudron.svg)](https://www.npmjs.com/package/@serenichron/mcp-cloudron)
+[![npm version](https://badge.fury.io/js/%40halecraft%2Fmcp-cloudron.svg)](https://www.npmjs.com/package/@halecraft/mcp-cloudron)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![MCP](https://img.shields.io/badge/MCP-Compatible-blue.svg)](https://modelcontextprotocol.io)
 
@@ -15,23 +15,23 @@ MCP server for [Cloudron](https://cloudron.io) instance management. List apps, g
 ## Installation
 
 ```bash
-npm install @serenichron/mcp-cloudron
+npm install @halecraft/mcp-cloudron
 ```
 
 Or run directly with npx:
 
 ```bash
-npx @serenichron/mcp-cloudron
+npx @halecraft/mcp-cloudron
 ```
 
 ## Configuration
 
 ### Environment Variables
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `CLOUDRON_BASE_URL` | Yes | Your Cloudron instance URL (e.g., `https://my.cloudron.io`) |
-| `CLOUDRON_API_TOKEN` | Yes | API token from Cloudron Admin Panel |
+| Variable             | Required | Description                                                 |
+| -------------------- | -------- | ----------------------------------------------------------- |
+| `CLOUDRON_BASE_URL`  | Yes      | Your Cloudron instance URL (e.g., `https://my.cloudron.io`) |
+| `CLOUDRON_API_TOKEN` | Yes      | API token from Cloudron Admin Panel                         |
 
 ### Getting an API Token
 
@@ -50,7 +50,7 @@ Add to your Claude Desktop configuration (`claude_desktop_config.json`):
   "mcpServers": {
     "cloudron": {
       "command": "npx",
-      "args": ["@serenichron/mcp-cloudron"],
+      "args": ["@halecraft/mcp-cloudron"],
       "env": {
         "CLOUDRON_BASE_URL": "https://your-cloudron-instance.com",
         "CLOUDRON_API_TOKEN": "your-api-token"
@@ -68,7 +68,7 @@ Add to your Docker MCP config (`~/.docker/mcp/config.yaml`):
 mcpServers:
   cloudron:
     command: npx
-    args: ["@serenichron/mcp-cloudron"]
+    args: ["@halecraft/mcp-cloudron"]
     env:
       CLOUDRON_BASE_URL: "https://your-cloudron-instance.com"
       CLOUDRON_API_TOKEN: "your-api-token"
@@ -85,6 +85,7 @@ List all installed applications on the Cloudron instance.
 **Returns**: List of apps with name, domain, ID, state, health, and memory usage.
 
 **Example output**:
+
 ```
 Found 3 apps:
 
@@ -121,6 +122,7 @@ Get the current status and configuration of the Cloudron instance.
 **Returns**: Instance information including name, version, admin URL, provider, and demo mode status.
 
 **Example output**:
+
 ```
 Cloudron Status:
   Name: My Cloudron
@@ -135,7 +137,7 @@ Cloudron Status:
 ### Setup
 
 ```bash
-git clone https://github.com/serenichron/mcp-cloudron.git
+git clone https://github.com/halecraft/mcp-cloudron.git
 cd mcp-cloudron
 npm install
 ```
@@ -173,17 +175,20 @@ The server uses the [Cloudron REST API](https://docs.cloudron.io/api/). Currentl
 ### v0.2.0 (2025-12-26)
 
 **New Features**:
+
 - 15 new MCP tools across app management, backups, users, infrastructure
 - Pre-flight validation for destructive operations (F37)
 - Storage checks before data creation (F36)
 - Async task tracking and cancellation (F34, F35)
 
 **Critical Bug Fixes**:
+
 - F23b: Corrected endpoint path and added required domain parameter
 - F04: Fixed HTTP method (DELETE → POST) for uninstall operation
 - Both bugs discovered via real API testing (mock tests validated nothing)
 
 **Testing**:
+
 - Real Cloudron API integration testing
 - Validated against live instance
 - All 16 tools tested with actual API calls
@@ -198,8 +203,8 @@ Future versions may include:
 ## Community
 
 - 💬 [Cloudron Forum](https://forum.cloudron.io) - Discussion and support
-- 🐛 [Issue Tracker](https://github.com/serenichron/mcp-cloudron/issues) - Report bugs
-- 💡 [Feature Requests](https://github.com/serenichron/mcp-cloudron/issues/new?labels=enhancement) - Suggest improvements
+- 🐛 [Issue Tracker](https://github.com/halecraft/mcp-cloudron/issues) - Report bugs
+- 💡 [Feature Requests](https://github.com/halecraft/mcp-cloudron/issues/new?labels=enhancement) - Suggest improvements
 
 ### Related Projects
 
@@ -219,19 +224,3 @@ Contributions welcome! Please open an issue or submit a pull request.
 - [Cloudron Documentation](https://docs.cloudron.io/)
 - [Model Context Protocol](https://modelcontextprotocol.io/)
 - [MCP TypeScript SDK](https://github.com/modelcontextprotocol/typescript-sdk)
-
-# Origin
-
-This repo was forked from https://github.com/serenichron/mcp-cloudron, and cleaned up:
-
-❯ git filter-repo --force --path node_modules --invert-paths
-❯ git filter-repo --force --path dist --invert-paths
-❯ git filter-repo --force --path TESTING.md --invert-paths
-❯ git filter-repo --force --path PHASE_2_3_SUMMARY.md --invert-paths
-❯ git filter-repo --force --path .serena --invert-paths
-❯ git filter-repo --force --path FORUM_POST.md --invert-paths
-❯ git filter-repo --force --path coverage/ --invert-paths
-❯ git filter-repo --force --path REAL_TEST_RESULTS_F23B.md --invert-paths
-❯ git filter-repo --force --path TESTING_NOTES.md --invert-paths
-
-Fix deprecated packages.
