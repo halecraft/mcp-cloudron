@@ -2,23 +2,12 @@
  * MCP response schema validation helpers
  */
 
-/**
- * MCP content item type
- */
-interface MCPContentItem {
-  type: string
-  text?: string
-  [key: string]: unknown
-}
+import type { MCPToolResponse } from "../../src/tools/response"
 
 /**
- * MCP tool response type
+ * MCP tool response type - alias for compatibility
  */
-interface MCPResponse {
-  content?: MCPContentItem[]
-  isError?: boolean
-  [key: string]: unknown
-}
+type MCPResponse = MCPToolResponse
 
 /**
  * Assert that MCP tool response has correct structure

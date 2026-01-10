@@ -21,6 +21,7 @@ module.exports = {
       displayName: "unit",
       testMatch: ["<rootDir>/tests/**/*.test.ts"],
       testPathIgnorePatterns: ["/integration/"],
+      setupFilesAfterEnv: ["<rootDir>/tests/helpers/setup.ts"],
       moduleNameMapper: {
         "^(\\.{1,2}/.*)\\.js$": "$1",
       },

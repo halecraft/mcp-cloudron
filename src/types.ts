@@ -285,7 +285,6 @@ export interface AppConfig {
   env?: Record<string, string> // Environment variables
   memoryLimit?: number // Memory limit in MB
   accessRestriction?: string | null // Access control settings
-  [key: string]: unknown // Allow additional config fields
 }
 
 /**
@@ -294,13 +293,4 @@ export interface AppConfig {
 export interface ConfigureAppResponse {
   app: App
   restartRequired: boolean // Whether app needs restart for config to take effect
-}
-
-/**
- * Validation result for app manifest (pre-flight safety check for installation)
- */
-export interface ManifestValidationResult {
-  valid: boolean
-  errors: string[]
-  warnings: string[]
 }

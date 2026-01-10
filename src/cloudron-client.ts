@@ -4,6 +4,15 @@
  * DI-enabled for testing
  */
 
+import {
+  BACKUP_MIN_STORAGE_MB,
+  DEFAULT_TIMEOUT_MS,
+  INSTALL_DEFAULT_STORAGE_MB,
+  MAX_LOG_LINES,
+  RESTORE_MIN_STORAGE_MB,
+  STORAGE_CRITICAL_THRESHOLD,
+  STORAGE_WARNING_THRESHOLD,
+} from "./config.js"
 import { CloudronError, createErrorFromStatus } from "./errors.js"
 import type {
   App,
@@ -29,8 +38,6 @@ import type {
   ValidatableOperation,
   ValidationResult,
 } from "./types.js"
-
-const DEFAULT_TIMEOUT = 30000
 
 export class CloudronClient {
   private readonly baseUrl: string
@@ -70,7 +77,7 @@ export class CloudronClient {
     options?: { timeout?: number },
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`
-    const timeout = options?.timeout ?? DEFAULT_TIMEOUT
+    const timeout = options?.timeout ?? DEFAULT_TIMEOUT_MS
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), timeout)
 
@@ -117,20 +124,18 @@ export class CloudronClient {
 
       if (error instanceof Error) {
         if (error.name === "AbortError") {
-          throw new CloudronError(
-            `Request timeout after ${timeout}ms`,
-            undefined,
-            "TIMEOUT",
-          )
+          throw new CloudronError(`Request timeout after ${timeout}ms`, {
+            code: "TIMEOUT",
+            cause: error,
+          })
         }
-        throw new CloudronError(
-          `Network error: ${error.message}`,
-          undefined,
-          "NETWORK_ERROR",
-        )
+        throw new CloudronError(`Network error: ${error.message}`, {
+          code: "NETWORK_ERROR",
+          cause: error,
+        })
       }
 
-      throw new CloudronError("Unknown error occurred")
+      throw new CloudronError("Unknown error occurred", { cause: error })
     }
   }
 
@@ -198,8 +203,7 @@ export class CloudronClient {
    * @returns Task ID for tracking backup progress via getTaskStatus()
    */
   async createBackup(): Promise<string> {
-    // F36 pre-flight storage check: Require 5GB minimum for backup
-    const BACKUP_MIN_STORAGE_MB = 5120 // 5GB
+    // F36 pre-flight storage check: Require minimum storage for backup
     const storageInfo = await this.checkStorage(BACKUP_MIN_STORAGE_MB)
 
     if (!storageInfo.sufficient) {
@@ -520,8 +524,8 @@ export class CloudronClient {
       )
     }
 
-    // Clamp lines between 1 and 1000
-    const clampedLines = Math.max(1, Math.min(1000, lines))
+    // Clamp lines between 1 and MAX_LOG_LINES
+    const clampedLines = Math.max(1, Math.min(MAX_LOG_LINES, lines))
 
     // Determine endpoint based on type
     const endpoint =
@@ -621,11 +625,11 @@ export class CloudronClient {
     const sufficient =
       requiredMB !== undefined ? available_mb >= requiredMB : true
 
-    // Warning threshold: available < 10% of total
-    const warning = available_mb < total_mb * 0.1
+    // Warning threshold: available < configured percentage of total
+    const warning = available_mb < total_mb * STORAGE_WARNING_THRESHOLD
 
-    // Critical threshold: available < 5% of total
-    const critical = available_mb < total_mb * 0.05
+    // Critical threshold: available < configured percentage of total
+    const critical = available_mb < total_mb * STORAGE_CRITICAL_THRESHOLD
 
     return {
       available_mb,
@@ -768,9 +772,7 @@ export class CloudronClient {
     // For Phase 1, we focus on storage validation
 
     try {
-      // Check storage sufficiency
-      // Assume backup requires at least 1GB of free space for safety margin
-      const RESTORE_MIN_STORAGE_MB = 1024
+      // Check storage sufficiency using configured minimum
       const storageInfo = await this.checkStorage(RESTORE_MIN_STORAGE_MB)
 
       if (!storageInfo.sufficient) {
@@ -812,12 +814,12 @@ export class CloudronClient {
    * Validate app manifest before installation (F23a pre-flight safety check)
    * Checks: F36 storage sufficient, dependencies available, configuration schema valid
    * @param appId - The app ID to validate from App Store
-   * @param requiredMB - Optional disk space requirement in MB (defaults to 500MB)
+   * @param requiredMB - Optional disk space requirement in MB (defaults to INSTALL_DEFAULT_STORAGE_MB)
    * @returns Validation result with errors and warnings
    */
   async validateManifest(
     appId: string,
-    requiredMB: number = 500,
+    requiredMB: number = INSTALL_DEFAULT_STORAGE_MB,
   ): Promise<ManifestValidationResult> {
     if (!appId) {
       throw new CloudronError("appId is required for manifest validation")

@@ -3,16 +3,47 @@
  * MVP scope: Base error + Auth error only
  */
 
+/** Options for CloudronError constructor */
+export interface CloudronErrorOptions {
+  statusCode?: number
+  code?: string
+  cause?: unknown
+}
+
 /** Base error for all Cloudron API errors */
 export class CloudronError extends Error {
   public readonly statusCode: number | undefined
   public readonly code: string | undefined
+  public override readonly cause: unknown
 
-  constructor(message: string, statusCode?: number, code?: string) {
-    super(message)
+  constructor(message: string, options?: CloudronErrorOptions)
+  /** @deprecated Use options object instead */
+  constructor(message: string, statusCode?: number, code?: string)
+  constructor(
+    message: string,
+    statusCodeOrOptions?: number | CloudronErrorOptions,
+    code?: string,
+  ) {
+    // Handle both old and new constructor signatures
+    let resolvedStatusCode: number | undefined
+    let resolvedCode: string | undefined
+    let resolvedCause: unknown
+
+    if (typeof statusCodeOrOptions === "object") {
+      resolvedStatusCode = statusCodeOrOptions.statusCode
+      resolvedCode = statusCodeOrOptions.code
+      resolvedCause = statusCodeOrOptions.cause
+    } else {
+      resolvedStatusCode = statusCodeOrOptions
+      resolvedCode = code
+      resolvedCause = undefined
+    }
+
+    super(message, { cause: resolvedCause })
     this.name = "CloudronError"
-    this.statusCode = statusCode ?? undefined
-    this.code = code ?? undefined
+    this.statusCode = resolvedStatusCode
+    this.code = resolvedCode
+    this.cause = resolvedCause
 
     // Maintains proper stack trace in V8 engines
     if (Error.captureStackTrace) {
