@@ -1,6 +1,6 @@
 /**
  * Cloudron Error Classes
- * MVP scope: Base error + Auth error only
+ * Base error, auth error, and error utilities for API responses
  */
 
 /** Options for CloudronError constructor */

@@ -2,16 +2,27 @@
  * Tests for app-related tool handlers
  */
 
-import { CloudronClient } from "../../src/cloudron-client"
+import { afterAll, beforeAll, describe, expect, it } from "vitest"
 import { appHandlers } from "../../src/tools/handlers/apps"
 import {
+  cleanupTestEnv,
   createMockFetch,
+  createTestContext,
   mockApps,
   mockCloudronStatus,
+  setupTestEnv,
 } from "../helpers/cloudron-mock"
 import { assertHasTextContent, assertSuccess } from "../helpers/mcp-assert"
 
 describe("App Handlers", () => {
+  beforeAll(() => {
+    setupTestEnv()
+  })
+
+  afterAll(() => {
+    cleanupTestEnv()
+  })
+
   describe("cloudron_list_apps", () => {
     it("should return formatted list of apps", async () => {
       global.fetch = createMockFetch({
@@ -22,8 +33,8 @@ describe("App Handlers", () => {
         },
       })
 
-      const client = new CloudronClient()
-      const response = await appHandlers.cloudron_list_apps({}, client)
+      const ctx = createTestContext()
+      const response = await appHandlers.cloudron_list_apps({}, ctx)
 
       assertSuccess(response)
       const text = assertHasTextContent(response)
@@ -42,8 +53,8 @@ describe("App Handlers", () => {
         },
       })
 
-      const client = new CloudronClient()
-      const response = await appHandlers.cloudron_list_apps({}, client)
+      const ctx = createTestContext()
+      const response = await appHandlers.cloudron_list_apps({}, ctx)
 
       assertSuccess(response)
       const text = assertHasTextContent(response)
@@ -61,10 +72,10 @@ describe("App Handlers", () => {
         },
       })
 
-      const client = new CloudronClient()
+      const ctx = createTestContext()
       const response = await appHandlers.cloudron_get_app(
         { appId: "app-1" },
-        client,
+        ctx,
       )
 
       assertSuccess(response)
@@ -75,18 +86,18 @@ describe("App Handlers", () => {
     })
 
     it("should throw error for missing appId", async () => {
-      const client = new CloudronClient()
+      const ctx = createTestContext()
 
-      await expect(appHandlers.cloudron_get_app({}, client)).rejects.toThrow(
+      await expect(appHandlers.cloudron_get_app({}, ctx)).rejects.toThrow(
         "appId is required",
       )
     })
 
     it("should throw error for empty appId", async () => {
-      const client = new CloudronClient()
+      const ctx = createTestContext()
 
       await expect(
-        appHandlers.cloudron_get_app({ appId: "" }, client),
+        appHandlers.cloudron_get_app({ appId: "" }, ctx),
       ).rejects.toThrow("appId is required")
     })
   })
@@ -101,10 +112,10 @@ describe("App Handlers", () => {
         },
       })
 
-      const client = new CloudronClient()
+      const ctx = createTestContext()
       const response = await appHandlers.cloudron_control_app(
         { appId: "app-1", action: "start" },
-        client,
+        ctx,
       )
 
       assertSuccess(response)
@@ -122,10 +133,10 @@ describe("App Handlers", () => {
         },
       })
 
-      const client = new CloudronClient()
+      const ctx = createTestContext()
       const response = await appHandlers.cloudron_control_app(
         { appId: "app-1", action: "stop" },
-        client,
+        ctx,
       )
 
       assertSuccess(response)
@@ -143,10 +154,10 @@ describe("App Handlers", () => {
         },
       })
 
-      const client = new CloudronClient()
+      const ctx = createTestContext()
       const response = await appHandlers.cloudron_control_app(
         { appId: "app-1", action: "restart" },
-        client,
+        ctx,
       )
 
       assertSuccess(response)
@@ -156,12 +167,12 @@ describe("App Handlers", () => {
     })
 
     it("should throw error for invalid action", async () => {
-      const client = new CloudronClient()
+      const ctx = createTestContext()
 
       await expect(
         appHandlers.cloudron_control_app(
           { appId: "app-1", action: "invalid" },
-          client,
+          ctx,
         ),
       ).rejects.toThrow("Invalid action")
     })
@@ -180,10 +191,10 @@ describe("App Handlers", () => {
         },
       })
 
-      const client = new CloudronClient()
+      const ctx = createTestContext()
       const response = await appHandlers.cloudron_configure_app(
         { appId: "app-1", config: { memoryLimit: 512 } },
-        client,
+        ctx,
       )
 
       assertSuccess(response)
@@ -194,13 +205,10 @@ describe("App Handlers", () => {
     })
 
     it("should throw error for empty config", async () => {
-      const client = new CloudronClient()
+      const ctx = createTestContext()
 
       await expect(
-        appHandlers.cloudron_configure_app(
-          { appId: "app-1", config: {} },
-          client,
-        ),
+        appHandlers.cloudron_configure_app({ appId: "app-1", config: {} }, ctx),
       ).rejects.toThrow("config object cannot be empty")
     })
   })
@@ -236,7 +244,7 @@ describe("App Handlers", () => {
         },
       })
 
-      const client = new CloudronClient()
+      const ctx = createTestContext()
       const response = await appHandlers.cloudron_install_app(
         {
           manifestId: "io.example.app",
@@ -244,7 +252,7 @@ describe("App Handlers", () => {
           domain: "example.com",
           accessRestriction: null,
         },
-        client,
+        ctx,
       )
 
       assertSuccess(response)
@@ -269,10 +277,10 @@ describe("App Handlers", () => {
         },
       })
 
-      const client = new CloudronClient()
+      const ctx = createTestContext()
       const response = await appHandlers.cloudron_uninstall_app(
         { appId: "app-1" },
-        client,
+        ctx,
       )
 
       assertSuccess(response)

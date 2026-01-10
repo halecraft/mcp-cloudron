@@ -3,6 +3,7 @@
  */
 
 import { BACKUP_MIN_STORAGE_MB } from "../../config.js"
+import type { CloneAppParams } from "../../types.js"
 import {
   formatApp,
   formatAsyncTaskResponse,
@@ -21,31 +22,31 @@ import {
 } from "../validators.js"
 
 export const appHandlers: ToolRegistry = {
-  cloudron_list_apps: async (_args, client) => {
-    const apps = await client.listApps()
+  cloudron_list_apps: async (_args, ctx) => {
+    const apps = await ctx.apps.listApps()
     const formatted = apps.map(formatApp).join("\n\n")
     return textResponse(`Found ${apps.length} apps:\n\n${formatted}`)
   },
 
-  cloudron_get_app: async (args, client) => {
+  cloudron_get_app: async (args, ctx) => {
     const { appId } = parseAppIdArgs(args)
-    const app = await client.getApp(appId)
+    const app = await ctx.apps.getApp(appId)
     return textResponse(formatApp(app))
   },
 
-  cloudron_control_app: async (args, client) => {
+  cloudron_control_app: async (args, ctx) => {
     const { appId, action } = parseControlAppArgs(args)
 
     let result: { taskId: string }
     switch (action) {
       case "start":
-        result = await client.startApp(appId)
+        result = await ctx.apps.startApp(appId)
         break
       case "stop":
-        result = await client.stopApp(appId)
+        result = await ctx.apps.stopApp(appId)
         break
       case "restart":
-        result = await client.restartApp(appId)
+        result = await ctx.apps.restartApp(appId)
         break
     }
 
@@ -56,9 +57,9 @@ export const appHandlers: ToolRegistry = {
 Use cloudron_task_status with taskId '${result.taskId}' to track completion.`)
   },
 
-  cloudron_configure_app: async (args, client) => {
+  cloudron_configure_app: async (args, ctx) => {
     const { appId, config } = parseConfigureAppArgs(args)
-    const result = await client.configureApp(appId, config)
+    const result = await ctx.apps.configureApp(appId, config)
 
     const configChanges = formatConfigChanges(config)
     const restartNote = result.restartRequired
@@ -73,9 +74,9 @@ ${configChanges}
 ${restartNote}`)
   },
 
-  cloudron_uninstall_app: async (args, client) => {
+  cloudron_uninstall_app: async (args, ctx) => {
     const { appId } = parseAppIdArgs(args)
-    const result = await client.uninstallApp(appId)
+    const result = await ctx.apps.uninstallApp(appId)
 
     return textResponse(`Uninstall operation initiated for app: ${appId}
   Task ID: ${result.taskId}
@@ -86,10 +87,10 @@ Use cloudron_task_status with taskId '${result.taskId}' to track uninstall progr
 Note: This is a DESTRUCTIVE operation. The app and its data will be removed once the task completes.`)
   },
 
-  cloudron_install_app: async (args, client) => {
+  cloudron_install_app: async (args, ctx) => {
     const parsed = parseInstallAppArgs(args)
 
-    const taskId = await client.installApp(parsed)
+    const taskId = await ctx.apps.installApp(parsed)
 
     return textResponse(
       formatAsyncTaskResponse(
@@ -102,10 +103,10 @@ Note: This is a DESTRUCTIVE operation. The app and its data will be removed once
 
   // ==================== New App Management Handlers ====================
 
-  cloudron_clone_app: async (args, client) => {
+  cloudron_clone_app: async (args, ctx) => {
     const parsed = parseCloneAppArgs(args)
 
-    const cloneParams: import("../../types.js").CloneAppParams = {
+    const cloneParams: CloneAppParams = {
       location: parsed.location,
     }
     if (parsed.domain !== undefined) {
@@ -118,7 +119,7 @@ Note: This is a DESTRUCTIVE operation. The app and its data will be removed once
       cloneParams.backupId = parsed.backupId
     }
 
-    const taskId = await client.cloneApp(parsed.appId, cloneParams)
+    const taskId = await ctx.apps.cloneApp(parsed.appId, cloneParams)
 
     const targetLocation = parsed.domain
       ? `${parsed.location}.${parsed.domain}`
@@ -133,10 +134,10 @@ Note: This is a DESTRUCTIVE operation. The app and its data will be removed once
     )
   },
 
-  cloudron_repair_app: async (args, client) => {
+  cloudron_repair_app: async (args, ctx) => {
     const { appId } = parseAppIdArgs(args)
 
-    const taskId = await client.repairApp(appId)
+    const taskId = await ctx.apps.repairApp(appId)
 
     return textResponse(
       formatAsyncTaskResponse(
@@ -147,10 +148,10 @@ Note: This is a DESTRUCTIVE operation. The app and its data will be removed once
     )
   },
 
-  cloudron_restore_app: async (args, client) => {
+  cloudron_restore_app: async (args, ctx) => {
     const { appId, backupId } = parseRestoreAppArgs(args)
 
-    const taskId = await client.restoreApp(appId, { backupId })
+    const taskId = await ctx.apps.restoreApp(appId, { backupId })
 
     return textResponse(
       formatAsyncTaskResponse(
@@ -161,7 +162,7 @@ Note: This is a DESTRUCTIVE operation. The app and its data will be removed once
     )
   },
 
-  cloudron_update_app: async (args, client) => {
+  cloudron_update_app: async (args, ctx) => {
     const parsed = parseUpdateAppArgs(args)
 
     let updateParams: import("../../types.js").UpdateAppParams | undefined
@@ -175,7 +176,7 @@ Note: This is a DESTRUCTIVE operation. The app and its data will be removed once
       }
     }
 
-    const taskId = await client.updateApp(parsed.appId, updateParams)
+    const taskId = await ctx.apps.updateApp(parsed.appId, updateParams)
 
     const versionInfo = parsed.version
       ? `to version ${parsed.version}`
@@ -190,10 +191,10 @@ Note: This is a DESTRUCTIVE operation. The app and its data will be removed once
     )
   },
 
-  cloudron_backup_app: async (args, client) => {
+  cloudron_backup_app: async (args, ctx) => {
     const { appId } = parseAppIdArgs(args)
 
-    const taskId = await client.backupApp(appId)
+    const taskId = await ctx.apps.backupApp(appId)
 
     return textResponse(
       formatAsyncTaskResponse(

@@ -2,11 +2,11 @@
  * Tests for cloudron_backup_app tool
  */
 
-import { CloudronClient } from "../src/cloudron-client"
 import { appHandlers } from "../src/tools/handlers/apps"
 import {
   cleanupTestEnv,
   createMockFetch,
+  createTestContext,
   mockCloudronStatus,
   setupTestEnv,
 } from "./helpers/cloudron-mock"
@@ -38,10 +38,10 @@ describe("cloudron_backup_app tool", () => {
         },
       })
 
-      const client = new CloudronClient()
+      const ctx = createTestContext()
       const response = await appHandlers.cloudron_backup_app(
         { appId: "app-1" },
-        client,
+        ctx,
       )
 
       assertSuccess(response)
@@ -70,9 +70,9 @@ describe("cloudron_backup_app tool", () => {
         },
       })
 
-      const client = new CloudronClient()
+      const ctx = createTestContext()
       await expect(
-        appHandlers.cloudron_backup_app({ appId: "app-1" }, client),
+        appHandlers.cloudron_backup_app({ appId: "app-1" }, ctx),
       ).rejects.toThrow("Insufficient storage")
     })
 
@@ -90,17 +90,17 @@ describe("cloudron_backup_app tool", () => {
         },
       })
 
-      const client = new CloudronClient()
+      const ctx = createTestContext()
       await expect(
-        appHandlers.cloudron_backup_app({ appId: "app-1" }, client),
+        appHandlers.cloudron_backup_app({ appId: "app-1" }, ctx),
       ).rejects.toThrow()
     })
   })
 
   describe("Validation", () => {
     it("should throw error for missing appId", async () => {
-      const client = new CloudronClient()
-      await expect(appHandlers.cloudron_backup_app({}, client)).rejects.toThrow(
+      const ctx = createTestContext()
+      await expect(appHandlers.cloudron_backup_app({}, ctx)).rejects.toThrow(
         "appId is required",
       )
     })

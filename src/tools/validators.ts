@@ -56,6 +56,38 @@ function assertObject(
   }
 }
 
+/**
+ * Validate that a value is a Record<string, string> (all values are strings)
+ */
+function assertRecordOfStrings(
+  value: Record<string, unknown>,
+  fieldName: string,
+): asserts value is Record<string, string> {
+  for (const [key, val] of Object.entries(value)) {
+    if (typeof val !== "string") {
+      throw new CloudronError(
+        `${fieldName}["${key}"] must be a string, got ${typeof val}`,
+      )
+    }
+  }
+}
+
+/**
+ * Validate that a value is a Record<string, number> (all values are numbers)
+ */
+function assertRecordOfNumbers(
+  value: Record<string, unknown>,
+  fieldName: string,
+): asserts value is Record<string, number> {
+  for (const [key, val] of Object.entries(value)) {
+    if (typeof val !== "number" || Number.isNaN(val)) {
+      throw new CloudronError(
+        `${fieldName}["${key}"] must be a number, got ${typeof val}`,
+      )
+    }
+  }
+}
+
 // ==================== Tool Argument Types ====================
 
 export interface AppIdArgs {
@@ -371,11 +403,13 @@ export function parseInstallAppArgs(args: unknown): InstallAppArgs {
   }
 
   if (portBindings !== undefined) {
-    result.portBindings = portBindings as Record<string, number>
+    assertRecordOfNumbers(portBindings, "portBindings")
+    result.portBindings = portBindings
   }
 
   if (env !== undefined) {
-    result.env = env as Record<string, string>
+    assertRecordOfStrings(env, "env")
+    result.env = env
   }
 
   return result
@@ -402,7 +436,8 @@ export function parseCloneAppArgs(args: unknown): CloneAppArgs {
 
   if (portBindings !== undefined) {
     assertObject(portBindings, "portBindings")
-    result.portBindings = portBindings as Record<string, number>
+    assertRecordOfNumbers(portBindings, "portBindings")
+    result.portBindings = portBindings
   }
 
   if (backupId !== undefined) {

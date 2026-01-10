@@ -16,8 +16,8 @@ import {
 } from "../validators.js"
 
 export const systemHandlers: ToolRegistry = {
-  cloudron_get_status: async (_args, client) => {
-    const status = await client.getStatus()
+  cloudron_get_status: async (_args, ctx) => {
+    const status = await ctx.system.getStatus()
     return textResponse(`Cloudron Status:
   Name: ${status.cloudronName}
   Version: ${status.version}
@@ -26,15 +26,15 @@ export const systemHandlers: ToolRegistry = {
   Demo Mode: ${status.isDemo}`)
   },
 
-  cloudron_task_status: async (args, client) => {
+  cloudron_task_status: async (args, ctx) => {
     const { taskId } = parseTaskIdArgs(args)
-    const taskStatus = await client.getTaskStatus(taskId)
+    const taskStatus = await ctx.tasks.getTaskStatus(taskId)
     return textResponse(formatTaskStatus(taskStatus))
   },
 
-  cloudron_cancel_task: async (args, client) => {
+  cloudron_cancel_task: async (args, ctx) => {
     const { taskId } = parseTaskIdArgs(args)
-    const taskStatus = await client.cancelTask(taskId)
+    const taskStatus = await ctx.tasks.cancelTask(taskId)
 
     let statusText = `Task Cancellation:
   Task ID: ${taskStatus.id}
@@ -53,15 +53,15 @@ export const systemHandlers: ToolRegistry = {
     return textResponse(statusText)
   },
 
-  cloudron_check_storage: async (args, client) => {
+  cloudron_check_storage: async (args, ctx) => {
     const { requiredMB } = parseCheckStorageArgs(args)
-    const storageInfo = await client.checkStorage(requiredMB)
+    const storageInfo = await ctx.system.checkStorage(requiredMB)
     return textResponse(formatStorageInfo(storageInfo, requiredMB))
   },
 
-  cloudron_validate_operation: async (args, client) => {
+  cloudron_validate_operation: async (args, ctx) => {
     const { operation, resourceId } = parseValidateOperationArgs(args)
-    const validationResult = await client.validateOperation(
+    const validationResult = await ctx.validation.validateOperation(
       operation,
       resourceId,
     )

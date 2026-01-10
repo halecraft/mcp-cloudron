@@ -7,8 +7,8 @@ import type { ToolRegistry } from "../registry.js"
 import { textResponse } from "../response.js"
 
 export const serviceHandlers: ToolRegistry = {
-  cloudron_list_services: async (_args, client) => {
-    const services = await client.listServices()
+  cloudron_list_services: async (_args, ctx) => {
+    const services = await ctx.system.listServices()
     return textResponse(formatServiceList(services))
   },
 }

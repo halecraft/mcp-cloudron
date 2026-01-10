@@ -7,9 +7,9 @@ import { textResponse } from "../response.js"
 import { parseAppIdArgs, parseSearchAppsArgs } from "../validators.js"
 
 export const appstoreHandlers: ToolRegistry = {
-  cloudron_search_apps: async (args, client) => {
+  cloudron_search_apps: async (args, ctx) => {
     const { query } = parseSearchAppsArgs(args)
-    const apps = await client.searchApps(query)
+    const apps = await ctx.appstore.searchApps(query)
 
     if (apps.length === 0) {
       return textResponse(
@@ -47,9 +47,9 @@ export const appstoreHandlers: ToolRegistry = {
     )
   },
 
-  cloudron_validate_manifest: async (args, client) => {
+  cloudron_validate_manifest: async (args, ctx) => {
     const { appId } = parseAppIdArgs(args)
-    const result = await client.validateManifest(appId)
+    const result = await ctx.validation.validateManifest(appId)
 
     if (result.valid) {
       const warningText =

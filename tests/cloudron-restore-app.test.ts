@@ -2,11 +2,11 @@
  * Tests for cloudron_restore_app tool
  */
 
-import { CloudronClient } from "../src/cloudron-client"
 import { appHandlers } from "../src/tools/handlers/apps"
 import {
   cleanupTestEnv,
   createMockFetch,
+  createTestContext,
   mockApps,
   mockBackups,
   mockCloudronStatus,
@@ -52,10 +52,10 @@ describe("cloudron_restore_app tool", () => {
         },
       })
 
-      const client = new CloudronClient()
+      const ctx = createTestContext()
       const response = await appHandlers.cloudron_restore_app(
         { appId: "app-1", backupId: "backup-1" },
-        client,
+        ctx,
       )
 
       assertSuccess(response)
@@ -86,11 +86,11 @@ describe("cloudron_restore_app tool", () => {
         },
       })
 
-      const client = new CloudronClient()
+      const ctx = createTestContext()
       await expect(
         appHandlers.cloudron_restore_app(
           { appId: "app-1", backupId: "nonexistent-backup" },
-          client,
+          ctx,
         ),
       ).rejects.toThrow("not found")
     })
@@ -104,11 +104,11 @@ describe("cloudron_restore_app tool", () => {
         },
       })
 
-      const client = new CloudronClient()
+      const ctx = createTestContext()
       await expect(
         appHandlers.cloudron_restore_app(
           { appId: "nonexistent", backupId: "backup-1" },
-          client,
+          ctx,
         ),
       ).rejects.toThrow("does not exist")
     })
@@ -116,16 +116,16 @@ describe("cloudron_restore_app tool", () => {
 
   describe("Validation", () => {
     it("should throw error for missing appId", async () => {
-      const client = new CloudronClient()
+      const ctx = createTestContext()
       await expect(
-        appHandlers.cloudron_restore_app({ backupId: "backup-1" }, client),
+        appHandlers.cloudron_restore_app({ backupId: "backup-1" }, ctx),
       ).rejects.toThrow("appId is required")
     })
 
     it("should throw error for missing backupId", async () => {
-      const client = new CloudronClient()
+      const ctx = createTestContext()
       await expect(
-        appHandlers.cloudron_restore_app({ appId: "app-1" }, client),
+        appHandlers.cloudron_restore_app({ appId: "app-1" }, ctx),
       ).rejects.toThrow("backupId is required")
     })
   })

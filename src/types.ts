@@ -1,6 +1,6 @@
 /**
  * Cloudron API TypeScript Definitions
- * MVP scope: listApps + getApp endpoints
+ * Complete type definitions for apps, users, groups, backups, services, and system management
  */
 
 /**

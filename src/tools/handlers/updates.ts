@@ -7,14 +7,14 @@ import type { ToolRegistry } from "../registry.js"
 import { textResponse } from "../response.js"
 
 export const updateHandlers: ToolRegistry = {
-  cloudron_check_updates: async (_args, client) => {
-    const updateInfo = await client.checkUpdates()
+  cloudron_check_updates: async (_args, ctx) => {
+    const updateInfo = await ctx.updates.checkUpdates()
 
     return textResponse(formatUpdateInfo(updateInfo))
   },
 
-  cloudron_apply_update: async (_args, client) => {
-    const taskId = await client.applyUpdate()
+  cloudron_apply_update: async (_args, ctx) => {
+    const taskId = await ctx.updates.applyUpdate()
 
     return textResponse(
       formatAsyncTaskResponse(

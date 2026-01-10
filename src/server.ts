@@ -11,7 +11,7 @@ import {
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js"
 
-import { CloudronClient } from "./cloudron-client.js"
+import { type CloudronContext, createCloudronContext } from "./client/index.js"
 import { isCloudronError } from "./errors.js"
 import { TOOLS } from "./tools/definitions.js"
 import { allHandlers } from "./tools/handlers/index.js"
@@ -53,14 +53,14 @@ const server = new Server(
   },
 )
 
-// Lazy-initialize client (validates env vars on first use)
-let client: CloudronClient | null = null
+// Lazy-initialize context (validates env vars on first use)
+let ctx: CloudronContext | null = null
 
-function getClient(): CloudronClient {
-  if (!client) {
-    client = new CloudronClient()
+function getContext(): CloudronContext {
+  if (!ctx) {
+    ctx = createCloudronContext()
   }
-  return client
+  return ctx
 }
 
 // Handle list tools request
@@ -73,7 +73,7 @@ server.setRequestHandler(CallToolRequestSchema, async request => {
   const { name, arguments: args } = request.params
 
   try {
-    const cloudron = getClient()
+    const context = getContext()
 
     // Look up handler in registry
     const handler = allHandlers[name]
@@ -82,7 +82,7 @@ server.setRequestHandler(CallToolRequestSchema, async request => {
     }
 
     // Execute handler
-    return await handler(args, cloudron)
+    return await handler(args, context)
   } catch (error) {
     const message = isCloudronError(error)
       ? `Cloudron API Error: ${error.message} (${error.statusCode ?? "unknown"})`

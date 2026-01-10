@@ -8,8 +8,8 @@ import type { ToolRegistry } from "../registry.js"
 import { textResponse } from "../response.js"
 
 export const backupHandlers: ToolRegistry = {
-  cloudron_list_backups: async (_args, client) => {
-    const backups = await client.listBackups()
+  cloudron_list_backups: async (_args, ctx) => {
+    const backups = await ctx.backups.listBackups()
 
     if (backups.length === 0) {
       return textResponse("No backups found.")
@@ -22,9 +22,9 @@ export const backupHandlers: ToolRegistry = {
     return textResponse(`Found ${backups.length} backup(s):\n\n${formatted}`)
   },
 
-  cloudron_create_backup: async (_args, client) => {
+  cloudron_create_backup: async (_args, ctx) => {
     // F36 pre-flight storage check performed in createBackup()
-    const taskId = await client.createBackup()
+    const taskId = await ctx.backups.createBackup()
 
     return textResponse(`Backup creation started successfully.
 

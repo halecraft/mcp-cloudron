@@ -7,9 +7,9 @@ import { textResponse } from "../response.js"
 import { parseGetLogsArgs } from "../validators.js"
 
 export const logHandlers: ToolRegistry = {
-  cloudron_get_logs: async (args, client) => {
+  cloudron_get_logs: async (args, ctx) => {
     const { resourceId, type, lines } = parseGetLogsArgs(args)
-    const logEntries = await client.getLogs(resourceId, type, lines)
+    const logEntries = await ctx.logs.getLogs(resourceId, type, lines)
 
     // Format logs for display
     const formattedLogs = logEntries

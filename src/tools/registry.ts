@@ -5,7 +5,7 @@
  * This pattern replaces the giant switch statement in server.ts.
  */
 
-import type { CloudronClient } from "../cloudron-client.js"
+import type { CloudronContext } from "../client/index.js"
 import type { MCPToolResponse } from "./response.js"
 
 /**
@@ -13,7 +13,7 @@ import type { MCPToolResponse } from "./response.js"
  */
 export type ToolHandler = (
   args: unknown,
-  client: CloudronClient,
+  ctx: CloudronContext,
 ) => Promise<MCPToolResponse>
 
 /**

@@ -2,11 +2,11 @@
  * Tests for cloudron_clone_app tool
  */
 
-import { CloudronClient } from "../src/cloudron-client"
 import { appHandlers } from "../src/tools/handlers/apps"
 import {
   cleanupTestEnv,
   createMockFetch,
+  createTestContext,
   mockApps,
   setupTestEnv,
 } from "./helpers/cloudron-mock"
@@ -44,10 +44,10 @@ describe("cloudron_clone_app tool", () => {
         },
       })
 
-      const client = new CloudronClient()
+      const ctx = createTestContext()
       const response = await appHandlers.cloudron_clone_app(
         { appId: "app-1", location: "newapp" },
-        client,
+        ctx,
       )
 
       assertSuccess(response)
@@ -76,7 +76,7 @@ describe("cloudron_clone_app tool", () => {
         },
       })
 
-      const client = new CloudronClient()
+      const ctx = createTestContext()
       const response = await appHandlers.cloudron_clone_app(
         {
           appId: "app-1",
@@ -84,7 +84,7 @@ describe("cloudron_clone_app tool", () => {
           domain: "other.com",
           backupId: "backup-123",
         },
-        client,
+        ctx,
       )
 
       assertSuccess(response)
@@ -104,11 +104,11 @@ describe("cloudron_clone_app tool", () => {
         },
       })
 
-      const client = new CloudronClient()
+      const ctx = createTestContext()
       await expect(
         appHandlers.cloudron_clone_app(
           { appId: "nonexistent", location: "newapp" },
-          client,
+          ctx,
         ),
       ).rejects.toThrow("does not exist")
     })
@@ -127,12 +127,12 @@ describe("cloudron_clone_app tool", () => {
         },
       })
 
-      const client = new CloudronClient()
+      const ctx = createTestContext()
       // Try to clone to existing location "blog" on same domain
       await expect(
         appHandlers.cloudron_clone_app(
           { appId: "app-1", location: "blog" },
-          client,
+          ctx,
         ),
       ).rejects.toThrow("already in use")
     })
@@ -140,16 +140,16 @@ describe("cloudron_clone_app tool", () => {
 
   describe("Validation", () => {
     it("should throw error for missing appId", async () => {
-      const client = new CloudronClient()
+      const ctx = createTestContext()
       await expect(
-        appHandlers.cloudron_clone_app({ location: "newapp" }, client),
+        appHandlers.cloudron_clone_app({ location: "newapp" }, ctx),
       ).rejects.toThrow("appId is required")
     })
 
     it("should throw error for missing location", async () => {
-      const client = new CloudronClient()
+      const ctx = createTestContext()
       await expect(
-        appHandlers.cloudron_clone_app({ appId: "app-1" }, client),
+        appHandlers.cloudron_clone_app({ appId: "app-1" }, ctx),
       ).rejects.toThrow("location is required")
     })
   })

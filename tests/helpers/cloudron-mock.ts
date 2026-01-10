@@ -3,6 +3,19 @@
  */
 
 import { vi } from "vitest"
+import {
+  AppStoreApi,
+  AppsApi,
+  BackupsApi,
+  type CloudronContext,
+  GroupsApi,
+  HttpClient,
+  LogsApi,
+  SystemApi,
+  TasksApi,
+  UpdatesApi,
+  UsersApi,
+} from "../../src/client/index"
 import type {
   App,
   Backup,
@@ -13,6 +26,7 @@ import type {
   UpdateInfo,
   User,
 } from "../../src/types"
+import { ValidationService } from "../../src/validation/index"
 
 export const mockApps: App[] = [
   {
@@ -560,5 +574,54 @@ export function mockUpdateInfo(
   return {
     available: false,
     ...overrides,
+  }
+}
+
+// ==================== Test Context ====================
+
+/**
+ * Create a CloudronContext for testing
+ * Must be called after setupTestEnv() and after setting up mock fetch
+ */
+export function createTestContext(): CloudronContext {
+  const http = HttpClient.fromEnv()
+  const system = new SystemApi(http)
+  const appstore = new AppStoreApi(http)
+  const backups = new BackupsApi(http, system)
+  const groups = new GroupsApi(http)
+  const logs = new LogsApi(http)
+  const tasks = new TasksApi(http)
+  const usersBasic = new UsersApi(http)
+  const updatesBasic = new UpdatesApi(http)
+  const appsBasic = new AppsApi(http, system)
+
+  const validationDataProvider = {
+    getApp: (appId: string) => appsBasic.getApp(appId),
+    listApps: () => appsBasic.listApps(),
+    getUser: (userId: string) => usersBasic.getUser(userId),
+    listUsers: () => usersBasic.listUsers(),
+    getStatus: () => system.getStatus(),
+    listBackups: () => backups.listBackups(),
+    checkUpdates: () => updatesBasic.checkUpdates(),
+    searchApps: (query?: string) => appstore.searchApps(query),
+  }
+
+  const validation = new ValidationService(validationDataProvider)
+  const apps = new AppsApi(http, system, validation)
+  const updates = new UpdatesApi(http, validation)
+  const users = new UsersApi(http, validation)
+
+  return {
+    http,
+    apps,
+    appstore,
+    backups,
+    groups,
+    logs,
+    system,
+    tasks,
+    updates,
+    users,
+    validation,
   }
 }

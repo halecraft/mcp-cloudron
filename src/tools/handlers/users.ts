@@ -13,8 +13,8 @@ import {
 } from "../validators.js"
 
 export const userHandlers: ToolRegistry = {
-  cloudron_list_users: async (_args, client) => {
-    const users = await client.listUsers()
+  cloudron_list_users: async (_args, ctx) => {
+    const users = await ctx.users.listUsers()
 
     if (users.length === 0) {
       return textResponse("No users found.")
@@ -25,9 +25,9 @@ export const userHandlers: ToolRegistry = {
     return textResponse(`Found ${users.length} user(s):\n\n${formatted}`)
   },
 
-  cloudron_create_user: async (args, client) => {
+  cloudron_create_user: async (args, ctx) => {
     const { email, password, role } = parseCreateUserArgs(args)
-    const user = await client.createUser(email, password, role)
+    const user = await ctx.users.createUser(email, password, role)
 
     return textResponse(`User created successfully:
   ID: ${user.id}
@@ -37,14 +37,14 @@ export const userHandlers: ToolRegistry = {
   Created: ${new Date(user.createdAt).toLocaleString()}`)
   },
 
-  cloudron_get_user: async (args, client) => {
+  cloudron_get_user: async (args, ctx) => {
     const { userId } = parseGetUserArgs(args)
-    const user = await client.getUser(userId)
+    const user = await ctx.users.getUser(userId)
 
     return textResponse(formatUserDetails(user))
   },
 
-  cloudron_update_user: async (args, client) => {
+  cloudron_update_user: async (args, ctx) => {
     const { userId, email, displayName, role, password } =
       parseUpdateUserArgs(args)
 
@@ -69,7 +69,7 @@ export const userHandlers: ToolRegistry = {
       params.password = password
     }
 
-    const user = await client.updateUser(userId, params)
+    const user = await ctx.users.updateUser(userId, params)
 
     return textResponse(`User updated successfully:
   ID: ${user.id}
@@ -79,9 +79,9 @@ export const userHandlers: ToolRegistry = {
   Created: ${new Date(user.createdAt).toLocaleString()}`)
   },
 
-  cloudron_delete_user: async (args, client) => {
+  cloudron_delete_user: async (args, ctx) => {
     const { userId } = parseDeleteUserArgs(args)
-    await client.deleteUser(userId)
+    await ctx.users.deleteUser(userId)
 
     return textResponse(`User '${userId}' deleted successfully.`)
   },

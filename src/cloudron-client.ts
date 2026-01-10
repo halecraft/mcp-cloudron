@@ -1,7 +1,6 @@
 /**
  * Cloudron API Client
- * MVP scope: listApps + getApp endpoints
- * DI-enabled for testing
+ * Full API implementation with DI support for testing
  */
 
 import {
@@ -13,7 +12,11 @@ import {
   STORAGE_CRITICAL_THRESHOLD,
   STORAGE_WARNING_THRESHOLD,
 } from "./config.js"
-import { CloudronError, createErrorFromStatus } from "./errors.js"
+import {
+  CloudronError,
+  createErrorFromStatus,
+  isCloudronError,
+} from "./errors.js"
 import type {
   App,
   AppConfig,
@@ -1554,11 +1557,4 @@ export class CloudronClient {
 
     return result
   }
-}
-
-/**
- * Type guard for CloudronError
- */
-function isCloudronError(error: unknown): error is CloudronError {
-  return error instanceof CloudronError
 }

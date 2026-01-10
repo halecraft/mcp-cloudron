@@ -7,8 +7,8 @@ import type { ToolRegistry } from "../registry.js"
 import { textResponse } from "../response.js"
 
 export const domainHandlers: ToolRegistry = {
-  cloudron_list_domains: async (_args, client) => {
-    const domains = await client.listDomains()
+  cloudron_list_domains: async (_args, ctx) => {
+    const domains = await ctx.system.listDomains()
 
     const domainList = domains.map(formatDomain).join("\n\n")
 

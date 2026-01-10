@@ -2,11 +2,11 @@
  * Tests for cloudron_list_services tool
  */
 
-import { CloudronClient } from "../src/cloudron-client"
 import { serviceHandlers } from "../src/tools/handlers/services"
 import {
   cleanupTestEnv,
   createMockFetch,
+  createTestContext,
   mockServices,
   setupTestEnv,
 } from "./helpers/cloudron-mock"
@@ -31,8 +31,8 @@ describe("cloudron_list_services tool", () => {
         },
       })
 
-      const client = new CloudronClient()
-      const response = await serviceHandlers.cloudron_list_services({}, client)
+      const ctx = createTestContext()
+      const response = await serviceHandlers.cloudron_list_services({}, ctx)
 
       assertSuccess(response)
       const text = assertHasTextContent(response)
@@ -54,8 +54,8 @@ describe("cloudron_list_services tool", () => {
         },
       })
 
-      const client = new CloudronClient()
-      const response = await serviceHandlers.cloudron_list_services({}, client)
+      const ctx = createTestContext()
+      const response = await serviceHandlers.cloudron_list_services({}, ctx)
 
       assertSuccess(response)
       const text = assertHasTextContent(response)
@@ -73,8 +73,8 @@ describe("cloudron_list_services tool", () => {
         },
       })
 
-      const client = new CloudronClient()
-      const response = await serviceHandlers.cloudron_list_services({}, client)
+      const ctx = createTestContext()
+      const response = await serviceHandlers.cloudron_list_services({}, ctx)
 
       assertSuccess(response)
       const text = assertHasTextContent(response)
@@ -91,8 +91,8 @@ describe("cloudron_list_services tool", () => {
         },
       })
 
-      const client = new CloudronClient()
-      const response = await serviceHandlers.cloudron_list_services({}, client)
+      const ctx = createTestContext()
+      const response = await serviceHandlers.cloudron_list_services({}, ctx)
 
       assertSuccess(response)
       const text = assertHasTextContent(response)
@@ -110,9 +110,9 @@ describe("cloudron_list_services tool", () => {
         },
       })
 
-      const client = new CloudronClient()
+      const ctx = createTestContext()
       await expect(
-        serviceHandlers.cloudron_list_services({}, client),
+        serviceHandlers.cloudron_list_services({}, ctx),
       ).rejects.toThrow()
     })
 
@@ -125,9 +125,9 @@ describe("cloudron_list_services tool", () => {
         },
       })
 
-      const client = new CloudronClient()
+      const ctx = createTestContext()
       await expect(
-        serviceHandlers.cloudron_list_services({}, client),
+        serviceHandlers.cloudron_list_services({}, ctx),
       ).rejects.toThrow()
     })
   })
