@@ -43,6 +43,7 @@ src/
         ├── backups.ts  # Backup operations
         ├── domains.ts  # Domain listing
         ├── logs.ts     # Log retrieval
+        ├── services.ts # Platform services (diagnostics)
         ├── system.ts   # System status, tasks, storage
         └── users.ts    # User management
 ```
@@ -118,29 +119,35 @@ The private [`makeRequest()`](src/cloudron-client.ts:73) method handles:
 
 ### API Methods
 
-| Method                      | Endpoint                        | Description           |
-| --------------------------- | ------------------------------- | --------------------- |
-| `listApps()`                | GET /api/v1/apps                | List installed apps   |
-| `getApp(id)`                | GET /api/v1/apps/:id            | Get app details       |
-| `getStatus()`               | GET /api/v1/cloudron/status     | System status         |
-| `listBackups()`             | GET /api/v1/backups             | List backups          |
-| `createBackup()`            | POST /api/v1/backups            | Create backup (async) |
-| `listUsers()`               | GET /api/v1/users               | List users            |
-| `createUser()`              | POST /api/v1/users              | Create user           |
-| `listDomains()`             | GET /api/v1/domains             | List domains          |
-| `searchApps(query)`         | GET /api/v1/appstore/apps       | Search App Store      |
-| `startApp(id)`              | POST /api/v1/apps/:id/start     | Start app (async)     |
-| `stopApp(id)`               | POST /api/v1/apps/:id/stop      | Stop app (async)      |
-| `restartApp(id)`            | POST /api/v1/apps/:id/restart   | Restart app (async)   |
-| `configureApp(id, config)`  | PUT /api/v1/apps/:id/configure  | Update app config     |
-| `uninstallApp(id)`          | POST /api/v1/apps/:id/uninstall | Uninstall app (async) |
-| `installApp(params)`        | POST /api/v1/apps               | Install app (async)   |
-| `getTaskStatus(id)`         | GET /api/v1/tasks/:id           | Check async task      |
-| `cancelTask(id)`            | DELETE /api/v1/tasks/:id        | Cancel async task     |
-| `getLogs(id, type, lines)`  | GET /api/v1/apps/:id/logs       | Get logs              |
-| `checkStorage(requiredMB)`  | GET /api/v1/cloudron/status     | Check disk space      |
-| `validateOperation(op, id)` | (composite)                     | Pre-flight validation |
-| `validateManifest(appId)`   | (composite)                     | Manifest validation   |
+| Method                      | Endpoint                        | Description              |
+| --------------------------- | ------------------------------- | ------------------------ |
+| `listApps()`                | GET /api/v1/apps                | List installed apps      |
+| `getApp(id)`                | GET /api/v1/apps/:id            | Get app details          |
+| `getStatus()`               | GET /api/v1/cloudron/status     | System status            |
+| `listBackups()`             | GET /api/v1/backups             | List backups             |
+| `createBackup()`            | POST /api/v1/backups            | Create backup (async)    |
+| `listUsers()`               | GET /api/v1/users               | List users               |
+| `createUser()`              | POST /api/v1/users              | Create user              |
+| `listDomains()`             | GET /api/v1/domains             | List domains             |
+| `searchApps(query)`         | GET /api/v1/appstore/apps       | Search App Store         |
+| `startApp(id)`              | POST /api/v1/apps/:id/start     | Start app (async)        |
+| `stopApp(id)`               | POST /api/v1/apps/:id/stop      | Stop app (async)         |
+| `restartApp(id)`            | POST /api/v1/apps/:id/restart   | Restart app (async)      |
+| `configureApp(id, config)`  | PUT /api/v1/apps/:id/configure  | Update app config        |
+| `uninstallApp(id)`          | POST /api/v1/apps/:id/uninstall | Uninstall app (async)    |
+| `installApp(params)`        | POST /api/v1/apps               | Install app (async)      |
+| `cloneApp(id, params)`      | POST /api/v1/apps/:id/clone     | Clone app (async)        |
+| `repairApp(id)`             | POST /api/v1/apps/:id/repair    | Repair app (async)       |
+| `restoreApp(id, params)`    | POST /api/v1/apps/:id/restore   | Restore app (async)      |
+| `updateApp(id, params?)`    | POST /api/v1/apps/:id/update    | Update app (async)       |
+| `backupApp(id)`             | POST /api/v1/apps/:id/backup    | Backup single app (async)|
+| `listServices()`            | GET /api/v1/services            | List platform services   |
+| `getTaskStatus(id)`         | GET /api/v1/tasks/:id           | Check async task         |
+| `cancelTask(id)`            | DELETE /api/v1/tasks/:id        | Cancel async task        |
+| `getLogs(id, type, lines)`  | GET /api/v1/apps/:id/logs       | Get logs                 |
+| `checkStorage(requiredMB)`  | GET /api/v1/cloudron/status     | Check disk space         |
+| `validateOperation(op, id)` | (composite)                     | Pre-flight validation    |
+| `validateManifest(appId)`   | (composite)                     | Manifest validation      |
 
 ## Pre-flight Safety Checks
 
@@ -189,6 +196,11 @@ Pre-installation checks:
 | `cloudron_configure_app` | Update env vars, memory, access      |
 | `cloudron_uninstall_app` | Uninstall with pre-flight validation |
 | `cloudron_install_app`   | Install from App Store               |
+| `cloudron_clone_app`     | Clone app to new location            |
+| `cloudron_repair_app`    | Repair broken app                    |
+| `cloudron_restore_app`   | Restore app from backup              |
+| `cloudron_update_app`    | Update app to new version            |
+| `cloudron_backup_app`    | Create app-specific backup           |
 
 ### App Store
 
@@ -220,6 +232,12 @@ Pre-installation checks:
 | ---------------------- | --------------------- |
 | `cloudron_list_users`  | List all users        |
 | `cloudron_create_user` | Create user with role |
+
+### Services (Diagnostics)
+
+| Tool                     | Description                        |
+| ------------------------ | ---------------------------------- |
+| `cloudron_list_services` | List platform services (read-only) |
 
 ### Other
 
@@ -450,6 +468,184 @@ const client = new CloudronClient({
 const apps = await client.listApps();
 ```
 
+## API Coverage Analysis
+
+Based on comparison with the official Cloudron OpenAPI specification (`docs/cloudron-openapi.json`):
+
+### Implemented Endpoints
+
+| Category  | Endpoint                        | Implementation Status |
+| --------- | ------------------------------- | --------------------- |
+| Apps      | GET /api/v1/apps                | ✅ `listApps()`       |
+| Apps      | GET /api/v1/apps/:id            | ✅ `getApp()`         |
+| Apps      | POST /api/v1/apps               | ✅ `installApp()`     |
+| Apps      | POST /api/v1/apps/:id/start     | ✅ `startApp()`       |
+| Apps      | POST /api/v1/apps/:id/stop      | ✅ `stopApp()`        |
+| Apps      | POST /api/v1/apps/:id/restart   | ✅ `restartApp()`     |
+| Apps      | PUT /api/v1/apps/:id/configure  | ✅ `configureApp()`   |
+| Apps      | POST /api/v1/apps/:id/uninstall | ✅ `uninstallApp()`   |
+| Apps      | POST /api/v1/apps/:id/clone     | ✅ `cloneApp()`       |
+| Apps      | POST /api/v1/apps/:id/repair    | ✅ `repairApp()`      |
+| Apps      | POST /api/v1/apps/:id/restore   | ✅ `restoreApp()`     |
+| Apps      | POST /api/v1/apps/:id/update    | ✅ `updateApp()`      |
+| Apps      | POST /api/v1/apps/:id/backup    | ✅ `backupApp()`      |
+| Apps      | GET /api/v1/apps/:id/logs       | ✅ `getLogs()`        |
+| Backups   | GET /api/v1/backups             | ✅ `listBackups()`    |
+| Backups   | POST /api/v1/backups            | ✅ `createBackup()`   |
+| Users     | GET /api/v1/users               | ✅ `listUsers()`      |
+| Users     | POST /api/v1/users              | ✅ `createUser()`     |
+| Domains   | GET /api/v1/domains             | ✅ `listDomains()`    |
+| System    | GET /api/v1/cloudron/status     | ✅ `getStatus()`      |
+| Services  | GET /api/v1/services            | ✅ `listServices()`   |
+| Tasks     | GET /api/v1/tasks/:id           | ✅ `getTaskStatus()`  |
+| Tasks     | DELETE /api/v1/tasks/:id        | ✅ `cancelTask()`     |
+| App Store | GET /api/v1/appstore/apps       | ✅ `searchApps()`     |
+
+### Not Yet Implemented (Available in Cloudron API)
+
+| Category      | Endpoint                       | Description                 |
+| ------------- | ------------------------------ | --------------------------- |
+| Apps          | POST /api/v1/apps/:id/exec     | Execute command in app (⚠️ security risk - see note below) |
+| Backups       | DELETE /api/v1/backups/:id     | Delete a backup             |
+| Backups       | GET /api/v1/backups/config     | Get backup configuration    |
+| Backups       | PUT /api/v1/backups/config     | Update backup configuration |
+| Users         | GET /api/v1/users/:id          | Get specific user           |
+| Users         | PUT /api/v1/users/:id          | Update user                 |
+| Users         | DELETE /api/v1/users/:id       | Delete user                 |
+| Groups        | GET /api/v1/groups             | List groups                 |
+| Groups        | POST /api/v1/groups            | Create group                |
+| Domains       | POST /api/v1/domains           | Add domain                  |
+| Domains       | DELETE /api/v1/domains/:domain | Remove domain               |
+| Mail          | GET /api/v1/mail               | Mail configuration          |
+| Events        | GET /api/v1/eventlog           | Event log                   |
+| Notifications | GET /api/v1/notifications      | List notifications          |
+| Updates       | GET /api/v1/updates            | Check for updates           |
+| Updates       | POST /api/v1/updates           | Apply updates               |
+
+### Security Note: App Exec Endpoint
+
+The `/api/v1/apps/:id/exec` endpoint is intentionally **not implemented** due to security concerns:
+
+- **Prompt injection risk**: An AI assistant could be tricked into executing malicious commands
+- **No audit trail**: Cloudron wouldn't know the AI initiated the command
+- **Privilege escalation**: Containers often run with elevated permissions
+- **Data exfiltration**: Commands like `curl` could send sensitive data anywhere
+
+If this functionality is needed in the future, it should be implemented with:
+- Command allowlisting (only safe commands like `ls`, `cat`, `ps`)
+- Explicit user confirmation before execution
+- A dry-run mode that shows what would execute without running it
+
+## Implementation Details
+
+### Handler Registry Pattern
+
+The tool dispatch system uses a flat registry pattern in [`src/tools/handlers/index.ts`](src/tools/handlers/index.ts):
+
+```typescript
+export const allHandlers: Record<string, ToolHandler> = {
+  ...appHandlers,
+  ...appstoreHandlers,
+  ...backupHandlers,
+  ...domainHandlers,
+  ...logHandlers,
+  ...systemHandlers,
+  ...userHandlers,
+};
+```
+
+Each handler module exports a `Record<string, ToolHandler>` where:
+
+- Key: Tool name (e.g., `cloudron_list_apps`)
+- Value: Async function `(args: unknown, client: CloudronClient) => Promise<McpResponse>`
+
+### Response Formatting
+
+The [`src/tools/formatters.ts`](src/tools/formatters.ts) module provides human-readable output:
+
+- `formatAppList()` - Tabular app listing with status indicators
+- `formatAppDetails()` - Detailed single app view
+- `formatBackupList()` - Backup listing with sizes and dates
+- `formatUserList()` - User listing with roles
+- `formatDomainList()` - Domain configuration display
+- `formatStorageInfo()` - Disk usage with visual bar
+- `formatTaskStatus()` - Task progress display
+- `formatValidationResult()` - Pre-flight check results
+
+### Validation Layer
+
+The [`src/tools/validators.ts`](src/tools/validators.ts) module provides runtime argument validation:
+
+- `validateAppId()` - Non-empty string check
+- `validateAction()` - Enum validation for start/stop/restart
+- `validateLogType()` - Enum validation for app/system
+- `validateLogLines()` - Range validation (1-1000)
+- `validateStorageRequirement()` - Positive number check
+- `validateOperationType()` - Enum validation for operation types
+
+### MCP Response Helpers
+
+The [`src/tools/response.ts`](src/tools/response.ts) module standardizes MCP responses:
+
+```typescript
+export function createTextResponse(text: string): McpResponse {
+  return { content: [{ type: "text", text }] };
+}
+
+export function createErrorResponse(error: unknown): McpResponse {
+  return {
+    content: [{ type: "text", text: formatError(error) }],
+    isError: true,
+  };
+}
+```
+
+## Cloudron API Behavior Notes
+
+Based on the OpenAPI specification analysis:
+
+### Asynchronous Operations
+
+Operations that return `taskId` for polling:
+
+- App installation (`POST /api/v1/apps`)
+- App uninstallation (`POST /api/v1/apps/:id/uninstall`)
+- App start/stop/restart
+- Backup creation (`POST /api/v1/backups`)
+- App updates
+- App cloning
+- App restoration
+
+### Task States
+
+Per the API spec, tasks have these states:
+
+- `pending` - Queued but not started
+- `running` - Currently executing
+- `success` - Completed successfully
+- `error` - Failed with error
+- `cancelled` - Cancelled by user
+
+### App States
+
+Apps have two state dimensions:
+
+- `installationState`: `pending_install`, `installed`, `pending_uninstall`, etc.
+- `runState`: `running`, `stopped`, `pending_start`, `pending_stop`, etc.
+- `health`: `healthy`, `unhealthy`, `dead`
+
+### Authentication
+
+The API supports two authentication methods:
+
+1. **Bearer token** (Authorization header) - Used by this implementation
+2. **Query parameter** (`?access_token=...`) - Not used
+
+Tokens can be:
+
+- **Readonly** - Only GET operations
+- **Read and Write** - Full access
+
 ## Future Considerations
 
 Based on code comments and structure:
@@ -463,3 +659,9 @@ Based on code comments and structure:
 4. **Backup Integrity:** Validation recommends checking but doesn't implement checksum verification.
 
 5. **App Dependencies:** Uninstall validation recommends checking but doesn't implement dependency resolution.
+
+6. **Missing API Coverage:** Many Cloudron API endpoints are not yet exposed as MCP tools (see API Coverage Analysis above).
+
+7. **Pagination:** The Cloudron API supports `page` and `per_page` query parameters for list endpoints. Current implementation doesn't expose pagination controls.
+
+8. **Streaming Logs:** The API supports SSE (Server-Sent Events) for real-time log streaming. Current implementation only fetches static log snapshots.

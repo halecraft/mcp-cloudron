@@ -8,6 +8,7 @@ import { appstoreHandlers } from "./appstore.js"
 import { backupHandlers } from "./backups.js"
 import { domainHandlers } from "./domains.js"
 import { logHandlers } from "./logs.js"
+import { serviceHandlers } from "./services.js"
 import { systemHandlers } from "./system.js"
 import { userHandlers } from "./users.js"
 
@@ -18,6 +19,7 @@ export {
   backupHandlers,
   domainHandlers,
   logHandlers,
+  serviceHandlers,
   systemHandlers,
   userHandlers,
 }
@@ -29,6 +31,7 @@ export const allHandlers: ToolRegistry = createRegistry(
   backupHandlers,
   domainHandlers,
   logHandlers,
+  serviceHandlers,
   systemHandlers,
   userHandlers,
 )

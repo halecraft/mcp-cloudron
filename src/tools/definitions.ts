@@ -336,4 +336,122 @@ export const TOOLS = [
       required: ["manifestId", "location", "domain", "accessRestriction"],
     },
   },
+  // ==================== New App Management Tools ====================
+  {
+    name: "cloudron_clone_app",
+    description:
+      "Clone an existing application to a new location. Creates a duplicate of the app with its data and configuration. Performs pre-flight validation to check source app exists and target location is available. Returns task ID for async operation tracking via cloudron_task_status.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        appId: {
+          type: "string",
+          description: "The unique identifier of the application to clone",
+        },
+        location: {
+          type: "string",
+          description: "Subdomain for the cloned app (REQUIRED)",
+        },
+        domain: {
+          type: "string",
+          description:
+            "Domain for the cloned app (optional, defaults to same domain as source)",
+        },
+        portBindings: {
+          type: "object",
+          description: "Optional port bindings for the clone",
+        },
+        backupId: {
+          type: "string",
+          description:
+            "Optional backup ID to clone from a specific backup state",
+        },
+      },
+      required: ["appId", "location"],
+    },
+  },
+  {
+    name: "cloudron_repair_app",
+    description:
+      "Repair a broken application. Attempts automatic repair of apps in error state. Use when an app is unhealthy or has installation issues. Returns task ID for async operation tracking via cloudron_task_status.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        appId: {
+          type: "string",
+          description: "The unique identifier of the application to repair",
+        },
+      },
+      required: ["appId"],
+    },
+  },
+  {
+    name: "cloudron_restore_app",
+    description:
+      "Restore an application from a backup. DESTRUCTIVE OPERATION - current app data will be replaced. Performs pre-flight validation to check backup exists and storage is sufficient. Returns task ID for async operation tracking via cloudron_task_status.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        appId: {
+          type: "string",
+          description: "The unique identifier of the application to restore",
+        },
+        backupId: {
+          type: "string",
+          description: "The backup ID to restore from (REQUIRED)",
+        },
+      },
+      required: ["appId", "backupId"],
+    },
+  },
+  {
+    name: "cloudron_update_app",
+    description:
+      "Update an application to a newer version. Performs pre-flight validation to check app exists and is in installed state. Returns task ID for async operation tracking via cloudron_task_status.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        appId: {
+          type: "string",
+          description: "The unique identifier of the application to update",
+        },
+        version: {
+          type: "string",
+          description:
+            "Optional specific version to update to (defaults to latest)",
+        },
+        force: {
+          type: "boolean",
+          description: "Force update even if already on same version",
+        },
+      },
+      required: ["appId"],
+    },
+  },
+  {
+    name: "cloudron_backup_app",
+    description:
+      "Create a backup of a specific application. Performs pre-flight storage check (requires 5GB minimum). Returns task ID for async operation tracking via cloudron_task_status.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        appId: {
+          type: "string",
+          description: "The unique identifier of the application to backup",
+        },
+      },
+      required: ["appId"],
+    },
+  },
+  // ==================== Services Tools ====================
+  {
+    name: "cloudron_list_services",
+    description:
+      "List all platform services (read-only diagnostics). Returns status of Cloudron infrastructure services like databases (MySQL, PostgreSQL, MongoDB), mail, and other platform components. This is diagnostic information - services are managed automatically by Cloudron.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {},
+      required: [],
+    },
+  },
 ]

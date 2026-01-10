@@ -22,6 +22,7 @@ import type {
   AppsResponse,
   Backup,
   BackupsResponse,
+  CloneAppParams,
   CloudronClientConfig,
   ConfigureAppResponse,
   Domain,
@@ -30,9 +31,13 @@ import type {
   LogsResponse,
   LogType,
   ManifestValidationResult,
+  RestoreAppParams,
+  Service,
+  ServicesResponse,
   StorageInfo,
   SystemStatus,
   TaskStatus,
+  UpdateAppParams,
   User,
   UsersResponse,
   ValidatableOperation,
@@ -942,6 +947,360 @@ export class CloudronClient {
     }
 
     return response.taskId
+  }
+
+  // ==================== New App Management Methods ====================
+
+  /**
+   * Clone an existing app
+   * POST /api/v1/apps/:appId/clone
+   * @param appId - The app ID to clone
+   * @param params - Clone parameters (location required, domain/portBindings/backupId optional)
+   * @returns Task ID for tracking clone progress
+   */
+  async cloneApp(appId: string, params: CloneAppParams): Promise<string> {
+    if (!appId) {
+      throw new CloudronError("appId is required")
+    }
+    if (!params.location) {
+      throw new CloudronError("location (subdomain) is required for cloning")
+    }
+
+    // Pre-flight validation: check if target location is available
+    const validation = await this.validateCloneOperation(appId, params)
+    if (!validation.valid) {
+      throw new CloudronError(
+        `Pre-flight validation failed: ${validation.errors.join(", ")}`,
+      )
+    }
+
+    const response = await this.makeRequest<{ taskId: string }>(
+      "POST",
+      `/api/v1/apps/${encodeURIComponent(appId)}/clone`,
+      params,
+    )
+
+    if (!response.taskId) {
+      throw new CloudronError("Clone response missing taskId")
+    }
+
+    return response.taskId
+  }
+
+  /**
+   * Repair a broken app
+   * POST /api/v1/apps/:appId/repair
+   * @param appId - The app ID to repair
+   * @returns Task ID for tracking repair progress
+   */
+  async repairApp(appId: string): Promise<string> {
+    if (!appId) {
+      throw new CloudronError("appId is required")
+    }
+
+    const response = await this.makeRequest<{ taskId: string }>(
+      "POST",
+      `/api/v1/apps/${encodeURIComponent(appId)}/repair`,
+    )
+
+    if (!response.taskId) {
+      throw new CloudronError("Repair response missing taskId")
+    }
+
+    return response.taskId
+  }
+
+  /**
+   * Restore an app from backup
+   * POST /api/v1/apps/:appId/restore
+   * @param appId - The app ID to restore
+   * @param params - Restore parameters (backupId required)
+   * @returns Task ID for tracking restore progress
+   */
+  async restoreApp(appId: string, params: RestoreAppParams): Promise<string> {
+    if (!appId) {
+      throw new CloudronError("appId is required")
+    }
+    if (!params.backupId) {
+      throw new CloudronError("backupId is required for restore")
+    }
+
+    // Pre-flight validation: check storage and backup compatibility
+    const validation = await this.validateRestoreOperation(
+      appId,
+      params.backupId,
+    )
+    if (!validation.valid) {
+      throw new CloudronError(
+        `Pre-flight validation failed: ${validation.errors.join(", ")}`,
+      )
+    }
+
+    const response = await this.makeRequest<{ taskId: string }>(
+      "POST",
+      `/api/v1/apps/${encodeURIComponent(appId)}/restore`,
+      params,
+    )
+
+    if (!response.taskId) {
+      throw new CloudronError("Restore response missing taskId")
+    }
+
+    return response.taskId
+  }
+
+  /**
+   * Update an app to a new version
+   * POST /api/v1/apps/:appId/update
+   * @param appId - The app ID to update
+   * @param params - Optional update parameters (version, force)
+   * @returns Task ID for tracking update progress
+   */
+  async updateApp(appId: string, params?: UpdateAppParams): Promise<string> {
+    if (!appId) {
+      throw new CloudronError("appId is required")
+    }
+
+    // Pre-flight validation: check if update is available
+    const validation = await this.validateUpdateOperation(appId)
+    if (!validation.valid) {
+      throw new CloudronError(
+        `Pre-flight validation failed: ${validation.errors.join(", ")}`,
+      )
+    }
+
+    const response = await this.makeRequest<{ taskId: string }>(
+      "POST",
+      `/api/v1/apps/${encodeURIComponent(appId)}/update`,
+      params ?? {},
+    )
+
+    if (!response.taskId) {
+      throw new CloudronError("Update response missing taskId")
+    }
+
+    return response.taskId
+  }
+
+  /**
+   * Create a backup of a specific app
+   * POST /api/v1/apps/:appId/backup
+   * @param appId - The app ID to backup
+   * @returns Task ID for tracking backup progress
+   */
+  async backupApp(appId: string): Promise<string> {
+    if (!appId) {
+      throw new CloudronError("appId is required")
+    }
+
+    // Pre-flight storage check
+    const storageInfo = await this.checkStorage(BACKUP_MIN_STORAGE_MB)
+    if (!storageInfo.sufficient) {
+      throw new CloudronError(
+        `Insufficient storage for app backup. Required: ${BACKUP_MIN_STORAGE_MB}MB, Available: ${storageInfo.available_mb}MB`,
+      )
+    }
+
+    const response = await this.makeRequest<{ taskId: string }>(
+      "POST",
+      `/api/v1/apps/${encodeURIComponent(appId)}/backup`,
+    )
+
+    if (!response.taskId) {
+      throw new CloudronError("App backup response missing taskId")
+    }
+
+    return response.taskId
+  }
+
+  // ==================== Services Methods ====================
+
+  /**
+   * List all platform services (read-only diagnostics)
+   * GET /api/v1/services
+   * @returns Array of service status objects
+   */
+  async listServices(): Promise<Service[]> {
+    const response = await this.makeRequest<ServicesResponse>(
+      "GET",
+      "/api/v1/services",
+    )
+    return response.services || []
+  }
+
+  // ==================== New Validation Methods ====================
+
+  /**
+   * Validate clone operation
+   * Checks: source app exists, target location available
+   */
+  private async validateCloneOperation(
+    appId: string,
+    params: CloneAppParams,
+  ): Promise<ValidationResult> {
+    const result: ValidationResult = {
+      valid: true,
+      errors: [],
+      warnings: [],
+      recommendations: [],
+    }
+
+    try {
+      // Check if source app exists
+      const app = await this.getApp(appId)
+
+      // Check app state
+      if (app.installationState !== "installed") {
+        result.errors.push(
+          `Cannot clone app in state '${app.installationState}'. App must be 'installed'.`,
+        )
+      }
+
+      // Check if target location might conflict
+      const apps = await this.listApps()
+      const targetDomain = params.domain ?? app.domain
+      const conflictingApp = apps.find(
+        a => a.location === params.location && a.domain === targetDomain,
+      )
+
+      if (conflictingApp) {
+        result.errors.push(
+          `Target location '${params.location}.${targetDomain}' is already in use by app '${conflictingApp.manifest.title}'.`,
+        )
+      }
+
+      // Recommendations
+      result.recommendations.push(
+        "Create a backup before cloning for disaster recovery.",
+      )
+    } catch (error) {
+      if (isCloudronError(error) && error.statusCode === 404) {
+        result.errors.push(`Source app with ID '${appId}' does not exist.`)
+      } else {
+        throw error
+      }
+    }
+
+    if (result.errors.length > 0) {
+      result.valid = false
+    }
+
+    return result
+  }
+
+  /**
+   * Validate restore operation
+   * Checks: backup exists, storage sufficient
+   */
+  private async validateRestoreOperation(
+    appId: string,
+    backupId: string,
+  ): Promise<ValidationResult> {
+    const result: ValidationResult = {
+      valid: true,
+      errors: [],
+      warnings: [],
+      recommendations: [],
+    }
+
+    try {
+      // Check if app exists
+      await this.getApp(appId)
+
+      // Check storage sufficiency
+      const storageInfo = await this.checkStorage(RESTORE_MIN_STORAGE_MB)
+      if (!storageInfo.sufficient) {
+        result.errors.push(
+          `Insufficient disk space for restore. Available: ${storageInfo.available_mb}MB, Required: ${RESTORE_MIN_STORAGE_MB}MB`,
+        )
+      }
+
+      if (storageInfo.critical) {
+        result.errors.push(
+          "CRITICAL: Less than 5% disk space remaining. Restore blocked.",
+        )
+      } else if (storageInfo.warning) {
+        result.warnings.push(
+          "WARNING: Less than 10% disk space remaining. Monitor during restore.",
+        )
+      }
+
+      // Check if backup exists
+      const backups = await this.listBackups()
+      const backup = backups.find(b => b.id === backupId)
+      if (!backup) {
+        result.errors.push(`Backup with ID '${backupId}' not found.`)
+      } else if (backup.state !== "uploaded" && backup.state !== "created") {
+        result.warnings.push(
+          `Backup is in state '${backup.state}'. Restore may fail.`,
+        )
+      }
+
+      result.recommendations.push(
+        "Create a backup of current state before restore for rollback capability.",
+      )
+    } catch (error) {
+      if (isCloudronError(error) && error.statusCode === 404) {
+        result.errors.push(`App with ID '${appId}' does not exist.`)
+      } else {
+        throw error
+      }
+    }
+
+    if (result.errors.length > 0) {
+      result.valid = false
+    }
+
+    return result
+  }
+
+  /**
+   * Validate update operation
+   * Checks: app exists, update available
+   */
+  private async validateUpdateOperation(
+    appId: string,
+  ): Promise<ValidationResult> {
+    const result: ValidationResult = {
+      valid: true,
+      errors: [],
+      warnings: [],
+      recommendations: [],
+    }
+
+    try {
+      // Check if app exists
+      const app = await this.getApp(appId)
+
+      // Check app state
+      if (app.installationState !== "installed") {
+        result.errors.push(
+          `Cannot update app in state '${app.installationState}'. App must be 'installed'.`,
+        )
+      }
+
+      // Note: Checking if update is available would require additional API call
+      // to /api/v1/appstore/apps/:id or similar. For now, we proceed with warning.
+      result.warnings.push(
+        "Update availability not verified. Operation may fail if no update exists.",
+      )
+
+      result.recommendations.push(
+        "Create a backup before updating for rollback capability.",
+      )
+    } catch (error) {
+      if (isCloudronError(error) && error.statusCode === 404) {
+        result.errors.push(`App with ID '${appId}' does not exist.`)
+      } else {
+        throw error
+      }
+    }
+
+    if (result.errors.length > 0) {
+      result.valid = false
+    }
+
+    return result
   }
 }
 

@@ -294,3 +294,52 @@ export interface ConfigureAppResponse {
   app: App
   restartRequired: boolean // Whether app needs restart for config to take effect
 }
+
+// ==================== New App Management Types ====================
+
+/**
+ * Parameters for cloning an app
+ */
+export interface CloneAppParams {
+  location: string // Required: subdomain for the clone
+  domain?: string // Optional: target domain (defaults to same)
+  portBindings?: Record<string, number> // Optional: port configuration
+  backupId?: string // Optional: clone from specific backup state
+}
+
+/**
+ * Parameters for restoring an app from backup
+ */
+export interface RestoreAppParams {
+  backupId: string // Required: backup to restore from
+}
+
+/**
+ * Parameters for updating an app
+ */
+export interface UpdateAppParams {
+  manifest?: {
+    version?: string // Optional: specific version to update to
+  }
+  force?: boolean // Optional: force update even if same version
+}
+
+// ==================== Services Types ====================
+
+/**
+ * Platform service status
+ */
+export interface Service {
+  name: string
+  status: "running" | "stopped" | "error" | "unknown"
+  memory?: number // Memory usage in bytes
+  version?: string
+  error?: string
+}
+
+/**
+ * API response wrapper for listing services
+ */
+export interface ServicesResponse {
+  services: Service[]
+}

@@ -17,6 +17,29 @@ import { TOOLS } from "./tools/definitions.js"
 import { allHandlers } from "./tools/handlers/index.js"
 import { errorResponse } from "./tools/response.js"
 
+/**
+ * Validate that all defined tools have corresponding handlers
+ * Catches tool↔handler mismatches at startup rather than runtime
+ */
+function validateToolHandlerAlignment(): void {
+  const missingHandlers: string[] = []
+
+  for (const tool of TOOLS) {
+    if (!allHandlers[tool.name]) {
+      missingHandlers.push(tool.name)
+    }
+  }
+
+  if (missingHandlers.length > 0) {
+    throw new Error(
+      `Tool↔Handler mismatch: The following tools are defined but have no handler: ${missingHandlers.join(", ")}`,
+    )
+  }
+}
+
+// Validate tool↔handler alignment at module load time
+validateToolHandlerAlignment()
+
 // Create server instance
 const server = new Server(
   {

@@ -4,7 +4,7 @@
  * Functions to format Cloudron data types into human-readable strings.
  */
 
-import type { App, Backup, Domain, User } from "../types.js"
+import type { App, Backup, Domain, Service, User } from "../types.js"
 
 /**
  * Format an app for display
@@ -191,4 +191,75 @@ export function formatConfigChanges(config: Record<string, unknown>): string {
       }
     })
     .join("\n")
+}
+
+/**
+ * Format async task response with consistent guidance
+ * Standardizes how all async operations communicate task tracking to the AI
+ */
+export function formatAsyncTaskResponse(
+  operation: string,
+  taskId: string,
+  additionalInfo?: string,
+): string {
+  let response = `${operation} initiated successfully.
+
+Task ID: ${taskId}
+
+Use cloudron_task_status with taskId="${taskId}" to track progress.`
+
+  if (additionalInfo) {
+    response += `\n\n${additionalInfo}`
+  }
+
+  return response
+}
+
+/**
+ * Format a service for display
+ */
+export function formatService(service: Service, index: number): string {
+  const statusIcon =
+    service.status === "running"
+      ? "✅"
+      : service.status === "stopped"
+        ? "⏹️"
+        : service.status === "error"
+          ? "❌"
+          : "❓"
+
+  let text = `${index + 1}. ${service.name} ${statusIcon}
+  Status: ${service.status}`
+
+  if (service.version) {
+    text += `\n  Version: ${service.version}`
+  }
+
+  if (service.memory !== undefined) {
+    const memoryMB = Math.round(service.memory / 1024 / 1024)
+    text += `\n  Memory: ${memoryMB} MB`
+  }
+
+  if (service.error) {
+    text += `\n  Error: ${service.error}`
+  }
+
+  return text
+}
+
+/**
+ * Format service list for display (read-only diagnostics)
+ */
+export function formatServiceList(services: Service[]): string {
+  if (services.length === 0) {
+    return "No services found."
+  }
+
+  const formatted = services.map((s, i) => formatService(s, i)).join("\n\n")
+
+  return `Platform Services (read-only diagnostics):
+
+${formatted}
+
+Note: This is diagnostic information. Services are managed by Cloudron automatically.`
 }

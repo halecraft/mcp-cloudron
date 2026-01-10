@@ -2,14 +2,22 @@
  * App-related tool handlers
  */
 
-import { formatApp, formatConfigChanges } from "../formatters.js"
+import { BACKUP_MIN_STORAGE_MB } from "../../config.js"
+import {
+  formatApp,
+  formatAsyncTaskResponse,
+  formatConfigChanges,
+} from "../formatters.js"
 import type { ToolRegistry } from "../registry.js"
 import { textResponse } from "../response.js"
 import {
   parseAppIdArgs,
+  parseCloneAppArgs,
   parseConfigureAppArgs,
   parseControlAppArgs,
   parseInstallAppArgs,
+  parseRestoreAppArgs,
+  parseUpdateAppArgs,
 } from "../validators.js"
 
 export const appHandlers: ToolRegistry = {
@@ -83,13 +91,116 @@ Note: This is a DESTRUCTIVE operation. The app and its data will be removed once
 
     const taskId = await client.installApp(parsed)
 
-    return textResponse(`Installation initiated for app: ${parsed.manifestId}
-  Location: ${parsed.location}
-  Task ID: ${taskId}
-  Status: Pending (202 Accepted)
+    return textResponse(
+      formatAsyncTaskResponse(
+        `App installation for ${parsed.manifestId}`,
+        taskId,
+        `Location: ${parsed.location}.${parsed.domain}\n\nNote: Pre-flight validation passed. Installation is in progress.`,
+      ),
+    )
+  },
 
-Use cloudron_task_status with taskId '${taskId}' to track installation progress.
+  // ==================== New App Management Handlers ====================
 
-Note: Pre-flight validation (F23a + F36) passed. Installation is in progress.`)
+  cloudron_clone_app: async (args, client) => {
+    const parsed = parseCloneAppArgs(args)
+
+    const cloneParams: import("../../types.js").CloneAppParams = {
+      location: parsed.location,
+    }
+    if (parsed.domain !== undefined) {
+      cloneParams.domain = parsed.domain
+    }
+    if (parsed.portBindings !== undefined) {
+      cloneParams.portBindings = parsed.portBindings
+    }
+    if (parsed.backupId !== undefined) {
+      cloneParams.backupId = parsed.backupId
+    }
+
+    const taskId = await client.cloneApp(parsed.appId, cloneParams)
+
+    const targetLocation = parsed.domain
+      ? `${parsed.location}.${parsed.domain}`
+      : parsed.location
+
+    return textResponse(
+      formatAsyncTaskResponse(
+        `App clone from ${parsed.appId}`,
+        taskId,
+        `Target location: ${targetLocation}\n\nNote: Pre-flight validation passed. Clone is in progress.`,
+      ),
+    )
+  },
+
+  cloudron_repair_app: async (args, client) => {
+    const { appId } = parseAppIdArgs(args)
+
+    const taskId = await client.repairApp(appId)
+
+    return textResponse(
+      formatAsyncTaskResponse(
+        `App repair for ${appId}`,
+        taskId,
+        "Cloudron is attempting automatic repair of the application.",
+      ),
+    )
+  },
+
+  cloudron_restore_app: async (args, client) => {
+    const { appId, backupId } = parseRestoreAppArgs(args)
+
+    const taskId = await client.restoreApp(appId, { backupId })
+
+    return textResponse(
+      formatAsyncTaskResponse(
+        `App restore for ${appId}`,
+        taskId,
+        `Restoring from backup: ${backupId}\n\n⚠️  DESTRUCTIVE OPERATION: Current app data will be replaced with backup data.`,
+      ),
+    )
+  },
+
+  cloudron_update_app: async (args, client) => {
+    const parsed = parseUpdateAppArgs(args)
+
+    let updateParams: import("../../types.js").UpdateAppParams | undefined
+    if (parsed.version !== undefined || parsed.force !== undefined) {
+      updateParams = {}
+      if (parsed.version !== undefined) {
+        updateParams.manifest = { version: parsed.version }
+      }
+      if (parsed.force !== undefined) {
+        updateParams.force = parsed.force
+      }
+    }
+
+    const taskId = await client.updateApp(parsed.appId, updateParams)
+
+    const versionInfo = parsed.version
+      ? `to version ${parsed.version}`
+      : "to latest version"
+
+    return textResponse(
+      formatAsyncTaskResponse(
+        `App update for ${parsed.appId}`,
+        taskId,
+        `Updating ${versionInfo}\n\nNote: Pre-flight validation passed. Update is in progress.`,
+      ),
+    )
+  },
+
+  cloudron_backup_app: async (args, client) => {
+    const { appId } = parseAppIdArgs(args)
+
+    const taskId = await client.backupApp(appId)
+
+    return textResponse(
+      formatAsyncTaskResponse(
+        `App backup for ${appId}`,
+        taskId,
+        `Note: Pre-flight storage check passed (${BACKUP_MIN_STORAGE_MB}MB minimum required).`,
+      ),
+    )
   },
 }

@@ -249,7 +249,7 @@ describe("App Handlers", () => {
 
       assertSuccess(response)
       const text = assertHasTextContent(response)
-      expect(text).toContain("Installation initiated")
+      expect(text).toContain("initiated successfully")
       expect(text).toContain("task-install-123")
     })
   })

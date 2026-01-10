@@ -3,7 +3,13 @@
  */
 
 import { vi } from "vitest"
-import type { App, CloudronStatus, TaskStatus } from "../../src/types"
+import type {
+  App,
+  Backup,
+  CloudronStatus,
+  Service,
+  TaskStatus,
+} from "../../src/types"
 
 export const mockApps: App[] = [
   {
@@ -149,6 +155,68 @@ export const mockTaskStatusCancelled: TaskStatus = {
   progress: 45,
   message: "Task cancelled by user request",
 }
+
+export const mockBackups: Backup[] = [
+  {
+    id: "backup-1",
+    creationTime: "2024-12-22T02:00:00Z",
+    version: "8.0.2",
+    type: "box",
+    state: "uploaded",
+    size: 5368709120, // 5GB
+    appCount: 3,
+  },
+  {
+    id: "backup-2",
+    creationTime: "2024-12-21T02:00:00Z",
+    version: "8.0.2",
+    type: "box",
+    state: "uploaded",
+    size: 5100000000,
+    appCount: 3,
+  },
+  {
+    id: "backup-3",
+    creationTime: "2024-12-20T02:00:00Z",
+    version: "8.0.1",
+    type: "app",
+    state: "created",
+    size: 1073741824, // 1GB
+    appCount: 1,
+  },
+]
+
+export const mockServices: Service[] = [
+  {
+    name: "mysql",
+    status: "running",
+    version: "8.0.35",
+    memory: 536870912, // 512MB
+  },
+  {
+    name: "postgresql",
+    status: "running",
+    version: "15.4",
+    memory: 268435456, // 256MB
+  },
+  {
+    name: "mongodb",
+    status: "stopped",
+    version: "6.0.12",
+  },
+  {
+    name: "mail",
+    status: "running",
+    version: "1.0.0",
+    memory: 134217728, // 128MB
+  },
+  {
+    name: "redis",
+    status: "error",
+    version: "7.2.3",
+    error: "Connection refused",
+  },
+]
 
 /**
  * Mock response configuration

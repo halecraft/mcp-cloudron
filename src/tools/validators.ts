@@ -110,6 +110,27 @@ export interface InstallAppArgs {
   env?: Record<string, string>
 }
 
+// ==================== New Tool Argument Types ====================
+
+export interface CloneAppArgs {
+  appId: string
+  location: string
+  domain?: string
+  portBindings?: Record<string, number>
+  backupId?: string
+}
+
+export interface RestoreAppArgs {
+  appId: string
+  backupId: string
+}
+
+export interface UpdateAppArgs {
+  appId: string
+  version?: string
+  force?: boolean
+}
+
 // ==================== Validators ====================
 
 /**
@@ -337,6 +358,77 @@ export function parseInstallAppArgs(args: unknown): InstallAppArgs {
 
   if (env !== undefined) {
     result.env = env as Record<string, string>
+  }
+
+  return result
+}
+
+// ==================== New Validators ====================
+
+/**
+ * Parse and validate arguments for cloudron_clone_app
+ */
+export function parseCloneAppArgs(args: unknown): CloneAppArgs {
+  assertObject(args, "arguments")
+  const { appId, location, domain, portBindings, backupId } = args
+
+  assertNonEmptyString(appId, "appId")
+  assertNonEmptyString(location, "location")
+
+  const result: CloneAppArgs = { appId, location }
+
+  if (domain !== undefined) {
+    assertNonEmptyString(domain, "domain")
+    result.domain = domain
+  }
+
+  if (portBindings !== undefined) {
+    assertObject(portBindings, "portBindings")
+    result.portBindings = portBindings as Record<string, number>
+  }
+
+  if (backupId !== undefined) {
+    assertNonEmptyString(backupId, "backupId")
+    result.backupId = backupId
+  }
+
+  return result
+}
+
+/**
+ * Parse and validate arguments for cloudron_restore_app
+ */
+export function parseRestoreAppArgs(args: unknown): RestoreAppArgs {
+  assertObject(args, "arguments")
+  const { appId, backupId } = args
+
+  assertNonEmptyString(appId, "appId")
+  assertNonEmptyString(backupId, "backupId")
+
+  return { appId, backupId }
+}
+
+/**
+ * Parse and validate arguments for cloudron_update_app
+ */
+export function parseUpdateAppArgs(args: unknown): UpdateAppArgs {
+  assertObject(args, "arguments")
+  const { appId, version, force } = args
+
+  assertNonEmptyString(appId, "appId")
+
+  const result: UpdateAppArgs = { appId }
+
+  if (version !== undefined) {
+    assertNonEmptyString(version, "version")
+    result.version = version
+  }
+
+  if (force !== undefined) {
+    if (typeof force !== "boolean") {
+      throw new CloudronError("force must be a boolean")
+    }
+    result.force = force
   }
 
   return result
