@@ -343,3 +343,51 @@ export interface Service {
 export interface ServicesResponse {
   services: Service[]
 }
+
+// ==================== User Management Types ====================
+
+/**
+ * Parameters for updating a user
+ */
+export interface UpdateUserParams {
+  email?: string // Optional: new email
+  displayName?: string // Optional: display name
+  role?: "admin" | "user" | "guest" // Optional: new role
+  password?: string // Optional: new password
+}
+
+// ==================== Group Types ====================
+
+/**
+ * Cloudron Group representation
+ */
+export interface Group {
+  id: string
+  name: string
+  createdAt: string
+}
+
+/**
+ * Parameters for creating a group
+ */
+export interface CreateGroupParams {
+  name: string // Required: group name
+}
+
+/**
+ * API response wrapper for listing groups
+ */
+export interface GroupsResponse {
+  groups: Group[]
+}
+
+// ==================== Update Management Types ====================
+
+/**
+ * Update information from Cloudron
+ */
+export interface UpdateInfo {
+  available: boolean
+  version?: string // Available version if update exists
+  changelog?: string // Changelog for the update
+}

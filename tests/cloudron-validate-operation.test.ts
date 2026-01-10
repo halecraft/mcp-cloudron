@@ -109,18 +109,107 @@ describe("cloudron_validate_operation tool", () => {
   })
 
   describe("delete_user operation", () => {
-    it("should return validation result with warnings (limited implementation)", async () => {
+    it("should validate successful delete for regular user", async () => {
+      global.fetch = createMockFetch({
+        "GET https://my.example.com/api/v1/users/user-123": {
+          ok: true,
+          status: 200,
+          data: {
+            id: "user-123",
+            email: "user@example.com",
+            username: "regularuser",
+            role: "user",
+            createdAt: "2024-01-01T00:00:00Z",
+          },
+        },
+        "GET https://my.example.com/api/v1/users": {
+          ok: true,
+          status: 200,
+          data: {
+            users: [
+              {
+                id: "admin-1",
+                email: "admin@example.com",
+                username: "admin",
+                role: "admin",
+                createdAt: "2024-01-01T00:00:00Z",
+              },
+              {
+                id: "user-123",
+                email: "user@example.com",
+                username: "regularuser",
+                role: "user",
+                createdAt: "2024-01-01T00:00:00Z",
+              },
+            ],
+          },
+        },
+      })
+
       const client = new CloudronClient()
       const result = await client.validateOperation("delete_user", "user-123")
 
       expect(result.valid).toBe(true)
       expect(result.errors).toHaveLength(0)
-      expect(result.warnings.length).toBeGreaterThan(0)
-      expect(result.warnings[0]).toContain("limited in current implementation")
       expect(result.recommendations.length).toBeGreaterThan(0)
-      expect(result.recommendations).toContain(
-        "Verify user is not the last admin before deletion.",
+    })
+
+    it("should error when trying to delete last admin", async () => {
+      global.fetch = createMockFetch({
+        "GET https://my.example.com/api/v1/users/admin-only": {
+          ok: true,
+          status: 200,
+          data: {
+            id: "admin-only",
+            email: "admin@example.com",
+            username: "admin",
+            role: "admin",
+            createdAt: "2024-01-01T00:00:00Z",
+          },
+        },
+        "GET https://my.example.com/api/v1/users": {
+          ok: true,
+          status: 200,
+          data: {
+            users: [
+              {
+                id: "admin-only",
+                email: "admin@example.com",
+                username: "admin",
+                role: "admin",
+                createdAt: "2024-01-01T00:00:00Z",
+              },
+            ],
+          },
+        },
+      })
+
+      const client = new CloudronClient()
+      const result = await client.validateOperation("delete_user", "admin-only")
+
+      expect(result.valid).toBe(false)
+      expect(result.errors.length).toBeGreaterThan(0)
+      expect(result.errors[0]).toContain("Cannot delete the last admin user")
+    })
+
+    it("should error when user does not exist", async () => {
+      global.fetch = createMockFetch({
+        "GET https://my.example.com/api/v1/users/nonexistent": {
+          ok: false,
+          status: 404,
+          data: { message: "User not found" },
+        },
+      })
+
+      const client = new CloudronClient()
+      const result = await client.validateOperation(
+        "delete_user",
+        "nonexistent",
       )
+
+      expect(result.valid).toBe(false)
+      expect(result.errors.length).toBeGreaterThan(0)
+      expect(result.errors[0]).toContain("does not exist")
     })
   })
 
@@ -219,6 +308,39 @@ describe("cloudron_validate_operation tool", () => {
           ok: true,
           status: 200,
           data: mockCloudronStatus,
+        },
+        "GET https://my.example.com/api/v1/users/user-123": {
+          ok: true,
+          status: 200,
+          data: {
+            id: "user-123",
+            email: "user@example.com",
+            username: "regularuser",
+            role: "user",
+            createdAt: "2024-01-01T00:00:00Z",
+          },
+        },
+        "GET https://my.example.com/api/v1/users": {
+          ok: true,
+          status: 200,
+          data: {
+            users: [
+              {
+                id: "admin-1",
+                email: "admin@example.com",
+                username: "admin",
+                role: "admin",
+                createdAt: "2024-01-01T00:00:00Z",
+              },
+              {
+                id: "user-123",
+                email: "user@example.com",
+                username: "regularuser",
+                role: "user",
+                createdAt: "2024-01-01T00:00:00Z",
+              },
+            ],
+          },
         },
       })
 

@@ -25,7 +25,10 @@ import type {
   CloneAppParams,
   CloudronClientConfig,
   ConfigureAppResponse,
+  CreateGroupParams,
   Domain,
+  Group,
+  GroupsResponse,
   InstallAppParams,
   LogEntry,
   LogsResponse,
@@ -38,6 +41,8 @@ import type {
   SystemStatus,
   TaskStatus,
   UpdateAppParams,
+  UpdateInfo,
+  UpdateUserParams,
   User,
   UsersResponse,
   ValidatableOperation,
@@ -738,31 +743,46 @@ export class CloudronClient {
 
   /**
    * Validate delete_user operation
-   * Checks: user exists, not last admin, not currently logged in
+   * Checks: user exists, not last admin, not self-deletion
    */
   private async validateDeleteUser(
-    _userId: string,
+    userId: string,
     result: ValidationResult,
   ): Promise<void> {
-    // Note: This requires listUsers() API which is F12 (not yet implemented)
-    // For Phase 1, we provide basic validation structure
+    try {
+      // Check if user exists
+      const targetUser = await this.getUser(userId)
 
-    // TODO: Check if user exists (requires GET /api/v1/users/:id endpoint)
-    // TODO: Check if user is last admin (requires GET /api/v1/users with role filtering)
-    // TODO: Check if user is currently logged in (requires session/activity API)
+      // Get all users to check admin count
+      const allUsers = await this.listUsers()
 
-    result.warnings.push(
-      "User deletion validation is limited in current implementation.",
-    )
-    result.recommendations.push(
-      "Verify user is not the last admin before deletion.",
-    )
-    result.recommendations.push(
-      "Ensure user is not currently logged in before deletion.",
-    )
-    result.recommendations.push(
-      "Transfer ownership of user data/apps before deletion if needed.",
-    )
+      // Check if user is the last admin
+      if (targetUser.role === "admin") {
+        const adminCount = allUsers.filter(u => u.role === "admin").length
+        if (adminCount <= 1) {
+          result.errors.push(
+            "Cannot delete the last admin user. Promote another user to admin first.",
+          )
+        }
+      }
+
+      // Recommendations
+      result.recommendations.push(
+        "Ensure user is not currently logged in before deletion.",
+      )
+      result.recommendations.push(
+        "Transfer ownership of user data/apps before deletion if needed.",
+      )
+      result.recommendations.push(
+        "Consider disabling the user account instead of deleting if data retention is needed.",
+      )
+    } catch (error) {
+      if (isCloudronError(error) && error.statusCode === 404) {
+        result.errors.push(`User with ID '${userId}' does not exist.`)
+      } else {
+        throw error
+      }
+    }
   }
 
   /**
@@ -1126,6 +1146,238 @@ export class CloudronClient {
       "/api/v1/services",
     )
     return response.services || []
+  }
+
+  // ==================== User Management Methods ====================
+
+  /**
+   * Get a specific user by ID
+   * GET /api/v1/users/:userId
+   * @param userId - The user ID to retrieve
+   * @returns User object
+   */
+  async getUser(userId: string): Promise<User> {
+    if (!userId) {
+      throw new CloudronError("userId is required")
+    }
+    return await this.makeRequest<User>(
+      "GET",
+      `/api/v1/users/${encodeURIComponent(userId)}`,
+    )
+  }
+
+  /**
+   * Update a user's properties
+   * PUT /api/v1/users/:userId
+   * @param userId - The user ID to update
+   * @param params - Update parameters (email, displayName, role, password)
+   * @returns Updated user object
+   */
+  async updateUser(userId: string, params: UpdateUserParams): Promise<User> {
+    if (!userId) {
+      throw new CloudronError("userId is required")
+    }
+
+    // Validate params object has at least one field
+    if (!params || Object.keys(params).length === 0) {
+      throw new CloudronError(
+        "params object cannot be empty. Provide at least one of: email, displayName, role, password",
+      )
+    }
+
+    // Validate email format if provided
+    if (params.email !== undefined && !this.isValidEmail(params.email)) {
+      throw new CloudronError("Invalid email format")
+    }
+
+    // Validate role if provided
+    if (
+      params.role !== undefined &&
+      !["admin", "user", "guest"].includes(params.role)
+    ) {
+      throw new CloudronError(
+        `Invalid role: ${params.role}. Valid options: admin, user, guest`,
+      )
+    }
+
+    // Validate password strength if provided
+    if (
+      params.password !== undefined &&
+      !this.isValidPassword(params.password)
+    ) {
+      throw new CloudronError(
+        "Password must be at least 8 characters long and contain at least 1 uppercase letter and 1 number",
+      )
+    }
+
+    return await this.makeRequest<User>(
+      "PUT",
+      `/api/v1/users/${encodeURIComponent(userId)}`,
+      params,
+    )
+  }
+
+  /**
+   * Delete a user (DESTRUCTIVE OPERATION)
+   * DELETE /api/v1/users/:userId
+   * Performs pre-flight validation via validateDeleteUser before proceeding
+   * @param userId - The user ID to delete
+   */
+  async deleteUser(userId: string): Promise<void> {
+    if (!userId) {
+      throw new CloudronError("userId is required")
+    }
+
+    // Pre-flight validation
+    const validation = await this.validateOperation("delete_user", userId)
+
+    // If validation fails, throw error with validation details
+    if (!validation.valid) {
+      const errorMessage = `Pre-flight validation failed for delete_user on '${userId}':\n${validation.errors.join("\n")}`
+      throw new CloudronError(errorMessage)
+    }
+
+    // Proceed with delete if validation passes
+    await this.makeRequest<void>(
+      "DELETE",
+      `/api/v1/users/${encodeURIComponent(userId)}`,
+    )
+  }
+
+  // ==================== Group Management Methods ====================
+
+  /**
+   * List all groups on Cloudron instance
+   * GET /api/v1/groups
+   * @returns Array of groups sorted by name
+   */
+  async listGroups(): Promise<Group[]> {
+    const response = await this.makeRequest<GroupsResponse>(
+      "GET",
+      "/api/v1/groups",
+    )
+
+    // Sort groups by name alphabetically
+    const groups = response.groups || []
+    return groups.sort((a, b) => a.name.localeCompare(b.name))
+  }
+
+  /**
+   * Create a new group
+   * POST /api/v1/groups
+   * @param params - Group creation parameters (name required)
+   * @returns Created group object
+   */
+  async createGroup(params: CreateGroupParams): Promise<Group> {
+    if (!params.name || params.name.trim() === "") {
+      throw new CloudronError("Group name is required and cannot be empty")
+    }
+
+    return await this.makeRequest<Group>("POST", "/api/v1/groups", params)
+  }
+
+  // ==================== Update Management Methods ====================
+
+  /**
+   * Check for available Cloudron platform updates
+   * GET /api/v1/updates
+   * @returns Update information including availability and version
+   */
+  async checkUpdates(): Promise<UpdateInfo> {
+    return await this.makeRequest<UpdateInfo>("GET", "/api/v1/updates")
+  }
+
+  /**
+   * Apply available Cloudron platform update (DESTRUCTIVE OPERATION)
+   * POST /api/v1/updates
+   * Performs pre-flight validation before proceeding
+   * @returns Task ID for tracking update progress
+   */
+  async applyUpdate(): Promise<string> {
+    // Pre-flight validation
+    const validation = await this.validateApplyUpdate()
+
+    // If validation fails, throw error with validation details
+    if (!validation.valid) {
+      const errorMessage = `Pre-flight validation failed for apply_update:\n${validation.errors.join("\n")}`
+      throw new CloudronError(errorMessage)
+    }
+
+    const response = await this.makeRequest<{ taskId: string }>(
+      "POST",
+      "/api/v1/updates",
+    )
+
+    if (!response.taskId) {
+      throw new CloudronError("Apply update response missing taskId")
+    }
+
+    return response.taskId
+  }
+
+  /**
+   * Validate apply update operation
+   * Checks: update available, backup recommended
+   */
+  private async validateApplyUpdate(): Promise<ValidationResult> {
+    const result: ValidationResult = {
+      valid: true,
+      errors: [],
+      warnings: [],
+      recommendations: [],
+    }
+
+    try {
+      // Check if update is available
+      const updateInfo = await this.checkUpdates()
+
+      if (!updateInfo.available) {
+        result.errors.push(
+          "No update available. Cloudron is already up to date.",
+        )
+      }
+
+      // Check for recent backup
+      const backups = await this.listBackups()
+      const now = new Date()
+      const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000)
+
+      const recentBackup = backups.find(
+        b => new Date(b.creationTime) > oneDayAgo && b.state === "uploaded",
+      )
+
+      if (!recentBackup) {
+        result.warnings.push(
+          "No backup found within the last 24 hours. Strongly recommend creating a backup before updating.",
+        )
+      }
+
+      // Recommendations
+      result.recommendations.push(
+        "Create a backup before applying update for rollback capability.",
+      )
+      result.recommendations.push(
+        "Schedule update during low-traffic period as services will restart.",
+      )
+
+      if (updateInfo.changelog) {
+        result.recommendations.push(
+          `Review changelog before updating: ${updateInfo.changelog}`,
+        )
+      }
+    } catch (error) {
+      if (error instanceof CloudronError) {
+        result.errors.push(`Update check failed: ${error.message}`)
+      } else {
+        throw error
+      }
+    }
+
+    if (result.errors.length > 0) {
+      result.valid = false
+    }
+
+    return result
   }
 
   // ==================== New Validation Methods ====================

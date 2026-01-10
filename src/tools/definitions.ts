@@ -454,4 +454,115 @@ export const TOOLS = [
       required: [],
     },
   },
+  // ==================== User Management Tools ====================
+  {
+    name: "cloudron_get_user",
+    description:
+      "Get detailed information about a specific user by their ID. Returns user details including email, username, role, and creation date.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        userId: {
+          type: "string",
+          description: "The unique identifier of the user",
+        },
+      },
+      required: ["userId"],
+    },
+  },
+  {
+    name: "cloudron_update_user",
+    description:
+      "Update a user's properties including email, display name, role, or password. At least one property must be provided. Role changes have security implications - promoting to admin grants full access, demoting from admin may lock out if last admin.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        userId: {
+          type: "string",
+          description: "The unique identifier of the user to update",
+        },
+        email: {
+          type: "string",
+          description: "New email address for the user (optional)",
+        },
+        displayName: {
+          type: "string",
+          description: "New display name for the user (optional)",
+        },
+        role: {
+          type: "string",
+          enum: ["admin", "user", "guest"],
+          description: "New role for the user (optional)",
+        },
+        password: {
+          type: "string",
+          description:
+            "New password for the user (optional, must meet strength requirements: 8+ chars, 1 uppercase, 1 number)",
+        },
+      },
+      required: ["userId"],
+    },
+  },
+  {
+    name: "cloudron_delete_user",
+    description:
+      "Delete a user from the Cloudron instance. DESTRUCTIVE OPERATION. Performs pre-flight validation to check user exists and is not the last admin. Returns 204 No Content on success.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        userId: {
+          type: "string",
+          description: "The unique identifier of the user to delete",
+        },
+      },
+      required: ["userId"],
+    },
+  },
+  // ==================== Group Management Tools ====================
+  {
+    name: "cloudron_list_groups",
+    description:
+      "List all groups on the Cloudron instance. Returns group details including ID, name, and creation date. Groups are sorted alphabetically by name.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {},
+      required: [],
+    },
+  },
+  {
+    name: "cloudron_create_group",
+    description:
+      "Create a new group on the Cloudron instance. Groups can be used for access control and user organization.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        name: {
+          type: "string",
+          description: "The name of the group to create (required)",
+        },
+      },
+      required: ["name"],
+    },
+  },
+  // ==================== Update Management Tools ====================
+  {
+    name: "cloudron_check_updates",
+    description:
+      "Check if Cloudron platform updates are available. Returns update information including availability, version, and changelog if an update exists.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {},
+      required: [],
+    },
+  },
+  {
+    name: "cloudron_apply_update",
+    description:
+      "Apply available Cloudron platform update. DESTRUCTIVE OPERATION - services will restart during update. Performs pre-flight validation to check update is available and recommends backup. Returns task ID for async operation tracking via cloudron_task_status.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {},
+      required: [],
+    },
+  },
 ]

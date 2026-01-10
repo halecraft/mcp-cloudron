@@ -42,9 +42,11 @@ src/
         ├── appstore.ts # App Store search/validation
         ├── backups.ts  # Backup operations
         ├── domains.ts  # Domain listing
+        ├── groups.ts   # Group management
         ├── logs.ts     # Log retrieval
         ├── services.ts # Platform services (diagnostics)
         ├── system.ts   # System status, tasks, storage
+        ├── updates.ts  # Platform update management
         └── users.ts    # User management
 ```
 
@@ -127,7 +129,12 @@ The private [`makeRequest()`](src/cloudron-client.ts:73) method handles:
 | `listBackups()`             | GET /api/v1/backups             | List backups             |
 | `createBackup()`            | POST /api/v1/backups            | Create backup (async)    |
 | `listUsers()`               | GET /api/v1/users               | List users               |
+| `getUser(id)`               | GET /api/v1/users/:id           | Get specific user        |
 | `createUser()`              | POST /api/v1/users              | Create user              |
+| `updateUser(id, params)`    | PUT /api/v1/users/:id           | Update user              |
+| `deleteUser(id)`            | DELETE /api/v1/users/:id        | Delete user              |
+| `listGroups()`              | GET /api/v1/groups              | List groups              |
+| `createGroup(params)`       | POST /api/v1/groups             | Create group             |
 | `listDomains()`             | GET /api/v1/domains             | List domains             |
 | `searchApps(query)`         | GET /api/v1/appstore/apps       | Search App Store         |
 | `startApp(id)`              | POST /api/v1/apps/:id/start     | Start app (async)        |
@@ -142,6 +149,8 @@ The private [`makeRequest()`](src/cloudron-client.ts:73) method handles:
 | `updateApp(id, params?)`    | POST /api/v1/apps/:id/update    | Update app (async)       |
 | `backupApp(id)`             | POST /api/v1/apps/:id/backup    | Backup single app (async)|
 | `listServices()`            | GET /api/v1/services            | List platform services   |
+| `checkUpdates()`            | GET /api/v1/updates             | Check for updates        |
+| `applyUpdate()`             | POST /api/v1/updates            | Apply update (async)     |
 | `getTaskStatus(id)`         | GET /api/v1/tasks/:id           | Check async task         |
 | `cancelTask(id)`            | DELETE /api/v1/tasks/:id        | Cancel async task        |
 | `getLogs(id, type, lines)`  | GET /api/v1/apps/:id/logs       | Get logs                 |
@@ -166,7 +175,7 @@ Validates disk space before operations that create data:
 Pre-flight checks for destructive operations:
 
 - `uninstall_app`: Verifies app exists, checks installation state
-- `delete_user`: Provides recommendations (limited implementation)
+- `delete_user`: Verifies user exists, checks if last admin
 - `restore_backup`: Validates storage sufficiency
 
 Returns a `ValidationResult` with:
@@ -175,6 +184,14 @@ Returns a `ValidationResult` with:
 - `errors`: Blocking issues
 - `warnings`: Non-blocking concerns
 - `recommendations`: Best practices
+
+### Update Validation ([`validateApplyUpdate()`](src/cloudron-client.ts))
+
+Pre-flight checks for platform updates:
+
+- Verifies update is available
+- Checks for recent backup (within 24 hours)
+- Provides recommendations for backup and scheduling
 
 ### Manifest Validation ([`validateManifest()`](src/cloudron-client.ts:820))
 
@@ -228,10 +245,27 @@ Pre-installation checks:
 
 ### Users
 
-| Tool                   | Description           |
-| ---------------------- | --------------------- |
-| `cloudron_list_users`  | List all users        |
-| `cloudron_create_user` | Create user with role |
+| Tool                   | Description                          |
+| ---------------------- | ------------------------------------ |
+| `cloudron_list_users`  | List all users                       |
+| `cloudron_get_user`    | Get details for specific user        |
+| `cloudron_create_user` | Create user with role                |
+| `cloudron_update_user` | Update user properties               |
+| `cloudron_delete_user` | Delete user with pre-flight check    |
+
+### Groups
+
+| Tool                    | Description        |
+| ----------------------- | ------------------ |
+| `cloudron_list_groups`  | List all groups    |
+| `cloudron_create_group` | Create a new group |
+
+### Updates
+
+| Tool                    | Description                          |
+| ----------------------- | ------------------------------------ |
+| `cloudron_check_updates`| Check for platform updates           |
+| `cloudron_apply_update` | Apply update with pre-flight check   |
 
 ### Services (Diagnostics)
 
@@ -493,10 +527,17 @@ Based on comparison with the official Cloudron OpenAPI specification (`docs/clou
 | Backups   | GET /api/v1/backups             | ✅ `listBackups()`    |
 | Backups   | POST /api/v1/backups            | ✅ `createBackup()`   |
 | Users     | GET /api/v1/users               | ✅ `listUsers()`      |
+| Users     | GET /api/v1/users/:id           | ✅ `getUser()`        |
 | Users     | POST /api/v1/users              | ✅ `createUser()`     |
+| Users     | PUT /api/v1/users/:id           | ✅ `updateUser()`     |
+| Users     | DELETE /api/v1/users/:id        | ✅ `deleteUser()`     |
+| Groups    | GET /api/v1/groups              | ✅ `listGroups()`     |
+| Groups    | POST /api/v1/groups             | ✅ `createGroup()`    |
 | Domains   | GET /api/v1/domains             | ✅ `listDomains()`    |
 | System    | GET /api/v1/cloudron/status     | ✅ `getStatus()`      |
 | Services  | GET /api/v1/services            | ✅ `listServices()`   |
+| Updates   | GET /api/v1/updates             | ✅ `checkUpdates()`   |
+| Updates   | POST /api/v1/updates            | ✅ `applyUpdate()`    |
 | Tasks     | GET /api/v1/tasks/:id           | ✅ `getTaskStatus()`  |
 | Tasks     | DELETE /api/v1/tasks/:id        | ✅ `cancelTask()`     |
 | App Store | GET /api/v1/appstore/apps       | ✅ `searchApps()`     |
@@ -509,18 +550,14 @@ Based on comparison with the official Cloudron OpenAPI specification (`docs/clou
 | Backups       | DELETE /api/v1/backups/:id     | Delete a backup             |
 | Backups       | GET /api/v1/backups/config     | Get backup configuration    |
 | Backups       | PUT /api/v1/backups/config     | Update backup configuration |
-| Users         | GET /api/v1/users/:id          | Get specific user           |
-| Users         | PUT /api/v1/users/:id          | Update user                 |
-| Users         | DELETE /api/v1/users/:id       | Delete user                 |
-| Groups        | GET /api/v1/groups             | List groups                 |
-| Groups        | POST /api/v1/groups            | Create group                |
+| Groups        | GET /api/v1/groups/:id         | Get specific group          |
+| Groups        | PUT /api/v1/groups/:id         | Update group                |
+| Groups        | DELETE /api/v1/groups/:id      | Delete group                |
 | Domains       | POST /api/v1/domains           | Add domain                  |
 | Domains       | DELETE /api/v1/domains/:domain | Remove domain               |
 | Mail          | GET /api/v1/mail               | Mail configuration          |
 | Events        | GET /api/v1/eventlog           | Event log                   |
 | Notifications | GET /api/v1/notifications      | List notifications          |
-| Updates       | GET /api/v1/updates            | Check for updates           |
-| Updates       | POST /api/v1/updates           | Apply updates               |
 
 ### Security Note: App Exec Endpoint
 
@@ -654,14 +691,14 @@ Based on code comments and structure:
 
 2. **Idempotency Keys:** Mentioned as prerequisite for retry logic.
 
-3. **User Deletion Validation:** Currently limited - needs user existence check, last-admin check, active session check.
+3. **Backup Integrity:** Validation recommends checking but doesn't implement checksum verification.
 
-4. **Backup Integrity:** Validation recommends checking but doesn't implement checksum verification.
+4. **App Dependencies:** Uninstall validation recommends checking but doesn't implement dependency resolution.
 
-5. **App Dependencies:** Uninstall validation recommends checking but doesn't implement dependency resolution.
+5. **Missing API Coverage:** Some Cloudron API endpoints are not yet exposed as MCP tools (see API Coverage Analysis above).
 
-6. **Missing API Coverage:** Many Cloudron API endpoints are not yet exposed as MCP tools (see API Coverage Analysis above).
+6. **Pagination:** The Cloudron API supports `page` and `per_page` query parameters for list endpoints. Current implementation doesn't expose pagination controls.
 
-7. **Pagination:** The Cloudron API supports `page` and `per_page` query parameters for list endpoints. Current implementation doesn't expose pagination controls.
+7. **Streaming Logs:** The API supports SSE (Server-Sent Events) for real-time log streaming. Current implementation only fetches static log snapshots.
 
-8. **Streaming Logs:** The API supports SSE (Server-Sent Events) for real-time log streaming. Current implementation only fetches static log snapshots.
+8. **Group Management:** Only list and create are implemented. Update and delete group operations are not yet available.

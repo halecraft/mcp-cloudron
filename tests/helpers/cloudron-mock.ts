@@ -7,8 +7,11 @@ import type {
   App,
   Backup,
   CloudronStatus,
+  Group,
   Service,
   TaskStatus,
+  UpdateInfo,
+  User,
 } from "../../src/types"
 
 export const mockApps: App[] = [
@@ -445,6 +448,117 @@ export function mockSystemStatus(
 ): CloudronStatus {
   return {
     ...mockCloudronStatus,
+    ...overrides,
+  }
+}
+
+// ==================== User Mock Data ====================
+
+export const mockUsers: User[] = [
+  {
+    id: "user-admin-1",
+    email: "admin@example.com",
+    username: "admin",
+    role: "admin",
+    createdAt: "2024-01-01T00:00:00Z",
+  },
+  {
+    id: "user-admin-2",
+    email: "admin2@example.com",
+    username: "admin2",
+    role: "admin",
+    createdAt: "2024-01-02T00:00:00Z",
+  },
+  {
+    id: "user-regular-1",
+    email: "user@example.com",
+    username: "regularuser",
+    role: "user",
+    createdAt: "2024-01-03T00:00:00Z",
+  },
+  {
+    id: "user-guest-1",
+    email: "guest@example.com",
+    username: "guestuser",
+    role: "guest",
+    createdAt: "2024-01-04T00:00:00Z",
+  },
+]
+
+export const mockUserSingleAdmin: User = {
+  id: "user-last-admin",
+  email: "lastadmin@example.com",
+  username: "lastadmin",
+  role: "admin",
+  createdAt: "2024-01-01T00:00:00Z",
+}
+
+/**
+ * Create a mock user with custom properties
+ */
+export function mockUser(overrides: Partial<User> = {}): User {
+  return {
+    id: "user-test",
+    email: "test@example.com",
+    username: "testuser",
+    role: "user",
+    createdAt: "2024-01-01T00:00:00Z",
+    ...overrides,
+  }
+}
+
+// ==================== Group Mock Data ====================
+
+export const mockGroups: Group[] = [
+  {
+    id: "group-1",
+    name: "Administrators",
+    createdAt: "2024-01-01T00:00:00Z",
+  },
+  {
+    id: "group-2",
+    name: "Developers",
+    createdAt: "2024-01-02T00:00:00Z",
+  },
+  {
+    id: "group-3",
+    name: "Users",
+    createdAt: "2024-01-03T00:00:00Z",
+  },
+]
+
+/**
+ * Create a mock group with custom properties
+ */
+export function mockGroup(overrides: Partial<Group> = {}): Group {
+  return {
+    id: "group-test",
+    name: "Test Group",
+    createdAt: "2024-01-01T00:00:00Z",
+    ...overrides,
+  }
+}
+
+// ==================== Update Mock Data ====================
+
+export const mockUpdateAvailable: UpdateInfo = {
+  available: true,
+  version: "8.1.0",
+  changelog: "https://cloudron.io/changelog/8.1.0",
+}
+
+export const mockUpdateNotAvailable: UpdateInfo = {
+  available: false,
+}
+
+/**
+ * Create a mock update info with custom properties
+ */
+export function mockUpdateInfo(
+  overrides: Partial<UpdateInfo> = {},
+): UpdateInfo {
+  return {
+    available: false,
     ...overrides,
   }
 }

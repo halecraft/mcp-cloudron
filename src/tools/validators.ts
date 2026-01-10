@@ -131,6 +131,24 @@ export interface UpdateAppArgs {
   force?: boolean
 }
 
+// ==================== New User/Group/Update Argument Types ====================
+
+export interface UserIdArgs {
+  userId: string
+}
+
+export interface UpdateUserArgs {
+  userId: string
+  email?: string
+  displayName?: string
+  role?: "admin" | "user" | "guest"
+  password?: string
+}
+
+export interface CreateGroupArgs {
+  name: string
+}
+
 // ==================== Validators ====================
 
 /**
@@ -432,4 +450,89 @@ export function parseUpdateAppArgs(args: unknown): UpdateAppArgs {
   }
 
   return result
+}
+
+// ==================== New User/Group/Update Validators ====================
+
+/**
+ * Parse and validate arguments for cloudron_get_user
+ */
+export function parseGetUserArgs(args: unknown): UserIdArgs {
+  assertObject(args, "arguments")
+  const { userId } = args
+  assertNonEmptyString(userId, "userId")
+  return { userId }
+}
+
+/**
+ * Parse and validate arguments for cloudron_update_user
+ */
+export function parseUpdateUserArgs(args: unknown): UpdateUserArgs {
+  assertObject(args, "arguments")
+  const { userId, email, displayName, role, password } = args
+
+  assertNonEmptyString(userId, "userId")
+
+  const result: UpdateUserArgs = { userId }
+
+  // At least one update field must be provided
+  const hasUpdateField =
+    email !== undefined ||
+    displayName !== undefined ||
+    role !== undefined ||
+    password !== undefined
+
+  if (!hasUpdateField) {
+    throw new CloudronError(
+      "At least one update field must be provided: email, displayName, role, or password",
+    )
+  }
+
+  if (email !== undefined) {
+    assertNonEmptyString(email, "email")
+    result.email = email
+  }
+
+  if (displayName !== undefined) {
+    assertString(displayName, "displayName")
+    result.displayName = displayName
+  }
+
+  if (role !== undefined) {
+    assertNonEmptyString(role, "role")
+    const validRoles = ["admin", "user", "guest"] as const
+    if (!validRoles.includes(role as (typeof validRoles)[number])) {
+      throw new CloudronError(
+        `Invalid role: ${role}. Valid options: ${validRoles.join(", ")}`,
+      )
+    }
+    result.role = role as "admin" | "user" | "guest"
+  }
+
+  if (password !== undefined) {
+    assertNonEmptyString(password, "password")
+    result.password = password
+  }
+
+  return result
+}
+
+/**
+ * Parse and validate arguments for cloudron_delete_user
+ */
+export function parseDeleteUserArgs(args: unknown): UserIdArgs {
+  assertObject(args, "arguments")
+  const { userId } = args
+  assertNonEmptyString(userId, "userId")
+  return { userId }
+}
+
+/**
+ * Parse and validate arguments for cloudron_create_group
+ */
+export function parseCreateGroupArgs(args: unknown): CreateGroupArgs {
+  assertObject(args, "arguments")
+  const { name } = args
+  assertNonEmptyString(name, "name")
+  return { name }
 }

@@ -4,7 +4,15 @@
  * Functions to format Cloudron data types into human-readable strings.
  */
 
-import type { App, Backup, Domain, Service, User } from "../types.js"
+import type {
+  App,
+  Backup,
+  Domain,
+  Group,
+  Service,
+  UpdateInfo,
+  User,
+} from "../types.js"
 
 /**
  * Format an app for display
@@ -262,4 +270,75 @@ export function formatServiceList(services: Service[]): string {
 ${formatted}
 
 Note: This is diagnostic information. Services are managed by Cloudron automatically.`
+}
+
+// ==================== User Management Formatters ====================
+
+/**
+ * Format a single user for detailed display
+ */
+export function formatUserDetails(user: User): string {
+  const createdAt = new Date(user.createdAt).toLocaleString()
+
+  return `User Details:
+  ID: ${user.id}
+  Email: ${user.email}
+  Username: ${user.username}
+  Role: ${user.role}
+  Created: ${createdAt}`
+}
+
+// ==================== Group Formatters ====================
+
+/**
+ * Format a group for display
+ */
+export function formatGroup(group: Group, index: number): string {
+  const createdAt = new Date(group.createdAt).toLocaleString()
+
+  return `${index + 1}. ${group.name}
+  ID: ${group.id}
+  Created: ${createdAt}`
+}
+
+/**
+ * Format group list for display
+ */
+export function formatGroupList(groups: Group[]): string {
+  if (groups.length === 0) {
+    return "No groups found."
+  }
+
+  const formatted = groups.map((g, i) => formatGroup(g, i)).join("\n\n")
+
+  return `Found ${groups.length} group(s):\n\n${formatted}`
+}
+
+// ==================== Update Formatters ====================
+
+/**
+ * Format update info for display
+ */
+export function formatUpdateInfo(updateInfo: UpdateInfo): string {
+  if (!updateInfo.available) {
+    return `Update Status:
+  Available: No
+  
+✅ Cloudron is up to date.`
+  }
+
+  let text = `Update Status:
+  Available: Yes
+  Version: ${updateInfo.version ?? "Unknown"}`
+
+  if (updateInfo.changelog) {
+    text += `\n  Changelog: ${updateInfo.changelog}`
+  }
+
+  text += `
+
+⚠️  An update is available. Use cloudron_apply_update to install.
+Recommendation: Create a backup before updating.`
+
+  return text
 }
