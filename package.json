@@ -19,6 +19,10 @@
 		"test:watch": "jest --watch",
 		"test:coverage": "jest --coverage",
 		"test:integration": "jest --testPathPattern=integration",
+		"verify": "node scripts/verify.mjs",
+		"verify:format": "biome check --write --error-on-warnings .",
+		"verify:logic": "NO_COLOR=1 jest",
+		"verify:types": "tsc --noEmit",
 		"lint": "tsc --noEmit",
 		"clean": "rm -rf dist",
 		"prepublishOnly": "pnpm run build"
