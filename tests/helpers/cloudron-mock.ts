@@ -2,234 +2,269 @@
  * Mock Cloudron API responses for testing
  */
 
-import { App, CloudronStatus, TaskStatus, ValidationResult } from '../../src/types';
+import type { App, CloudronStatus, TaskStatus } from "../../src/types"
 
 export const mockApps: App[] = [
   {
-    id: 'app-1',
-    appStoreId: 'io.wordpress.cloudronapp',
-    installationState: 'installed',
-    runState: 'running',
-    health: 'healthy',
-    location: 'blog',
-    domain: 'example.com',
-    fqdn: 'blog.example.com',
+    id: "app-1",
+    appStoreId: "io.wordpress.cloudronapp",
+    installationState: "installed",
+    installationProgress: "",
+    runState: "running",
+    health: "healthy",
+    location: "blog",
+    domain: "example.com",
+    fqdn: "blog.example.com",
     manifest: {
-      id: 'io.wordpress.cloudronapp',
-      title: 'WordPress',
-      author: 'Cloudron',
-      description: 'Blog and website platform',
-      version: '6.4.2'
+      id: "io.wordpress.cloudronapp",
+      title: "WordPress",
+      author: "Cloudron",
+      description: "Blog and website platform",
+      version: "6.4.2",
     },
     accessRestriction: null,
-    creationTime: '2024-01-15T10:00:00Z',
-    updateTime: '2024-12-01T14:30:00Z'
+    portBindings: null,
+    iconUrl: null,
+    memoryLimit: 256 * 1024 * 1024,
+    creationTime: "2024-01-15T10:00:00Z",
   },
   {
-    id: 'app-2',
-    appStoreId: 'org.nextcloud.cloudronapp',
-    installationState: 'installed',
-    runState: 'stopped',
-    health: 'healthy',
-    location: 'files',
-    domain: 'example.com',
-    fqdn: 'files.example.com',
+    id: "app-2",
+    appStoreId: "org.nextcloud.cloudronapp",
+    installationState: "installed",
+    installationProgress: "",
+    runState: "stopped",
+    health: "healthy",
+    location: "files",
+    domain: "example.com",
+    fqdn: "files.example.com",
     manifest: {
-      id: 'org.nextcloud.cloudronapp',
-      title: 'Nextcloud',
-      author: 'Cloudron',
-      description: 'File sync and share platform',
-      version: '28.0.1'
+      id: "org.nextcloud.cloudronapp",
+      title: "Nextcloud",
+      author: "Cloudron",
+      description: "File sync and share platform",
+      version: "28.0.1",
     },
     accessRestriction: null,
-    creationTime: '2024-02-20T12:00:00Z',
-    updateTime: '2024-11-15T09:45:00Z'
+    portBindings: null,
+    iconUrl: null,
+    memoryLimit: 512 * 1024 * 1024,
+    creationTime: "2024-02-20T12:00:00Z",
   },
   {
-    id: 'app-3',
-    appStoreId: 'com.gitlab.cloudronapp',
-    installationState: 'installed',
-    runState: 'running',
-    health: 'unhealthy',
-    location: 'git',
-    domain: 'example.com',
-    fqdn: 'git.example.com',
+    id: "app-3",
+    appStoreId: "com.gitlab.cloudronapp",
+    installationState: "installed",
+    installationProgress: "",
+    runState: "running",
+    health: "unhealthy",
+    location: "git",
+    domain: "example.com",
+    fqdn: "git.example.com",
     manifest: {
-      id: 'com.gitlab.cloudronapp',
-      title: 'GitLab',
-      author: 'Cloudron',
-      description: 'Git repository management',
-      version: '16.7.0'
+      id: "com.gitlab.cloudronapp",
+      title: "GitLab",
+      author: "Cloudron",
+      description: "Git repository management",
+      version: "16.7.0",
     },
     accessRestriction: null,
-    creationTime: '2024-03-10T08:00:00Z',
-    updateTime: '2024-12-10T11:20:00Z'
-  }
-];
+    portBindings: null,
+    iconUrl: null,
+    memoryLimit: 1024 * 1024 * 1024,
+    creationTime: "2024-03-10T08:00:00Z",
+  },
+]
 
 export const mockCloudronStatus: CloudronStatus = {
-  version: '8.0.2',
-  boxVersionsUrl: 'https://cloudron.io/api/v1/boxes/versions',
-  apiServerOrigin: 'https://api.example.com',
-  webServerOrigin: 'https://example.com',
-  fqdn: 'my.example.com',
+  version: "8.0.2",
+  boxVersionsUrl: "https://cloudron.io/api/v1/boxes/versions",
+  apiServerOrigin: "https://api.example.com",
+  webServerOrigin: "https://example.com",
+  fqdn: "my.example.com",
+  adminFqdn: "my.example.com",
+  provider: "generic",
+  cloudronName: "My Cloudron",
+  isDemo: false,
   isCustomDomain: true,
   memory: {
     total: 16777216,
     used: 8388608,
     free: 8388608,
-    percent: 50
+    percent: 50,
   },
   disk: {
     total: 107374182400,
     used: 53687091200,
     free: 53687091200,
-    percent: 50
+    percent: 50,
   },
   update: null,
   backup: {
-    lastBackupTime: '2024-12-22T02:00:00Z',
-    lastBackupId: 'backup-20241222-020000'
-  }
-};
+    lastBackupTime: "2024-12-22T02:00:00Z",
+    lastBackupId: "backup-20241222-020000",
+  },
+}
 
 export const mockTaskStatusPending: TaskStatus = {
-  id: 'task-123',
-  state: 'pending',
+  id: "task-123",
+  state: "pending",
   progress: 0,
-  message: 'Task queued'
-};
+  message: "Task queued",
+}
 
 export const mockTaskStatusRunning: TaskStatus = {
-  id: 'task-123',
-  state: 'running',
+  id: "task-123",
+  state: "running",
   progress: 45,
-  message: 'Processing backup...'
-};
+  message: "Processing backup...",
+}
 
 export const mockTaskStatusSuccess: TaskStatus = {
-  id: 'task-123',
-  state: 'success',
+  id: "task-123",
+  state: "success",
   progress: 100,
-  message: 'Backup completed successfully',
+  message: "Backup completed successfully",
   result: {
-    backupId: 'backup-20241223-140000',
-    size: 1024000000
-  }
-};
+    backupId: "backup-20241223-140000",
+    size: 1024000000,
+  },
+}
 
 export const mockTaskStatusError: TaskStatus = {
-  id: 'task-123',
-  state: 'error',
+  id: "task-123",
+  state: "error",
   progress: 60,
-  message: 'Backup failed',
+  message: "Backup failed",
   error: {
-    message: 'Insufficient disk space',
-    code: 'DISK_FULL'
-  }
-};
+    message: "Insufficient disk space",
+    code: "DISK_FULL",
+  },
+}
 
 export const mockTaskStatusCancelled: TaskStatus = {
-  id: 'task-123',
-  state: 'cancelled',
+  id: "task-123",
+  state: "cancelled",
   progress: 45,
-  message: 'Task cancelled by user request'
-};
+  message: "Task cancelled by user request",
+}
+
+/**
+ * Mock response configuration
+ */
+export interface MockResponseConfig {
+  ok?: boolean
+  status?: number
+  statusText?: string
+  data?: unknown
+  error?: Error
+}
+
+/**
+ * Mock fetch options
+ */
+export interface MockFetchOptions {
+  method?: string
+  body?: string
+  headers?: Record<string, string>
+}
 
 /**
  * Create a mock fetch implementation for testing
  */
-export function createMockFetch(responses: Record<string, any>) {
-  return jest.fn((url: string, options?: any) => {
-    const method = options?.method || 'GET';
-    const key = `${method} ${url}`;
+export function createMockFetch(
+  responses: Record<string, MockResponseConfig>,
+): typeof fetch {
+  return jest.fn((url: string | URL | Request, options?: MockFetchOptions) => {
+    const urlString = typeof url === "string" ? url : url.toString()
+    const method = options?.method || "GET"
+    const key = `${method} ${urlString}`
 
-    if (responses[key]) {
-      const response = responses[key];
-
+    const response = responses[key]
+    if (response) {
       if (response.error) {
-        return Promise.reject(response.error);
+        return Promise.reject(response.error)
       }
 
       return Promise.resolve({
         ok: response.ok !== false,
         status: response.status || 200,
-        statusText: response.statusText || 'OK',
+        statusText: response.statusText || "OK",
         json: async () => response.data,
-        text: async () => JSON.stringify(response.data)
-      });
+        text: async () => JSON.stringify(response.data),
+      } as Response)
     }
 
     // Default 404 response
     return Promise.resolve({
       ok: false,
       status: 404,
-      statusText: 'Not Found',
-      json: async () => ({ message: 'Not found' }),
-      text: async () => JSON.stringify({ message: 'Not found' })
-    });
-  });
+      statusText: "Not Found",
+      json: async () => ({ message: "Not found" }),
+      text: async () => JSON.stringify({ message: "Not found" }),
+    } as Response)
+  }) as unknown as typeof fetch
 }
 
 /**
  * Mock environment variables for testing
  */
 export const mockEnv = {
-  CLOUDRON_BASE_URL: 'https://my.example.com',
-  CLOUDRON_API_TOKEN: 'test-token-12345'
-};
+  CLOUDRON_BASE_URL: "https://my.example.com",
+  CLOUDRON_API_TOKEN: "test-token-12345",
+}
 
 /**
  * Setup test environment
  */
 export function setupTestEnv() {
-  process.env.CLOUDRON_BASE_URL = mockEnv.CLOUDRON_BASE_URL;
-  process.env.CLOUDRON_API_TOKEN = mockEnv.CLOUDRON_API_TOKEN;
+  process.env.CLOUDRON_BASE_URL = mockEnv.CLOUDRON_BASE_URL
+  process.env.CLOUDRON_API_TOKEN = mockEnv.CLOUDRON_API_TOKEN
 }
 
 /**
  * Cleanup test environment
  */
 export function cleanupTestEnv() {
-  delete process.env.CLOUDRON_BASE_URL;
-  delete process.env.CLOUDRON_API_TOKEN;
+  delete process.env.CLOUDRON_BASE_URL
+  delete process.env.CLOUDRON_API_TOKEN
 }
 
 /**
  * Mock app for validation tests - installed state
  */
 export const mockAppInstalled: App = {
-  id: 'app-valid',
-  appStoreId: 'io.wordpress.cloudronapp',
-  installationState: 'installed',
-  installationProgress: '',
-  runState: 'running',
-  health: 'healthy',
-  location: 'blog',
-  domain: 'example.com',
-  fqdn: 'blog.example.com',
+  id: "app-valid",
+  appStoreId: "io.wordpress.cloudronapp",
+  installationState: "installed",
+  installationProgress: "",
+  runState: "running",
+  health: "healthy",
+  location: "blog",
+  domain: "example.com",
+  fqdn: "blog.example.com",
   manifest: {
-    id: 'io.wordpress.cloudronapp',
-    title: 'WordPress',
-    author: 'Cloudron',
-    description: 'Blog and website platform',
-    version: '6.4.2'
+    id: "io.wordpress.cloudronapp",
+    title: "WordPress",
+    author: "Cloudron",
+    description: "Blog and website platform",
+    version: "6.4.2",
   },
   accessRestriction: null,
   portBindings: null,
   iconUrl: null,
   memoryLimit: 268435456,
-  creationTime: '2024-01-15T10:00:00Z'
-};
+  creationTime: "2024-01-15T10:00:00Z",
+}
 
 /**
  * Mock app for validation tests - pending uninstall state
  */
 export const mockAppPendingUninstall: App = {
   ...mockAppInstalled,
-  id: 'app-pending',
-  installationState: 'pending_uninstall'
-};
+  id: "app-pending",
+  installationState: "pending_uninstall",
+}
 
 /**
  * Mock Cloudron status with low disk space (critical - under 5%)
@@ -239,10 +274,10 @@ export const mockCloudronStatusCriticalDisk: CloudronStatus = {
   disk: {
     total: 107374182400,
     used: 102542024704, // 95.5% used
-    free: 4832157696,   // 4.5% free (under critical threshold)
-    percent: 95.5
-  }
-};
+    free: 4832157696, // 4.5% free (under critical threshold)
+    percent: 95.5,
+  },
+}
 
 /**
  * Mock Cloudron status with very low disk space (insufficient for restore)
@@ -252,19 +287,19 @@ export const mockCloudronStatusInsufficientDisk: CloudronStatus = {
   disk: {
     total: 107374182400,
     used: 106837319680, // 99.5% used
-    free: 536862720,    // 512 MB free (less than 1024 MB required)
-    percent: 99.5
-  }
-};
+    free: 536862720, // 512 MB free (less than 1024 MB required)
+    percent: 99.5,
+  },
+}
 
 /**
  * Create a mock success response
  */
-export function mockSuccessResponse(data: any, status: number = 200): Response {
+export function mockSuccessResponse(data: unknown, status = 200): Response {
   return {
     ok: true,
     status,
-    statusText: 'OK',
+    statusText: "OK",
     headers: new Headers(),
     json: async () => data,
     text: async () => JSON.stringify(data),
@@ -275,9 +310,9 @@ export function mockSuccessResponse(data: any, status: number = 200): Response {
     bodyUsed: false,
     clone: () => mockSuccessResponse(data, status),
     redirected: false,
-    type: 'basic',
-    url: '',
-  } as Response;
+    type: "basic",
+    url: "",
+  } as Response
 }
 
 /**
@@ -298,9 +333,9 @@ export function mockErrorResponse(status: number, message: string): Response {
     bodyUsed: false,
     clone: () => mockErrorResponse(status, message),
     redirected: false,
-    type: 'basic',
-    url: '',
-  } as Response;
+    type: "basic",
+    url: "",
+  } as Response
 }
 
 /**
@@ -308,37 +343,39 @@ export function mockErrorResponse(status: number, message: string): Response {
  */
 export function mockApp(overrides: Partial<App> = {}): App {
   return {
-    id: 'app-test',
-    appStoreId: 'io.test.cloudronapp',
-    installationState: 'installed',
-    installationProgress: '',
-    runState: 'running',
-    health: 'healthy',
-    location: 'test',
-    domain: 'example.com',
-    fqdn: 'test.example.com',
+    id: "app-test",
+    appStoreId: "io.test.cloudronapp",
+    installationState: "installed",
+    installationProgress: "",
+    runState: "running",
+    health: "healthy",
+    location: "test",
+    domain: "example.com",
+    fqdn: "test.example.com",
     manifest: {
-      id: 'io.test.cloudronapp',
-      title: 'Test App',
-      author: 'Cloudron',
-      description: 'Test application',
-      version: '1.0.0'
+      id: "io.test.cloudronapp",
+      title: "Test App",
+      author: "Cloudron",
+      description: "Test application",
+      version: "1.0.0",
     },
     accessRestriction: null,
     portBindings: null,
     iconUrl: null,
     memoryLimit: 268435456,
-    creationTime: '2024-01-01T00:00:00Z',
-    ...overrides
-  };
+    creationTime: "2024-01-01T00:00:00Z",
+    ...overrides,
+  }
 }
 
 /**
  * Create a mock system status
  */
-export function mockSystemStatus(overrides: Partial<CloudronStatus> = {}): CloudronStatus {
+export function mockSystemStatus(
+  overrides: Partial<CloudronStatus> = {},
+): CloudronStatus {
   return {
     ...mockCloudronStatus,
-    ...overrides
-  };
+    ...overrides,
+  }
 }

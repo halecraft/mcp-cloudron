@@ -5,18 +5,18 @@
 
 /** Base error for all Cloudron API errors */
 export class CloudronError extends Error {
-  public readonly statusCode: number | undefined;
-  public readonly code: string | undefined;
+  public readonly statusCode: number | undefined
+  public readonly code: string | undefined
 
   constructor(message: string, statusCode?: number, code?: string) {
-    super(message);
-    this.name = 'CloudronError';
-    this.statusCode = statusCode ?? undefined;
-    this.code = code ?? undefined;
+    super(message)
+    this.name = "CloudronError"
+    this.statusCode = statusCode ?? undefined
+    this.code = code ?? undefined
 
     // Maintains proper stack trace in V8 engines
     if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, CloudronError);
+      Error.captureStackTrace(this, CloudronError)
     }
   }
 
@@ -26,19 +26,19 @@ export class CloudronError extends Error {
    * 4xx errors (except 429) are NOT retryable
    */
   isRetryable(): boolean {
-    if (!this.statusCode) return false;
-    return this.statusCode === 429 || this.statusCode >= 500;
+    if (!this.statusCode) return false
+    return this.statusCode === 429 || this.statusCode >= 500
   }
 }
 
 /** Authentication/Authorization error (401/403) */
 export class CloudronAuthError extends CloudronError {
   constructor(
-    message = 'Authentication failed. Check CLOUDRON_API_TOKEN.',
-    statusCode = 401
+    message = "Authentication failed. Check CLOUDRON_API_TOKEN.",
+    statusCode = 401,
   ) {
-    super(message, statusCode, 'AUTH_ERROR');
-    this.name = 'CloudronAuthError';
+    super(message, statusCode, "AUTH_ERROR")
+    this.name = "CloudronAuthError"
   }
 }
 
@@ -47,7 +47,7 @@ export class CloudronAuthError extends CloudronError {
  * Usage: if (isCloudronError(error)) { ... }
  */
 export function isCloudronError(error: unknown): error is CloudronError {
-  return error instanceof CloudronError;
+  return error instanceof CloudronError
 }
 
 /**
@@ -56,10 +56,10 @@ export function isCloudronError(error: unknown): error is CloudronError {
  */
 export function createErrorFromStatus(
   statusCode: number,
-  message: string
+  message: string,
 ): CloudronError {
   if (statusCode === 401 || statusCode === 403) {
-    return new CloudronAuthError(message, statusCode);
+    return new CloudronAuthError(message, statusCode)
   }
-  return new CloudronError(message, statusCode);
+  return new CloudronError(message, statusCode)
 }

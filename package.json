@@ -18,9 +18,10 @@
 		"test": "jest",
 		"test:watch": "jest --watch",
 		"test:coverage": "jest --coverage",
+		"test:integration": "jest --testPathPattern=integration",
 		"lint": "tsc --noEmit",
 		"clean": "rm -rf dist",
-		"prepublishOnly": "npm run build"
+		"prepublishOnly": "pnpm run build"
 	},
 	"keywords": [
 		"mcp",
@@ -50,6 +51,7 @@
 		"node": ">=18.0.0"
 	},
 	"devDependencies": {
+		"@biomejs/biome": "^2.3.11",
 		"@types/jest": "^30.0.0",
 		"@types/node": "^24.10.2",
 		"jest": "^30.2.0",

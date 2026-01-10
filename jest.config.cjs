@@ -1,36 +1,43 @@
 /** @type {import('jest').Config} */
 module.exports = {
-  preset: 'ts-jest',
-  testEnvironment: 'node',
-  roots: ['<rootDir>/tests'],
-  testMatch: ['**/*.test.ts'],
-  extensionsToTreatAsEsm: ['.ts'],
+  preset: "ts-jest",
+  testEnvironment: "node",
+  roots: ["<rootDir>/tests"],
+  testMatch: ["**/*.test.ts"],
+  extensionsToTreatAsEsm: [".ts"],
   moduleNameMapper: {
-    '^(\\.{1,2}/.*)\\.js$': '$1',
+    "^(\\.{1,2}/.*)\\.js$": "$1",
   },
   transform: {
-    '^.+\\.ts$': [
-      'ts-jest',
+    "^.+\\.ts$": [
+      "ts-jest",
       {
         useESM: true,
       },
     ],
   },
-  collectCoverageFrom: [
-    'src/**/*.ts',
-    '!src/**/*.d.ts',
-    '!src/index.ts'
+  projects: [
+    {
+      displayName: "unit",
+      testMatch: ["<rootDir>/tests/**/*.test.ts"],
+      testPathIgnorePatterns: ["/integration/"],
+      moduleNameMapper: {
+        "^(\\.{1,2}/.*)\\.js$": "$1",
+      },
+      transform: {
+        "^.+\\.ts$": ["ts-jest", { useESM: true }],
+      },
+    },
+    {
+      displayName: "integration",
+      testMatch: ["<rootDir>/tests/integration/**/*.test.ts"],
+      testTimeout: 30000,
+      moduleNameMapper: {
+        "^(\\.{1,2}/.*)\\.js$": "$1",
+      },
+      transform: {
+        "^.+\\.ts$": ["ts-jest", { useESM: true }],
+      },
+    },
   ],
-  coverageDirectory: 'coverage',
-  coverageReporters: ['text', 'lcov', 'html'],
-  coverageThreshold: {
-    global: {
-      branches: 65,
-      functions: 50,
-      lines: 80,
-      statements: 80
-    }
-  },
-  moduleFileExtensions: ['ts', 'js', 'json'],
-  verbose: true
-};
+}

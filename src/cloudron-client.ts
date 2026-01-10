@@ -4,32 +4,59 @@
  * DI-enabled for testing
  */
 
-import type { CloudronClientConfig, App, AppsResponse, AppResponse, SystemStatus, TaskStatus, StorageInfo, ValidatableOperation, ValidationResult, Backup, BackupsResponse, AppStoreApp, AppStoreResponse, User, UsersResponse, LogType, LogEntry, LogsResponse, AppConfig, ConfigureAppResponse, ManifestValidationResult, AppManifest, InstallAppParams, Domain } from './types.js';
-import { CloudronError, CloudronAuthError, createErrorFromStatus } from './errors.js';
+import { CloudronError, createErrorFromStatus } from "./errors.js"
+import type {
+  App,
+  AppConfig,
+  AppStoreApp,
+  AppStoreResponse,
+  AppsResponse,
+  Backup,
+  BackupsResponse,
+  CloudronClientConfig,
+  ConfigureAppResponse,
+  Domain,
+  InstallAppParams,
+  LogEntry,
+  LogsResponse,
+  LogType,
+  ManifestValidationResult,
+  StorageInfo,
+  SystemStatus,
+  TaskStatus,
+  User,
+  UsersResponse,
+  ValidatableOperation,
+  ValidationResult,
+} from "./types.js"
 
-const DEFAULT_TIMEOUT = 30000;
+const DEFAULT_TIMEOUT = 30000
 
 export class CloudronClient {
-  private readonly baseUrl: string;
-  private readonly token: string;
+  private readonly baseUrl: string
+  private readonly token: string
 
   /**
    * Create CloudronClient with DI support
    * @param config - Optional config (defaults to env vars)
    */
   constructor(config?: Partial<CloudronClientConfig>) {
-    const baseUrl = config?.baseUrl ?? process.env.CLOUDRON_BASE_URL;
-    const token = config?.token ?? process.env.CLOUDRON_API_TOKEN;
+    const baseUrl = config?.baseUrl ?? process.env.CLOUDRON_BASE_URL
+    const token = config?.token ?? process.env.CLOUDRON_API_TOKEN
 
     if (!baseUrl) {
-      throw new CloudronError('CLOUDRON_BASE_URL not set. Provide via config or environment variable.');
+      throw new CloudronError(
+        "CLOUDRON_BASE_URL not set. Provide via config or environment variable.",
+      )
     }
     if (!token) {
-      throw new CloudronError('CLOUDRON_API_TOKEN not set. Provide via config or environment variable.');
+      throw new CloudronError(
+        "CLOUDRON_API_TOKEN not set. Provide via config or environment variable.",
+      )
     }
 
-    this.baseUrl = baseUrl.replace(/\/$/, ''); // Remove trailing slash
-    this.token = token;
+    this.baseUrl = baseUrl.replace(/\/$/, "") // Remove trailing slash
+    this.token = token
   }
 
   /**
@@ -37,65 +64,73 @@ export class CloudronClient {
    * NO retry logic (deferred to Phase 3 with idempotency keys)
    */
   private async makeRequest<T>(
-    method: 'GET' | 'POST' | 'PUT' | 'DELETE',
+    method: "GET" | "POST" | "PUT" | "DELETE",
     endpoint: string,
     body?: unknown,
-    options?: { timeout?: number }
+    options?: { timeout?: number },
   ): Promise<T> {
-    const url = `${this.baseUrl}${endpoint}`;
-    const timeout = options?.timeout ?? DEFAULT_TIMEOUT;
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), timeout);
+    const url = `${this.baseUrl}${endpoint}`
+    const timeout = options?.timeout ?? DEFAULT_TIMEOUT
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), timeout)
 
     try {
       const fetchOptions: RequestInit = {
         method,
         headers: {
-          'Authorization': `Bearer ${this.token}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
+          Authorization: `Bearer ${this.token}`,
+          "Content-Type": "application/json",
+          Accept: "application/json",
         },
         signal: controller.signal,
-      };
-
-      if (body !== undefined) {
-        fetchOptions.body = JSON.stringify(body);
       }
 
-      const response = await fetch(url, fetchOptions);
+      if (body !== undefined) {
+        fetchOptions.body = JSON.stringify(body)
+      }
 
-      clearTimeout(timeoutId);
+      const response = await fetch(url, fetchOptions)
+
+      clearTimeout(timeoutId)
 
       if (!response.ok) {
-        const errorBody = await response.text();
-        let message = `Cloudron API error: ${response.status} ${response.statusText}`;
+        const errorBody = await response.text()
+        let message = `Cloudron API error: ${response.status} ${response.statusText}`
 
         try {
-          const parsed = JSON.parse(errorBody);
-          if (parsed.message) message = parsed.message;
+          const parsed = JSON.parse(errorBody)
+          if (parsed.message) message = parsed.message
         } catch {
           // Use default message if body isn't JSON
         }
 
-        throw createErrorFromStatus(response.status, message);
+        throw createErrorFromStatus(response.status, message)
       }
 
-      return await response.json() as T;
+      return (await response.json()) as T
     } catch (error) {
-      clearTimeout(timeoutId);
+      clearTimeout(timeoutId)
 
       if (error instanceof CloudronError) {
-        throw error;
+        throw error
       }
 
       if (error instanceof Error) {
-        if (error.name === 'AbortError') {
-          throw new CloudronError(`Request timeout after ${timeout}ms`, undefined, 'TIMEOUT');
+        if (error.name === "AbortError") {
+          throw new CloudronError(
+            `Request timeout after ${timeout}ms`,
+            undefined,
+            "TIMEOUT",
+          )
         }
-        throw new CloudronError(`Network error: ${error.message}`, undefined, 'NETWORK_ERROR');
+        throw new CloudronError(
+          `Network error: ${error.message}`,
+          undefined,
+          "NETWORK_ERROR",
+        )
       }
 
-      throw new CloudronError('Unknown error occurred');
+      throw new CloudronError("Unknown error occurred")
     }
   }
 
@@ -106,8 +141,8 @@ export class CloudronClient {
    * GET /api/v1/apps
    */
   async listApps(): Promise<App[]> {
-    const response = await this.makeRequest<AppsResponse>('GET', '/api/v1/apps');
-    return response.apps;
+    const response = await this.makeRequest<AppsResponse>("GET", "/api/v1/apps")
+    return response.apps
   }
 
   /**
@@ -118,9 +153,12 @@ export class CloudronClient {
    */
   async getApp(appId: string): Promise<App> {
     if (!appId) {
-      throw new CloudronError('appId is required');
+      throw new CloudronError("appId is required")
     }
-    return await this.makeRequest<App>('GET', `/api/v1/apps/${encodeURIComponent(appId)}`);
+    return await this.makeRequest<App>(
+      "GET",
+      `/api/v1/apps/${encodeURIComponent(appId)}`,
+    )
   }
 
   /**
@@ -128,7 +166,10 @@ export class CloudronClient {
    * GET /api/v1/cloudron/status
    */
   async getStatus(): Promise<SystemStatus> {
-    return await this.makeRequest<SystemStatus>('GET', '/api/v1/cloudron/status');
+    return await this.makeRequest<SystemStatus>(
+      "GET",
+      "/api/v1/cloudron/status",
+    )
   }
 
   /**
@@ -137,15 +178,18 @@ export class CloudronClient {
    * @returns Array of backups sorted by timestamp (newest first)
    */
   async listBackups(): Promise<Backup[]> {
-    const response = await this.makeRequest<BackupsResponse>('GET', '/api/v1/backups');
+    const response = await this.makeRequest<BackupsResponse>(
+      "GET",
+      "/api/v1/backups",
+    )
 
     // Sort backups by creationTime (newest first)
-    const backups = response.backups || [];
+    const backups = response.backups || []
     return backups.sort((a, b) => {
-      const timeA = new Date(a.creationTime).getTime();
-      const timeB = new Date(b.creationTime).getTime();
-      return timeB - timeA; // Descending order (newest first)
-    });
+      const timeA = new Date(a.creationTime).getTime()
+      const timeB = new Date(b.creationTime).getTime()
+      return timeB - timeA // Descending order (newest first)
+    })
   }
 
   /**
@@ -155,30 +199,33 @@ export class CloudronClient {
    */
   async createBackup(): Promise<string> {
     // F36 pre-flight storage check: Require 5GB minimum for backup
-    const BACKUP_MIN_STORAGE_MB = 5120; // 5GB
-    const storageInfo = await this.checkStorage(BACKUP_MIN_STORAGE_MB);
+    const BACKUP_MIN_STORAGE_MB = 5120 // 5GB
+    const storageInfo = await this.checkStorage(BACKUP_MIN_STORAGE_MB)
 
     if (!storageInfo.sufficient) {
       throw new CloudronError(
-        `Insufficient storage for backup. Required: ${BACKUP_MIN_STORAGE_MB}MB, Available: ${storageInfo.available_mb}MB`
-      );
+        `Insufficient storage for backup. Required: ${BACKUP_MIN_STORAGE_MB}MB, Available: ${storageInfo.available_mb}MB`,
+      )
     }
 
     if (storageInfo.warning) {
       // Log warning but allow operation to proceed
       console.warn(
-        `Storage warning: ${storageInfo.available_mb}MB available (${((storageInfo.available_mb / storageInfo.total_mb) * 100).toFixed(1)}% of total)`
-      );
+        `Storage warning: ${storageInfo.available_mb}MB available (${((storageInfo.available_mb / storageInfo.total_mb) * 100).toFixed(1)}% of total)`,
+      )
     }
 
     // Create backup (async operation)
-    const response = await this.makeRequest<{ taskId: string }>('POST', '/api/v1/backups');
+    const response = await this.makeRequest<{ taskId: string }>(
+      "POST",
+      "/api/v1/backups",
+    )
 
     if (!response.taskId) {
-      throw new CloudronError('Backup creation response missing taskId');
+      throw new CloudronError("Backup creation response missing taskId")
     }
 
-    return response.taskId;
+    return response.taskId
   }
 
   /**
@@ -187,19 +234,22 @@ export class CloudronClient {
    * @returns Array of users sorted by role then email
    */
   async listUsers(): Promise<User[]> {
-    const response = await this.makeRequest<UsersResponse>('GET', '/api/v1/users');
+    const response = await this.makeRequest<UsersResponse>(
+      "GET",
+      "/api/v1/users",
+    )
 
     // Sort users by role then email
-    const users = response.users || [];
+    const users = response.users || []
     return users.sort((a, b) => {
       // Sort by role first (admin > user > guest)
-      const roleOrder = { admin: 0, user: 1, guest: 2 };
-      const roleCompare = roleOrder[a.role] - roleOrder[b.role];
-      if (roleCompare !== 0) return roleCompare;
+      const roleOrder = { admin: 0, user: 1, guest: 2 }
+      const roleCompare = roleOrder[a.role] - roleOrder[b.role]
+      if (roleCompare !== 0) return roleCompare
 
       // Then by email alphabetically
-      return a.email.localeCompare(b.email);
-    });
+      return a.email.localeCompare(b.email)
+    })
   }
 
   /**
@@ -211,17 +261,17 @@ export class CloudronClient {
   async searchApps(query?: string): Promise<AppStoreApp[]> {
     const endpoint = query
       ? `/api/v1/appstore/apps?search=${encodeURIComponent(query)}`
-      : '/api/v1/appstore/apps';
+      : "/api/v1/appstore/apps"
 
-    const response = await this.makeRequest<AppStoreResponse>('GET', endpoint);
+    const response = await this.makeRequest<AppStoreResponse>("GET", endpoint)
 
     // Sort results by relevance score (highest first) if available
-    const apps = response.apps || [];
+    const apps = response.apps || []
     return apps.sort((a, b) => {
-      const scoreA = a.relevanceScore ?? 0;
-      const scoreB = b.relevanceScore ?? 0;
-      return scoreB - scoreA; // Descending order (highest relevance first)
-    });
+      const scoreA = a.relevanceScore ?? 0
+      const scoreB = b.relevanceScore ?? 0
+      return scoreB - scoreA // Descending order (highest relevance first)
+    })
   }
 
   /**
@@ -232,27 +282,35 @@ export class CloudronClient {
    * @param role - User role: 'admin', 'user', or 'guest'
    * @returns Created user object
    */
-  async createUser(email: string, password: string, role: 'admin' | 'user' | 'guest'): Promise<User> {
+  async createUser(
+    email: string,
+    password: string,
+    role: "admin" | "user" | "guest",
+  ): Promise<User> {
     // Validate email format
     if (!email || !this.isValidEmail(email)) {
-      throw new CloudronError('Invalid email format');
+      throw new CloudronError("Invalid email format")
     }
 
     // Validate password strength (8+ chars, 1 uppercase, 1 number)
     if (!this.isValidPassword(password)) {
-      throw new CloudronError('Password must be at least 8 characters long and contain at least 1 uppercase letter and 1 number');
+      throw new CloudronError(
+        "Password must be at least 8 characters long and contain at least 1 uppercase letter and 1 number",
+      )
     }
 
     // Validate role enum
-    if (!['admin', 'user', 'guest'].includes(role)) {
-      throw new CloudronError(`Invalid role: ${role}. Valid options: admin, user, guest`);
+    if (!["admin", "user", "guest"].includes(role)) {
+      throw new CloudronError(
+        `Invalid role: ${role}. Valid options: admin, user, guest`,
+      )
     }
 
-    return await this.makeRequest<User>('POST', '/api/v1/users', {
+    return await this.makeRequest<User>("POST", "/api/v1/users", {
       email,
       password,
       role,
-    });
+    })
   }
 
   /**
@@ -261,8 +319,11 @@ export class CloudronClient {
    * @returns Array of domain configurations
    */
   async listDomains(): Promise<Domain[]> {
-    const response = await this.makeRequest<{ domains: Domain[] }>('GET', '/api/v1/domains');
-    return response.domains;
+    const response = await this.makeRequest<{ domains: Domain[] }>(
+      "GET",
+      "/api/v1/domains",
+    )
+    return response.domains
   }
 
   /**
@@ -271,8 +332,8 @@ export class CloudronClient {
    * @returns true if email format is valid
    */
   private isValidEmail(email: string): boolean {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    return emailRegex.test(email)
   }
 
   /**
@@ -282,10 +343,10 @@ export class CloudronClient {
    * @returns true if password meets strength requirements
    */
   private isValidPassword(password: string): boolean {
-    if (password.length < 8) return false;
-    if (!/[A-Z]/.test(password)) return false; // At least 1 uppercase
-    if (!/[0-9]/.test(password)) return false; // At least 1 number
-    return true;
+    if (password.length < 8) return false
+    if (!/[A-Z]/.test(password)) return false // At least 1 uppercase
+    if (!/[0-9]/.test(password)) return false // At least 1 number
+    return true
   }
 
   /**
@@ -295,9 +356,12 @@ export class CloudronClient {
    */
   async startApp(appId: string): Promise<{ taskId: string }> {
     if (!appId) {
-      throw new CloudronError('appId is required');
+      throw new CloudronError("appId is required")
     }
-    return await this.makeRequest<{ taskId: string }>('POST', `/api/v1/apps/${encodeURIComponent(appId)}/start`);
+    return await this.makeRequest<{ taskId: string }>(
+      "POST",
+      `/api/v1/apps/${encodeURIComponent(appId)}/start`,
+    )
   }
 
   /**
@@ -307,9 +371,12 @@ export class CloudronClient {
    */
   async stopApp(appId: string): Promise<{ taskId: string }> {
     if (!appId) {
-      throw new CloudronError('appId is required');
+      throw new CloudronError("appId is required")
     }
-    return await this.makeRequest<{ taskId: string }>('POST', `/api/v1/apps/${encodeURIComponent(appId)}/stop`);
+    return await this.makeRequest<{ taskId: string }>(
+      "POST",
+      `/api/v1/apps/${encodeURIComponent(appId)}/stop`,
+    )
   }
 
   /**
@@ -319,9 +386,12 @@ export class CloudronClient {
    */
   async restartApp(appId: string): Promise<{ taskId: string }> {
     if (!appId) {
-      throw new CloudronError('appId is required');
+      throw new CloudronError("appId is required")
     }
-    return await this.makeRequest<{ taskId: string }>('POST', `/api/v1/apps/${encodeURIComponent(appId)}/restart`);
+    return await this.makeRequest<{ taskId: string }>(
+      "POST",
+      `/api/v1/apps/${encodeURIComponent(appId)}/restart`,
+    )
   }
 
   /**
@@ -331,38 +401,44 @@ export class CloudronClient {
    * @param config - Configuration object with env vars, memoryLimit, accessRestriction
    * @returns Response with updated app and restart requirement flag
    */
-  async configureApp(appId: string, config: AppConfig): Promise<ConfigureAppResponse> {
+  async configureApp(
+    appId: string,
+    config: AppConfig,
+  ): Promise<ConfigureAppResponse> {
     if (!appId) {
-      throw new CloudronError('appId is required');
+      throw new CloudronError("appId is required")
     }
 
     // Validate config object has at least one field
     if (!config || Object.keys(config).length === 0) {
-      throw new CloudronError('config object cannot be empty');
+      throw new CloudronError("config object cannot be empty")
     }
 
     // Validate config fields if present
-    if (config.env !== undefined && typeof config.env !== 'object') {
-      throw new CloudronError('env must be an object of key-value pairs');
+    if (config.env !== undefined && typeof config.env !== "object") {
+      throw new CloudronError("env must be an object of key-value pairs")
     }
 
     if (config.memoryLimit !== undefined) {
-      if (typeof config.memoryLimit !== 'number' || config.memoryLimit <= 0) {
-        throw new CloudronError('memoryLimit must be a positive number (in MB)');
+      if (typeof config.memoryLimit !== "number" || config.memoryLimit <= 0) {
+        throw new CloudronError("memoryLimit must be a positive number (in MB)")
       }
     }
 
-    if (config.accessRestriction !== undefined && config.accessRestriction !== null) {
-      if (typeof config.accessRestriction !== 'string') {
-        throw new CloudronError('accessRestriction must be a string or null');
+    if (
+      config.accessRestriction !== undefined &&
+      config.accessRestriction !== null
+    ) {
+      if (typeof config.accessRestriction !== "string") {
+        throw new CloudronError("accessRestriction must be a string or null")
       }
     }
 
     return await this.makeRequest<ConfigureAppResponse>(
-      'PUT',
+      "PUT",
       `/api/v1/apps/${encodeURIComponent(appId)}/configure`,
-      config
-    );
+      config,
+    )
   }
 
   /**
@@ -373,23 +449,23 @@ export class CloudronClient {
    */
   async uninstallApp(appId: string): Promise<{ taskId: string }> {
     if (!appId) {
-      throw new CloudronError('appId is required');
+      throw new CloudronError("appId is required")
     }
 
     // Pre-flight validation via F37
-    const validation = await this.validateOperation('uninstall_app', appId);
+    const validation = await this.validateOperation("uninstall_app", appId)
 
     // If validation fails, throw error with validation details
     if (!validation.valid) {
-      const errorMessage = `Pre-flight validation failed for uninstall_app on '${appId}':\n${validation.errors.join('\n')}`;
-      throw new CloudronError(errorMessage);
+      const errorMessage = `Pre-flight validation failed for uninstall_app on '${appId}':\n${validation.errors.join("\n")}`
+      throw new CloudronError(errorMessage)
     }
 
     // Proceed with uninstall if validation passes
     return await this.makeRequest<{ taskId: string }>(
-      'POST',
-      `/api/v1/apps/${encodeURIComponent(appId)}/uninstall`
-    );
+      "POST",
+      `/api/v1/apps/${encodeURIComponent(appId)}/uninstall`,
+    )
   }
 
   /**
@@ -398,9 +474,12 @@ export class CloudronClient {
    */
   async getTaskStatus(taskId: string): Promise<TaskStatus> {
     if (!taskId) {
-      throw new CloudronError('taskId is required');
+      throw new CloudronError("taskId is required")
     }
-    return await this.makeRequest<TaskStatus>('GET', `/api/v1/tasks/${encodeURIComponent(taskId)}`);
+    return await this.makeRequest<TaskStatus>(
+      "GET",
+      `/api/v1/tasks/${encodeURIComponent(taskId)}`,
+    )
   }
 
   /**
@@ -410,9 +489,12 @@ export class CloudronClient {
    */
   async cancelTask(taskId: string): Promise<TaskStatus> {
     if (!taskId) {
-      throw new CloudronError('taskId is required');
+      throw new CloudronError("taskId is required")
     }
-    return await this.makeRequest<TaskStatus>('DELETE', `/api/v1/tasks/${encodeURIComponent(taskId)}`);
+    return await this.makeRequest<TaskStatus>(
+      "DELETE",
+      `/api/v1/tasks/${encodeURIComponent(taskId)}`,
+    )
   }
 
   /**
@@ -423,27 +505,34 @@ export class CloudronClient {
    * @param lines - Optional number of log lines to retrieve (default 100, max 1000)
    * @returns Formatted log entries with timestamps and severity levels
    */
-  async getLogs(resourceId: string, type: LogType, lines: number = 100): Promise<LogEntry[]> {
+  async getLogs(
+    resourceId: string,
+    type: LogType,
+    lines: number = 100,
+  ): Promise<LogEntry[]> {
     if (!resourceId) {
-      throw new CloudronError('resourceId is required');
+      throw new CloudronError("resourceId is required")
     }
 
-    if (type !== 'app' && type !== 'service') {
-      throw new CloudronError(`Invalid type: ${type}. Valid options: app, service`);
+    if (type !== "app" && type !== "service") {
+      throw new CloudronError(
+        `Invalid type: ${type}. Valid options: app, service`,
+      )
     }
 
     // Clamp lines between 1 and 1000
-    const clampedLines = Math.max(1, Math.min(1000, lines));
+    const clampedLines = Math.max(1, Math.min(1000, lines))
 
     // Determine endpoint based on type
-    const endpoint = type === 'app'
-      ? `/api/v1/apps/${encodeURIComponent(resourceId)}/logs?lines=${clampedLines}`
-      : `/api/v1/services/${encodeURIComponent(resourceId)}/logs?lines=${clampedLines}`;
+    const endpoint =
+      type === "app"
+        ? `/api/v1/apps/${encodeURIComponent(resourceId)}/logs?lines=${clampedLines}`
+        : `/api/v1/services/${encodeURIComponent(resourceId)}/logs?lines=${clampedLines}`
 
-    const response = await this.makeRequest<LogsResponse>('GET', endpoint);
+    const response = await this.makeRequest<LogsResponse>("GET", endpoint)
 
     // Parse and format log entries
-    return this.parseLogEntries(response.logs || []);
+    return this.parseLogEntries(response.logs || [])
   }
 
   /**
@@ -458,42 +547,57 @@ export class CloudronClient {
       // 3. Simple format: "[INFO] message"
       // 4. Plain text: "message"
 
-      const isoMatch = line.match(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z?)\s+\[?(\w+)\]?\s*(.*)$/);
-      if (isoMatch && isoMatch[1] && isoMatch[2] && isoMatch[3]) {
+      const isoMatch = line.match(
+        /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z?)\s+\[?(\w+)\]?\s*(.*)$/,
+      )
+      if (isoMatch?.[1] && isoMatch[2] && isoMatch[3]) {
         return {
           timestamp: isoMatch[1],
           severity: isoMatch[2].toUpperCase(),
           message: isoMatch[3].trim(),
-        };
+        }
       }
 
-      const syslogMatch = line.match(/^(\w{3}\s+\d{1,2}\s+\d{2}:\d{2}:\d{2})\s+.*?\[\d+\]:\s*\[?(\w+)\]?\s*(.*)$/);
-      if (syslogMatch && syslogMatch[1] && syslogMatch[2] && syslogMatch[3]) {
+      const syslogMatch = line.match(
+        /^(\w{3}\s+\d{1,2}\s+\d{2}:\d{2}:\d{2})\s+.*?\[\d+\]:\s*\[?(\w+)\]?\s*(.*)$/,
+      )
+      if (syslogMatch?.[1] && syslogMatch[2] && syslogMatch[3]) {
         return {
           timestamp: syslogMatch[1],
           severity: syslogMatch[2].toUpperCase(),
           message: syslogMatch[3].trim(),
-        };
+        }
       }
 
-      const simpleMatch = line.match(/^\[?(\w+)\]?\s+(.*)$/);
-      if (simpleMatch && simpleMatch[1] && simpleMatch[2] && ['DEBUG', 'INFO', 'WARN', 'WARNING', 'ERROR', 'FATAL', 'TRACE'].includes(simpleMatch[1].toUpperCase())) {
+      const simpleMatch = line.match(/^\[?(\w+)\]?\s+(.*)$/)
+      if (
+        simpleMatch?.[1] &&
+        simpleMatch[2] &&
+        [
+          "DEBUG",
+          "INFO",
+          "WARN",
+          "WARNING",
+          "ERROR",
+          "FATAL",
+          "TRACE",
+        ].includes(simpleMatch[1].toUpperCase())
+      ) {
         return {
           timestamp: new Date().toISOString(),
           severity: simpleMatch[1].toUpperCase(),
           message: simpleMatch[2].trim(),
-        };
+        }
       }
 
       // Fallback: plain text log line
       return {
         timestamp: new Date().toISOString(),
-        severity: 'INFO',
+        severity: "INFO",
         message: line.trim(),
-      };
-    });
+      }
+    })
   }
-
 
   /**
    * Check available disk space for pre-flight validation
@@ -502,25 +606,26 @@ export class CloudronClient {
    * @returns Storage info with availability and threshold checks
    */
   async checkStorage(requiredMB?: number): Promise<StorageInfo> {
-    const status = await this.getStatus();
+    const status = await this.getStatus()
 
     if (!status.disk) {
-      throw new CloudronError('Disk information not available in system status');
+      throw new CloudronError("Disk information not available in system status")
     }
 
     // Convert bytes to MB
-    const available_mb = Math.floor(status.disk.free / 1024 / 1024);
-    const total_mb = Math.floor(status.disk.total / 1024 / 1024);
-    const used_mb = Math.floor(status.disk.used / 1024 / 1024);
+    const available_mb = Math.floor(status.disk.free / 1024 / 1024)
+    const total_mb = Math.floor(status.disk.total / 1024 / 1024)
+    const used_mb = Math.floor(status.disk.used / 1024 / 1024)
 
     // Check if sufficient space available (if requiredMB provided)
-    const sufficient = requiredMB !== undefined ? available_mb >= requiredMB : true;
+    const sufficient =
+      requiredMB !== undefined ? available_mb >= requiredMB : true
 
     // Warning threshold: available < 10% of total
-    const warning = available_mb < (total_mb * 0.1);
+    const warning = available_mb < total_mb * 0.1
 
     // Critical threshold: available < 5% of total
-    const critical = available_mb < (total_mb * 0.05);
+    const critical = available_mb < total_mb * 0.05
 
     return {
       available_mb,
@@ -529,7 +634,7 @@ export class CloudronClient {
       sufficient,
       warning,
       critical,
-    };
+    }
   }
 
   /**
@@ -538,9 +643,12 @@ export class CloudronClient {
    * @param resourceId - ID of the resource being operated on
    * @returns Validation result with errors, warnings, and recommendations
    */
-  async validateOperation(operation: ValidatableOperation, resourceId: string): Promise<ValidationResult> {
+  async validateOperation(
+    operation: ValidatableOperation,
+    resourceId: string,
+  ): Promise<ValidationResult> {
     if (!resourceId) {
-      throw new CloudronError('resourceId is required for operation validation');
+      throw new CloudronError("resourceId is required for operation validation")
     }
 
     const result: ValidationResult = {
@@ -548,61 +656,73 @@ export class CloudronClient {
       errors: [],
       warnings: [],
       recommendations: [],
-    };
+    }
 
     switch (operation) {
-      case 'uninstall_app':
-        await this.validateUninstallApp(resourceId, result);
-        break;
-      case 'delete_user':
-        await this.validateDeleteUser(resourceId, result);
-        break;
-      case 'restore_backup':
-        await this.validateRestoreBackup(resourceId, result);
-        break;
+      case "uninstall_app":
+        await this.validateUninstallApp(resourceId, result)
+        break
+      case "delete_user":
+        await this.validateDeleteUser(resourceId, result)
+        break
+      case "restore_backup":
+        await this.validateRestoreBackup(resourceId, result)
+        break
       default:
-        throw new CloudronError(`Invalid operation type: ${operation}. Valid options: uninstall_app, delete_user, restore_backup`);
+        throw new CloudronError(
+          `Invalid operation type: ${operation}. Valid options: uninstall_app, delete_user, restore_backup`,
+        )
     }
 
     // Set valid to false if there are any blocking errors
     if (result.errors.length > 0) {
-      result.valid = false;
+      result.valid = false
     }
 
-    return result;
+    return result
   }
 
   /**
    * Validate uninstall_app operation
    * Checks: app exists, no dependent apps, backup exists
    */
-  private async validateUninstallApp(appId: string, result: ValidationResult): Promise<void> {
+  private async validateUninstallApp(
+    appId: string,
+    result: ValidationResult,
+  ): Promise<void> {
     try {
       // Check if app exists
-      const app = await this.getApp(appId);
+      const app = await this.getApp(appId)
 
       // Check app state - warn if pending operations
-      if (app.installationState !== 'installed') {
-        result.warnings.push(`App is in state '${app.installationState}', not 'installed'. Uninstall may fail or behave unexpectedly.`);
+      if (app.installationState !== "installed") {
+        result.warnings.push(
+          `App is in state '${app.installationState}', not 'installed'. Uninstall may fail or behave unexpectedly.`,
+        )
       }
 
       // Recommendation: Create backup before uninstall
-      result.recommendations.push('Create a backup before uninstalling to preserve app data and configuration.');
+      result.recommendations.push(
+        "Create a backup before uninstalling to preserve app data and configuration.",
+      )
 
       // TODO: Check for dependent apps (requires app dependency API endpoint)
       // For now, add as recommendation
-      result.recommendations.push('Verify no other apps depend on this app before uninstalling.');
+      result.recommendations.push(
+        "Verify no other apps depend on this app before uninstalling.",
+      )
 
       // Check if recent backup exists (within last 24 hours)
       // Note: This requires listBackups() which is F07 (not yet implemented)
       // For now, add as recommendation
-      result.recommendations.push('Ensure a recent backup exists for disaster recovery.');
-
+      result.recommendations.push(
+        "Ensure a recent backup exists for disaster recovery.",
+      )
     } catch (error) {
       if (isCloudronError(error) && error.statusCode === 404) {
-        result.errors.push(`App with ID '${appId}' does not exist.`);
+        result.errors.push(`App with ID '${appId}' does not exist.`)
       } else {
-        throw error;
+        throw error
       }
     }
   }
@@ -611,7 +731,10 @@ export class CloudronClient {
    * Validate delete_user operation
    * Checks: user exists, not last admin, not currently logged in
    */
-  private async validateDeleteUser(userId: string, result: ValidationResult): Promise<void> {
+  private async validateDeleteUser(
+    _userId: string,
+    result: ValidationResult,
+  ): Promise<void> {
     // Note: This requires listUsers() API which is F12 (not yet implemented)
     // For Phase 1, we provide basic validation structure
 
@@ -619,48 +742,68 @@ export class CloudronClient {
     // TODO: Check if user is last admin (requires GET /api/v1/users with role filtering)
     // TODO: Check if user is currently logged in (requires session/activity API)
 
-    result.warnings.push('User deletion validation is limited in current implementation.');
-    result.recommendations.push('Verify user is not the last admin before deletion.');
-    result.recommendations.push('Ensure user is not currently logged in before deletion.');
-    result.recommendations.push('Transfer ownership of user data/apps before deletion if needed.');
+    result.warnings.push(
+      "User deletion validation is limited in current implementation.",
+    )
+    result.recommendations.push(
+      "Verify user is not the last admin before deletion.",
+    )
+    result.recommendations.push(
+      "Ensure user is not currently logged in before deletion.",
+    )
+    result.recommendations.push(
+      "Transfer ownership of user data/apps before deletion if needed.",
+    )
   }
 
   /**
    * Validate restore_backup operation
    * Checks: backup exists, backup integrity valid, sufficient storage
    */
-  private async validateRestoreBackup(backupId: string, result: ValidationResult): Promise<void> {
+  private async validateRestoreBackup(
+    _backupId: string,
+    result: ValidationResult,
+  ): Promise<void> {
     // Note: This requires listBackups() API which is F07 (not yet implemented)
     // For Phase 1, we focus on storage validation
 
     try {
       // Check storage sufficiency
       // Assume backup requires at least 1GB of free space for safety margin
-      const RESTORE_MIN_STORAGE_MB = 1024;
-      const storageInfo = await this.checkStorage(RESTORE_MIN_STORAGE_MB);
+      const RESTORE_MIN_STORAGE_MB = 1024
+      const storageInfo = await this.checkStorage(RESTORE_MIN_STORAGE_MB)
 
       if (!storageInfo.sufficient) {
-        result.errors.push(`Insufficient disk space for restore. Available: ${storageInfo.available_mb} MB, Required: ${RESTORE_MIN_STORAGE_MB} MB`);
+        result.errors.push(
+          `Insufficient disk space for restore. Available: ${storageInfo.available_mb} MB, Required: ${RESTORE_MIN_STORAGE_MB} MB`,
+        )
       }
 
       if (storageInfo.critical) {
-        result.errors.push('CRITICAL: Less than 5% disk space remaining. Restore operation blocked.');
+        result.errors.push(
+          "CRITICAL: Less than 5% disk space remaining. Restore operation blocked.",
+        )
       } else if (storageInfo.warning) {
-        result.warnings.push('WARNING: Less than 10% disk space remaining. Monitor disk usage during restore.');
+        result.warnings.push(
+          "WARNING: Less than 10% disk space remaining. Monitor disk usage during restore.",
+        )
       }
 
       // TODO: Check if backup exists (requires GET /api/v1/backups/:id endpoint from F07)
       // TODO: Check backup integrity (requires backup metadata with checksum/status)
 
-      result.recommendations.push('Verify backup integrity before restore.');
-      result.recommendations.push('Ensure all apps are stopped before restore to prevent data corruption.');
-      result.recommendations.push('Create a new backup of current state before restore for rollback capability.');
-
+      result.recommendations.push("Verify backup integrity before restore.")
+      result.recommendations.push(
+        "Ensure all apps are stopped before restore to prevent data corruption.",
+      )
+      result.recommendations.push(
+        "Create a new backup of current state before restore for rollback capability.",
+      )
     } catch (error) {
       if (error instanceof CloudronError) {
-        result.errors.push(`Storage check failed: ${error.message}`);
+        result.errors.push(`Storage check failed: ${error.message}`)
       } else {
-        throw error;
+        throw error
       }
     }
   }
@@ -672,67 +815,79 @@ export class CloudronClient {
    * @param requiredMB - Optional disk space requirement in MB (defaults to 500MB)
    * @returns Validation result with errors and warnings
    */
-  async validateManifest(appId: string, requiredMB: number = 500): Promise<ManifestValidationResult> {
+  async validateManifest(
+    appId: string,
+    requiredMB: number = 500,
+  ): Promise<ManifestValidationResult> {
     if (!appId) {
-      throw new CloudronError('appId is required for manifest validation');
+      throw new CloudronError("appId is required for manifest validation")
     }
 
     const result: ManifestValidationResult = {
       valid: true,
       errors: [],
       warnings: [],
-    };
+    }
 
     try {
       // Step 1: Fetch app manifest from App Store
       // Note: Using searchApps as proxy since GET /api/v1/appstore/:id may not exist
-      const apps = await this.searchApps(appId);
-      const app = apps.find(a => a.id === appId);
+      const apps = await this.searchApps(appId)
+      const app = apps.find(a => a.id === appId)
 
       if (!app) {
-        result.errors.push(`App not found in App Store: ${appId}`);
-        result.valid = false;
-        return result;
+        result.errors.push(`App not found in App Store: ${appId}`)
+        result.valid = false
+        return result
       }
 
       // Step 2: Check F36 storage sufficient for installation
-      const storageInfo = await this.checkStorage(requiredMB);
+      const storageInfo = await this.checkStorage(requiredMB)
 
       if (storageInfo.critical) {
-        result.errors.push(`CRITICAL: Less than 5% disk space remaining (${storageInfo.available_mb}MB available). Installation blocked.`);
+        result.errors.push(
+          `CRITICAL: Less than 5% disk space remaining (${storageInfo.available_mb}MB available). Installation blocked.`,
+        )
       } else if (!storageInfo.sufficient) {
-        result.errors.push(`Insufficient disk space: ${storageInfo.available_mb}MB available, ${requiredMB}MB required.`);
+        result.errors.push(
+          `Insufficient disk space: ${storageInfo.available_mb}MB available, ${requiredMB}MB required.`,
+        )
       } else if (storageInfo.warning) {
-        result.warnings.push(`WARNING: Less than 10% disk space remaining (${storageInfo.available_mb}MB available). Monitor disk usage after installation.`);
+        result.warnings.push(
+          `WARNING: Less than 10% disk space remaining (${storageInfo.available_mb}MB available). Monitor disk usage after installation.`,
+        )
       }
 
       // Step 3: Check dependencies available in catalog
       // Note: Cloudron App Store apps declare dependencies in manifest.addons
       // For MVP, we'll validate basic structure exists
       // Full dependency resolution would require GET /api/v1/appstore/:id/manifest
-      if (app.description && app.description.toLowerCase().includes('requires')) {
-        result.warnings.push('App may have dependencies. Verify all required addons are available.');
+      if (app.description?.toLowerCase().includes("requires")) {
+        result.warnings.push(
+          "App may have dependencies. Verify all required addons are available.",
+        )
       }
 
       // Step 4: Validate configuration schema
       // Note: Full schema validation would require manifest.configSchema from API
       // For MVP, we'll pass this check with a recommendation
-      result.warnings.push('Ensure app configuration matches Cloudron specification after installation.');
-
+      result.warnings.push(
+        "Ensure app configuration matches Cloudron specification after installation.",
+      )
     } catch (error) {
       if (error instanceof CloudronError) {
-        result.errors.push(`Manifest validation failed: ${error.message}`);
+        result.errors.push(`Manifest validation failed: ${error.message}`)
       } else {
-        throw error;
+        throw error
       }
     }
 
     // Set valid to false if there are any blocking errors
     if (result.errors.length > 0) {
-      result.valid = false;
+      result.valid = false
     }
 
-    return result;
+    return result
   }
 
   /**
@@ -743,23 +898,25 @@ export class CloudronClient {
    */
   async installApp(params: InstallAppParams): Promise<string> {
     if (!params.manifestId) {
-      throw new CloudronError('manifestId is required for app installation');
+      throw new CloudronError("manifestId is required for app installation")
     }
     if (!params.location) {
-      throw new CloudronError('location (subdomain) is required for app installation');
+      throw new CloudronError(
+        "location (subdomain) is required for app installation",
+      )
     }
 
     // F23a pre-flight validation: Check manifest validity and storage
-    const validation = await this.validateManifest(params.manifestId);
+    const validation = await this.validateManifest(params.manifestId)
     if (!validation.valid) {
       throw new CloudronError(
-        `Pre-flight validation failed: ${validation.errors.join(', ')}`
-      );
+        `Pre-flight validation failed: ${validation.errors.join(", ")}`,
+      )
     }
 
     // Log warnings but allow installation to proceed
     if (validation.warnings.length > 0) {
-      console.warn(`Installation warnings: ${validation.warnings.join('; ')}`);
+      console.warn(`Installation warnings: ${validation.warnings.join("; ")}`)
     }
 
     // Install app (async operation)
@@ -770,15 +927,19 @@ export class CloudronClient {
       accessRestriction: params.accessRestriction,
       ...(params.portBindings && { portBindings: params.portBindings }),
       ...(params.env && { env: params.env }),
-    };
-
-    const response = await this.makeRequest<{ taskId: string }>('POST', '/api/v1/apps', body);
-
-    if (!response.taskId) {
-      throw new CloudronError('App installation response missing taskId');
     }
 
-    return response.taskId;
+    const response = await this.makeRequest<{ taskId: string }>(
+      "POST",
+      "/api/v1/apps",
+      body,
+    )
+
+    if (!response.taskId) {
+      throw new CloudronError("App installation response missing taskId")
+    }
+
+    return response.taskId
   }
 }
 
@@ -786,5 +947,5 @@ export class CloudronClient {
  * Type guard for CloudronError
  */
 function isCloudronError(error: unknown): error is CloudronError {
-  return error instanceof CloudronError;
+  return error instanceof CloudronError
 }

@@ -4,22 +4,20 @@
  */
 
 // Main client
-export { CloudronClient } from './cloudron-client.js';
-
-// Types
-export type {
-  CloudronClientConfig,
-  App,
-  AppManifest,
-  AppsResponse,
-  AppResponse,
-  SystemStatus,
-} from './types.js';
-
+export { CloudronClient } from "./cloudron-client.js"
 // Errors
 export {
-  CloudronError,
   CloudronAuthError,
-  isCloudronError,
+  CloudronError,
   createErrorFromStatus,
-} from './errors.js';
+  isCloudronError,
+} from "./errors.js"
+// Types
+export type {
+  App,
+  AppManifest,
+  AppResponse,
+  AppsResponse,
+  CloudronClientConfig,
+  SystemStatus,
+} from "./types.js"

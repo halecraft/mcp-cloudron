@@ -3,270 +3,280 @@
  * Validates backup listing, sorting, and error handling
  */
 
-import { CloudronClient } from '../src/cloudron-client.js';
-import type { Backup, BackupsResponse } from '../src/types.js';
-import { CloudronError, CloudronAuthError } from '../src/errors.js';
+import { CloudronClient } from "../src/cloudron-client.js"
+import { CloudronError } from "../src/errors.js"
+import type { Backup } from "../src/types.js"
 import {
+  cleanupTestEnv,
   createMockFetch,
   setupTestEnv,
-  cleanupTestEnv,
-} from './helpers/cloudron-mock.js';
+} from "./helpers/cloudron-mock.js"
 
-describe('cloudron_list_backups tool', () => {
-  let originalFetch: typeof global.fetch;
+describe("cloudron_list_backups tool", () => {
+  let originalFetch: typeof global.fetch
 
   beforeAll(() => {
-    setupTestEnv();
-    originalFetch = global.fetch;
-  });
+    setupTestEnv()
+    originalFetch = global.fetch
+  })
 
   afterAll(() => {
-    cleanupTestEnv();
-    global.fetch = originalFetch;
-  });
+    cleanupTestEnv()
+    global.fetch = originalFetch
+  })
 
   beforeEach(() => {
-    jest.clearAllMocks();
-  });
+    jest.clearAllMocks()
+  })
 
-  describe('successful backup listing', () => {
-    it('should list all backups sorted by timestamp (newest first)', async () => {
+  describe("successful backup listing", () => {
+    it("should list all backups sorted by timestamp (newest first)", async () => {
       const mockBackups: Backup[] = [
         {
-          id: 'backup-1',
-          creationTime: '2025-12-20T10:00:00Z',
-          version: '8.2.0',
-          type: 'box',
-          state: 'uploaded',
+          id: "backup-1",
+          creationTime: "2025-12-20T10:00:00Z",
+          version: "8.2.0",
+          type: "box",
+          state: "uploaded",
           size: 5368709120, // 5GB in bytes
           appCount: 12,
         },
         {
-          id: 'backup-2',
-          creationTime: '2025-12-23T15:30:00Z',
-          version: '8.2.0',
-          type: 'box',
-          state: 'uploaded',
+          id: "backup-2",
+          creationTime: "2025-12-23T15:30:00Z",
+          version: "8.2.0",
+          type: "box",
+          state: "uploaded",
           size: 6442450944, // 6GB in bytes
           appCount: 15,
         },
         {
-          id: 'backup-3',
-          creationTime: '2025-12-21T08:00:00Z',
-          version: '8.2.0',
-          type: 'box',
-          state: 'uploaded',
+          id: "backup-3",
+          creationTime: "2025-12-21T08:00:00Z",
+          version: "8.2.0",
+          type: "box",
+          state: "uploaded",
           size: 5905580032, // 5.5GB in bytes
           appCount: 13,
         },
-      ];
+      ]
 
       global.fetch = createMockFetch({
-        'GET https://my.example.com/api/v1/backups': {
+        "GET https://my.example.com/api/v1/backups": {
           ok: true,
           status: 200,
           data: { backups: mockBackups },
         },
-      }) as any;
+      })
 
-      const client = new CloudronClient();
-      const backups = await client.listBackups();
+      const client = new CloudronClient()
+      const backups = await client.listBackups()
 
       // Verify backups are sorted by timestamp (newest first)
-      expect(backups).toHaveLength(3);
-      expect(backups[0].id).toBe('backup-2'); // 2025-12-23 (newest)
-      expect(backups[1].id).toBe('backup-3'); // 2025-12-21
-      expect(backups[2].id).toBe('backup-1'); // 2025-12-20 (oldest)
-    });
+      expect(backups).toHaveLength(3)
+      expect(backups[0].id).toBe("backup-2") // 2025-12-23 (newest)
+      expect(backups[1].id).toBe("backup-3") // 2025-12-21
+      expect(backups[2].id).toBe("backup-1") // 2025-12-20 (oldest)
+    })
 
-    it('should include all backup metadata fields', async () => {
+    it("should include all backup metadata fields", async () => {
       const mockBackup: Backup = {
-        id: 'backup-full-metadata',
-        creationTime: '2025-12-23T10:00:00Z',
-        version: '8.2.0',
-        type: 'box',
-        state: 'uploaded',
+        id: "backup-full-metadata",
+        creationTime: "2025-12-23T10:00:00Z",
+        version: "8.2.0",
+        type: "box",
+        state: "uploaded",
         size: 1073741824, // 1GB
         appCount: 5,
-        dependsOn: ['backup-previous'],
-      };
+        dependsOn: ["backup-previous"],
+      }
 
       global.fetch = createMockFetch({
-        'GET https://my.example.com/api/v1/backups': {
+        "GET https://my.example.com/api/v1/backups": {
           ok: true,
           status: 200,
           data: { backups: [mockBackup] },
         },
-      }) as any;
+      })
 
-      const client = new CloudronClient();
-      const backups = await client.listBackups();
+      const client = new CloudronClient()
+      const backups = await client.listBackups()
 
-      expect(backups).toHaveLength(1);
+      expect(backups).toHaveLength(1)
       expect(backups[0]).toMatchObject({
-        id: 'backup-full-metadata',
-        creationTime: '2025-12-23T10:00:00Z',
-        version: '8.2.0',
-        type: 'box',
-        state: 'uploaded',
+        id: "backup-full-metadata",
+        creationTime: "2025-12-23T10:00:00Z",
+        version: "8.2.0",
+        type: "box",
+        state: "uploaded",
         size: 1073741824,
         appCount: 5,
-        dependsOn: ['backup-previous'],
-      });
-    });
+        dependsOn: ["backup-previous"],
+      })
+    })
 
-    it('should handle backups with different states', async () => {
+    it("should handle backups with different states", async () => {
       const mockBackups: Backup[] = [
         {
-          id: 'backup-creating',
-          creationTime: '2025-12-23T10:00:00Z',
-          version: '8.2.0',
-          type: 'box',
-          state: 'creating',
+          id: "backup-creating",
+          creationTime: "2025-12-23T10:00:00Z",
+          version: "8.2.0",
+          type: "box",
+          state: "creating",
         },
         {
-          id: 'backup-error',
-          creationTime: '2025-12-23T09:00:00Z',
-          version: '8.2.0',
-          type: 'box',
-          state: 'error',
-          errorMessage: 'Insufficient disk space',
+          id: "backup-error",
+          creationTime: "2025-12-23T09:00:00Z",
+          version: "8.2.0",
+          type: "box",
+          state: "error",
+          errorMessage: "Insufficient disk space",
         },
         {
-          id: 'backup-uploaded',
-          creationTime: '2025-12-23T08:00:00Z',
-          version: '8.2.0',
-          type: 'box',
-          state: 'uploaded',
+          id: "backup-uploaded",
+          creationTime: "2025-12-23T08:00:00Z",
+          version: "8.2.0",
+          type: "box",
+          state: "uploaded",
         },
-      ];
+      ]
 
       global.fetch = createMockFetch({
-        'GET https://my.example.com/api/v1/backups': {
+        "GET https://my.example.com/api/v1/backups": {
           ok: true,
           status: 200,
           data: { backups: mockBackups },
         },
-      }) as any;
+      })
 
-      const client = new CloudronClient();
-      const backups = await client.listBackups();
+      const client = new CloudronClient()
+      const backups = await client.listBackups()
 
-      expect(backups).toHaveLength(3);
-      expect(backups.find(b => b.id === 'backup-creating')?.state).toBe('creating');
-      expect(backups.find(b => b.id === 'backup-error')?.state).toBe('error');
-      expect(backups.find(b => b.id === 'backup-error')?.errorMessage).toBe('Insufficient disk space');
-      expect(backups.find(b => b.id === 'backup-uploaded')?.state).toBe('uploaded');
-    });
+      expect(backups).toHaveLength(3)
+      expect(backups.find(b => b.id === "backup-creating")?.state).toBe(
+        "creating",
+      )
+      expect(backups.find(b => b.id === "backup-error")?.state).toBe("error")
+      expect(backups.find(b => b.id === "backup-error")?.errorMessage).toBe(
+        "Insufficient disk space",
+      )
+      expect(backups.find(b => b.id === "backup-uploaded")?.state).toBe(
+        "uploaded",
+      )
+    })
 
-    it('should handle backups with app and box types', async () => {
+    it("should handle backups with app and box types", async () => {
       const mockBackups: Backup[] = [
         {
-          id: 'backup-box',
-          creationTime: '2025-12-23T10:00:00Z',
-          version: '8.2.0',
-          type: 'box',
-          state: 'uploaded',
+          id: "backup-box",
+          creationTime: "2025-12-23T10:00:00Z",
+          version: "8.2.0",
+          type: "box",
+          state: "uploaded",
         },
         {
-          id: 'backup-app',
-          creationTime: '2025-12-23T09:00:00Z',
-          version: '8.2.0',
-          type: 'app',
-          state: 'uploaded',
+          id: "backup-app",
+          creationTime: "2025-12-23T09:00:00Z",
+          version: "8.2.0",
+          type: "app",
+          state: "uploaded",
         },
-      ];
+      ]
 
       global.fetch = createMockFetch({
-        'GET https://my.example.com/api/v1/backups': {
+        "GET https://my.example.com/api/v1/backups": {
           ok: true,
           status: 200,
           data: { backups: mockBackups },
         },
-      }) as any;
+      })
 
-      const client = new CloudronClient();
-      const backups = await client.listBackups();
+      const client = new CloudronClient()
+      const backups = await client.listBackups()
 
-      expect(backups).toHaveLength(2);
-      expect(backups.find(b => b.id === 'backup-box')?.type).toBe('box');
-      expect(backups.find(b => b.id === 'backup-app')?.type).toBe('app');
-    });
-  });
+      expect(backups).toHaveLength(2)
+      expect(backups.find(b => b.id === "backup-box")?.type).toBe("box")
+      expect(backups.find(b => b.id === "backup-app")?.type).toBe("app")
+    })
+  })
 
-  describe('empty backup list', () => {
-    it('should return empty array when no backups exist', async () => {
+  describe("empty backup list", () => {
+    it("should return empty array when no backups exist", async () => {
       global.fetch = createMockFetch({
-        'GET https://my.example.com/api/v1/backups': {
+        "GET https://my.example.com/api/v1/backups": {
           ok: true,
           status: 200,
           data: { backups: [] },
         },
-      }) as any;
+      })
 
-      const client = new CloudronClient();
-      const backups = await client.listBackups();
+      const client = new CloudronClient()
+      const backups = await client.listBackups()
 
-      expect(backups).toEqual([]);
-      expect(backups).toHaveLength(0);
-    });
-  });
+      expect(backups).toEqual([])
+      expect(backups).toHaveLength(0)
+    })
+  })
 
-  describe('error handling', () => {
-    it('should handle API authentication error', async () => {
+  describe("error handling", () => {
+    it("should handle API authentication error", async () => {
       global.fetch = createMockFetch({
-        'GET https://my.example.com/api/v1/backups': {
+        "GET https://my.example.com/api/v1/backups": {
           ok: false,
           status: 401,
-          data: { message: 'Invalid API token' },
+          data: { message: "Invalid API token" },
         },
-      }) as any;
+      })
 
-      const client = new CloudronClient();
-      await expect(client.listBackups()).rejects.toThrow('Invalid API token');
-    });
+      const client = new CloudronClient()
+      await expect(client.listBackups()).rejects.toThrow("Invalid API token")
+    })
 
-    it('should handle API server error', async () => {
+    it("should handle API server error", async () => {
       global.fetch = createMockFetch({
-        'GET https://my.example.com/api/v1/backups': {
+        "GET https://my.example.com/api/v1/backups": {
           ok: false,
           status: 500,
-          data: { message: 'Database connection failed' },
+          data: { message: "Database connection failed" },
         },
-      }) as any;
+      })
 
-      const client = new CloudronClient();
-      await expect(client.listBackups()).rejects.toThrow('Database connection failed');
-    });
+      const client = new CloudronClient()
+      await expect(client.listBackups()).rejects.toThrow(
+        "Database connection failed",
+      )
+    })
 
-    it('should handle network error', async () => {
-      global.fetch = jest.fn().mockRejectedValue(new Error('Network timeout'));
+    it("should handle network error", async () => {
+      global.fetch = jest.fn().mockRejectedValue(new Error("Network timeout"))
 
-      const client = new CloudronClient();
-      await expect(client.listBackups()).rejects.toThrow(CloudronError);
-      await expect(client.listBackups()).rejects.toThrow('Network error: Network timeout');
-    });
-  });
+      const client = new CloudronClient()
+      await expect(client.listBackups()).rejects.toThrow(CloudronError)
+      await expect(client.listBackups()).rejects.toThrow(
+        "Network error: Network timeout",
+      )
+    })
+  })
 
-  describe('environment variable validation', () => {
-    it('should require CLOUDRON_BASE_URL', () => {
-      const originalBaseUrl = process.env.CLOUDRON_BASE_URL;
-      delete process.env.CLOUDRON_BASE_URL;
-      process.env.CLOUDRON_API_TOKEN = 'test-token';
+  describe("environment variable validation", () => {
+    it("should require CLOUDRON_BASE_URL", () => {
+      const originalBaseUrl = process.env.CLOUDRON_BASE_URL
+      delete process.env.CLOUDRON_BASE_URL
+      process.env.CLOUDRON_API_TOKEN = "test-token"
 
-      expect(() => new CloudronClient()).toThrow('CLOUDRON_BASE_URL not set');
+      expect(() => new CloudronClient()).toThrow("CLOUDRON_BASE_URL not set")
 
-      process.env.CLOUDRON_BASE_URL = originalBaseUrl;
-    });
+      process.env.CLOUDRON_BASE_URL = originalBaseUrl
+    })
 
-    it('should require CLOUDRON_API_TOKEN', () => {
-      const originalToken = process.env.CLOUDRON_API_TOKEN;
-      process.env.CLOUDRON_BASE_URL = 'https://test.cloudron.io';
-      delete process.env.CLOUDRON_API_TOKEN;
+    it("should require CLOUDRON_API_TOKEN", () => {
+      const originalToken = process.env.CLOUDRON_API_TOKEN
+      process.env.CLOUDRON_BASE_URL = "https://test.cloudron.io"
+      delete process.env.CLOUDRON_API_TOKEN
 
-      expect(() => new CloudronClient()).toThrow('CLOUDRON_API_TOKEN not set');
+      expect(() => new CloudronClient()).toThrow("CLOUDRON_API_TOKEN not set")
 
-      process.env.CLOUDRON_API_TOKEN = originalToken;
-    });
-  });
-});
+      process.env.CLOUDRON_API_TOKEN = originalToken
+    })
+  })
+})

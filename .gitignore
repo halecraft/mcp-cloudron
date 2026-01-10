@@ -2,3 +2,11 @@ node_modules/
 dist/
 .env
 .mcp.json
+
+# Test artifacts
+tests/**/*.js
+tests/**/*.d.ts
+tests/**/*.map
+*.d.mts
+*.d.mts.map
+coverage/
