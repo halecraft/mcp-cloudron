@@ -8,7 +8,7 @@
 		"tests",
 		"coverage",
 		"scripts",
-		"jest.config.cjs"
+		"vitest.config.ts"
 	],
 	"compilerOptions": {
 		// File Layout

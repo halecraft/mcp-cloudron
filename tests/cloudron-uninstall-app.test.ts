@@ -1,3 +1,12 @@
+import {
+  afterAll,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest"
 /**
  * Tests for cloudron_uninstall_app tool
  * DESTRUCTIVE OPERATION with pre-flight validation
@@ -31,7 +40,7 @@ describe("cloudron_uninstall_app (F04)", () => {
 
   beforeEach(() => {
     client = new CloudronClient(baseUrl, "test-token-123")
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   describe("Pre-flight validation (F37 integration)", () => {
@@ -264,7 +273,7 @@ describe("cloudron_uninstall_app (F04)", () => {
       const appId = "app-anchor-test"
       const testApp = mockApp({ id: appId, installationState: "installed" })
 
-      const fetchSpy = jest.fn((url: string, options?: any) => {
+      const fetchSpy = vi.fn((url: string, options?: any) => {
         const method = options?.method || "GET"
         if (method === "GET" && url.includes(appId)) {
           return Promise.resolve(mockSuccessResponse(testApp))
@@ -291,7 +300,7 @@ describe("cloudron_uninstall_app (F04)", () => {
     it("F37 validation failure prevents uninstall (returns error, no API call made)", async () => {
       const appId = "blocked-app"
 
-      const fetchSpy = jest
+      const fetchSpy = vi
         .fn()
         .mockResolvedValue(mockErrorResponse(404, "App not found"))
 

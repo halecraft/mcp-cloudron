@@ -1,3 +1,12 @@
+import {
+  afterAll,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest"
 /**
  * Tests for cloudron_create_user MCP tool
  * Create user with role assignment in single atomic operation
@@ -25,7 +34,7 @@ describe("cloudron_create_user tool", () => {
   })
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   // Test Anchor 1: POST /api/v1/users creates user with role atomically
@@ -260,7 +269,7 @@ describe("cloudron_create_user tool", () => {
   it("should verify role is set atomically in POST body", async () => {
     let capturedRequestBody: any = null
 
-    global.fetch = jest.fn(async (_url, options) => {
+    global.fetch = vi.fn(async (_url, options) => {
       if (options?.body) {
         capturedRequestBody = JSON.parse(options.body as string)
       }
@@ -350,7 +359,7 @@ describe("cloudron_create_user tool", () => {
   })
 
   it("should handle network error", async () => {
-    global.fetch = jest.fn(() =>
+    global.fetch = vi.fn(() =>
       Promise.reject(new Error("Network connection failed")),
     )
 

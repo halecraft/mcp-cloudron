@@ -1,3 +1,12 @@
+import {
+  afterAll,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest"
 /**
  * Test cloudron_create_backup tool
  * Validates backup creation with pre-flight storage check and task tracking
@@ -26,7 +35,7 @@ describe("cloudron_create_backup tool", () => {
   })
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   it("should create backup and return task ID when sufficient storage", async () => {
@@ -94,7 +103,7 @@ describe("cloudron_create_backup tool", () => {
       },
     }
 
-    const mockFetch = jest.fn().mockResolvedValueOnce({
+    const mockFetch = vi.fn().mockResolvedValueOnce({
       ok: true,
       status: 200,
       json: async () => lowStorageStatus,
@@ -195,7 +204,7 @@ describe("cloudron_create_backup tool", () => {
   })
 
   it("should use POST HTTP method and correct endpoint", async () => {
-    const mockFetch = jest
+    const mockFetch = vi
       .fn()
       .mockResolvedValueOnce({
         ok: true,
@@ -249,7 +258,7 @@ describe("cloudron_create_backup tool", () => {
       },
     })
 
-    const consoleWarnSpy = jest.spyOn(console, "warn").mockImplementation()
+    const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation()
 
     const client = new CloudronClient()
     const taskId = await client.createBackup()

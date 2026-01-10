@@ -1,3 +1,4 @@
+import { beforeEach, describe, expect, it, vi } from "vitest"
 /**
  * cloudron_configure_app tool tests
  * Test anchors:
@@ -19,7 +20,7 @@ import {
 } from "./helpers/cloudron-mock.js"
 
 // Mock fetch globally
-global.fetch = jest.fn() as jest.MockedFunction<typeof fetch>
+global.fetch = vi.fn() as vi.MockedFunction<typeof fetch>
 
 describe("F05: cloudron_configure_app", () => {
   let client: CloudronClient
@@ -28,7 +29,7 @@ describe("F05: cloudron_configure_app", () => {
 
   beforeEach(() => {
     client = new CloudronClient({ baseUrl: mockBaseUrl, token: mockToken })
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   describe("Config validation", () => {
@@ -86,9 +87,9 @@ describe("F05: cloudron_configure_app", () => {
         restartRequired: false,
       }
 
-      ;(
-        global.fetch as jest.MockedFunction<typeof fetch>
-      ).mockResolvedValueOnce(mockSuccessResponse(mockResponse))
+      ;(global.fetch as vi.MockedFunction<typeof fetch>).mockResolvedValueOnce(
+        mockSuccessResponse(mockResponse),
+      )
 
       const result = await client.configureApp("app-123", {
         accessRestriction: null,
@@ -122,9 +123,9 @@ describe("F05: cloudron_configure_app", () => {
         restartRequired: true,
       }
 
-      ;(
-        global.fetch as jest.MockedFunction<typeof fetch>
-      ).mockResolvedValueOnce(mockSuccessResponse(mockResponse))
+      ;(global.fetch as vi.MockedFunction<typeof fetch>).mockResolvedValueOnce(
+        mockSuccessResponse(mockResponse),
+      )
 
       const result = await client.configureApp("app-123", config)
 
@@ -156,9 +157,9 @@ describe("F05: cloudron_configure_app", () => {
         restartRequired: true,
       }
 
-      ;(
-        global.fetch as jest.MockedFunction<typeof fetch>
-      ).mockResolvedValueOnce(mockSuccessResponse(mockResponse))
+      ;(global.fetch as vi.MockedFunction<typeof fetch>).mockResolvedValueOnce(
+        mockSuccessResponse(mockResponse),
+      )
 
       const result = await client.configureApp("app-123", config)
 
@@ -174,9 +175,9 @@ describe("F05: cloudron_configure_app", () => {
         restartRequired: true,
       }
 
-      ;(
-        global.fetch as jest.MockedFunction<typeof fetch>
-      ).mockResolvedValueOnce(mockSuccessResponse(mockResponse))
+      ;(global.fetch as vi.MockedFunction<typeof fetch>).mockResolvedValueOnce(
+        mockSuccessResponse(mockResponse),
+      )
 
       const result = await client.configureApp("app-123", config)
       expect(result.app.memoryLimit).toBe(8192)
@@ -197,9 +198,9 @@ describe("F05: cloudron_configure_app", () => {
         restartRequired: false,
       }
 
-      ;(
-        global.fetch as jest.MockedFunction<typeof fetch>
-      ).mockResolvedValueOnce(mockSuccessResponse(mockResponse))
+      ;(global.fetch as vi.MockedFunction<typeof fetch>).mockResolvedValueOnce(
+        mockSuccessResponse(mockResponse),
+      )
 
       const result = await client.configureApp("app-123", config)
 
@@ -215,9 +216,9 @@ describe("F05: cloudron_configure_app", () => {
         restartRequired: false,
       }
 
-      ;(
-        global.fetch as jest.MockedFunction<typeof fetch>
-      ).mockResolvedValueOnce(mockSuccessResponse(mockResponse))
+      ;(global.fetch as vi.MockedFunction<typeof fetch>).mockResolvedValueOnce(
+        mockSuccessResponse(mockResponse),
+      )
 
       const result = await client.configureApp("app-123", config)
       expect(result.app.accessRestriction).toBeNull()
@@ -243,9 +244,9 @@ describe("F05: cloudron_configure_app", () => {
         restartRequired: true,
       }
 
-      ;(
-        global.fetch as jest.MockedFunction<typeof fetch>
-      ).mockResolvedValueOnce(mockSuccessResponse(mockResponse))
+      ;(global.fetch as vi.MockedFunction<typeof fetch>).mockResolvedValueOnce(
+        mockSuccessResponse(mockResponse),
+      )
 
       const result = await client.configureApp("app-123", config)
 
@@ -264,9 +265,9 @@ describe("F05: cloudron_configure_app", () => {
         restartRequired: true,
       }
 
-      ;(
-        global.fetch as jest.MockedFunction<typeof fetch>
-      ).mockResolvedValueOnce(mockSuccessResponse(mockResponse))
+      ;(global.fetch as vi.MockedFunction<typeof fetch>).mockResolvedValueOnce(
+        mockSuccessResponse(mockResponse),
+      )
 
       const result = await client.configureApp("app-123", config)
       expect(result.restartRequired).toBe(true)
@@ -280,9 +281,9 @@ describe("F05: cloudron_configure_app", () => {
         restartRequired: false,
       }
 
-      ;(
-        global.fetch as jest.MockedFunction<typeof fetch>
-      ).mockResolvedValueOnce(mockSuccessResponse(mockResponse))
+      ;(global.fetch as vi.MockedFunction<typeof fetch>).mockResolvedValueOnce(
+        mockSuccessResponse(mockResponse),
+      )
 
       const result = await client.configureApp("app-123", config)
       expect(result.restartRequired).toBe(false)
@@ -291,9 +292,9 @@ describe("F05: cloudron_configure_app", () => {
 
   describe("Error handling", () => {
     it("should handle 404 Not Found for invalid appId", async () => {
-      ;(
-        global.fetch as jest.MockedFunction<typeof fetch>
-      ).mockResolvedValueOnce(mockErrorResponse(404, "App not found"))
+      ;(global.fetch as vi.MockedFunction<typeof fetch>).mockResolvedValueOnce(
+        mockErrorResponse(404, "App not found"),
+      )
 
       await expect(
         client.configureApp("invalid-app", { env: { KEY: "value" } }),
@@ -301,9 +302,7 @@ describe("F05: cloudron_configure_app", () => {
     })
 
     it("should handle 400 Bad Request for invalid config", async () => {
-      ;(
-        global.fetch as jest.MockedFunction<typeof fetch>
-      ).mockResolvedValueOnce(
+      ;(global.fetch as vi.MockedFunction<typeof fetch>).mockResolvedValueOnce(
         mockErrorResponse(
           400,
           "Invalid configuration: memoryLimit must be between 128 and 8192 MB",
@@ -316,9 +315,9 @@ describe("F05: cloudron_configure_app", () => {
     })
 
     it("should handle 401 Unauthorized", async () => {
-      ;(
-        global.fetch as jest.MockedFunction<typeof fetch>
-      ).mockResolvedValueOnce(mockErrorResponse(401, "Invalid credentials"))
+      ;(global.fetch as vi.MockedFunction<typeof fetch>).mockResolvedValueOnce(
+        mockErrorResponse(401, "Invalid credentials"),
+      )
 
       await expect(
         client.configureApp("app-123", { env: { KEY: "value" } }),
@@ -326,9 +325,9 @@ describe("F05: cloudron_configure_app", () => {
     })
 
     it("should handle 500 Internal Server Error", async () => {
-      ;(
-        global.fetch as jest.MockedFunction<typeof fetch>
-      ).mockResolvedValueOnce(mockErrorResponse(500, "Internal server error"))
+      ;(global.fetch as vi.MockedFunction<typeof fetch>).mockResolvedValueOnce(
+        mockErrorResponse(500, "Internal server error"),
+      )
 
       await expect(
         client.configureApp("app-123", { env: { KEY: "value" } }),
@@ -345,9 +344,9 @@ describe("F05: cloudron_configure_app", () => {
         restartRequired: false,
       }
 
-      ;(
-        global.fetch as jest.MockedFunction<typeof fetch>
-      ).mockResolvedValueOnce(mockSuccessResponse(mockResponse))
+      ;(global.fetch as vi.MockedFunction<typeof fetch>).mockResolvedValueOnce(
+        mockSuccessResponse(mockResponse),
+      )
 
       await client.configureApp("app-123", config)
 
@@ -371,9 +370,9 @@ describe("F05: cloudron_configure_app", () => {
         restartRequired: false,
       }
 
-      ;(
-        global.fetch as jest.MockedFunction<typeof fetch>
-      ).mockResolvedValueOnce(mockSuccessResponse(mockResponse))
+      ;(global.fetch as vi.MockedFunction<typeof fetch>).mockResolvedValueOnce(
+        mockSuccessResponse(mockResponse),
+      )
 
       await client.configureApp("app-with-special-chars", config)
 

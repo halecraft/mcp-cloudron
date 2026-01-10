@@ -1,10 +1,11 @@
 /**
- * Global test setup for Jest
+ * Global test setup for Vitest
  *
- * This file is loaded via Jest's setupFilesAfterEnv configuration.
+ * This file is loaded via Vitest's setupFiles configuration.
  * It provides common setup/teardown for all tests.
  */
 
+import { afterAll, afterEach, beforeAll, vi } from "vitest"
 import { cleanupTestEnv, setupTestEnv } from "./cloudron-mock"
 
 // Store original fetch for restoration
@@ -20,6 +21,6 @@ afterAll(() => {
   global.fetch = originalFetch
 })
 
-beforeEach(() => {
-  jest.clearAllMocks()
+afterEach(() => {
+  vi.clearAllMocks()
 })

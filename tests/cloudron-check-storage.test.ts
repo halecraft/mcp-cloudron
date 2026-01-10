@@ -1,3 +1,12 @@
+import {
+  afterAll,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest"
 /**
  * Test cloudron_check_storage tool
  * Validates disk space checking with warning and critical thresholds
@@ -25,7 +34,7 @@ describe("cloudron_check_storage tool", () => {
   })
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   it("should return storage info without requiredMB parameter", async () => {
@@ -196,7 +205,7 @@ describe("cloudron_check_storage tool", () => {
   })
 
   it("should handle network error", async () => {
-    global.fetch = jest.fn(() =>
+    global.fetch = vi.fn(() =>
       Promise.reject(new Error("Network connection failed")),
     )
 

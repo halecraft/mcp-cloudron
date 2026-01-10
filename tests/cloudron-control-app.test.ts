@@ -1,3 +1,4 @@
+import { beforeEach, describe, expect, it, vi } from "vitest"
 /**
  * Test suite for cloudron_control_app tool
  * Merged F01/F02/F03 into single tool with action enum
@@ -12,14 +13,14 @@ import {
 } from "./helpers/cloudron-mock.js"
 
 // Mock fetch globally
-global.fetch = jest.fn()
+global.fetch = vi.fn()
 
 describe("cloudron_control_app tool", () => {
   let client: CloudronClient
-  const mockFetch = global.fetch as jest.MockedFunction<typeof fetch>
+  const mockFetch = global.fetch as vi.MockedFunction<typeof fetch>
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
     client = new CloudronClient({
       baseUrl: "https://test.cloudron.io",
       token: "test-token",

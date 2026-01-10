@@ -1,3 +1,12 @@
+import {
+  afterAll,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest"
 /**
  * Test cloudron_search_apps tool
  * Search Cloudron App Store for available applications
@@ -55,7 +64,7 @@ describe("cloudron_search_apps tool", () => {
   })
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   it("should search apps with query and return sorted results", async () => {

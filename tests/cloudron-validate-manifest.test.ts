@@ -1,3 +1,4 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 /**
  * cloudron_validate_manifest tool tests
  * Test anchors:
@@ -20,10 +21,10 @@ import {
 
 describe("cloudron_validate_manifest", () => {
   let client: CloudronClient
-  let mockFetch: jest.Mock
+  let mockFetch: vi.Mock
 
   beforeEach(() => {
-    mockFetch = jest.fn()
+    mockFetch = vi.fn()
     global.fetch = mockFetch
 
     client = new CloudronClient({
@@ -33,7 +34,7 @@ describe("cloudron_validate_manifest", () => {
   })
 
   afterEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   describe("Test Anchor: Manifest schema validated", () => {

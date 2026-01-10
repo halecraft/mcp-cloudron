@@ -1,3 +1,12 @@
+import {
+  afterAll,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest"
 /**
  * Test cloudron_install_app tool
  * Validates app installation with pre-flight manifest validation and storage check
@@ -26,7 +35,7 @@ describe("cloudron_install_app", () => {
   })
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   describe("Test Anchor: Pre-flight validation", () => {
@@ -183,7 +192,7 @@ describe("cloudron_install_app", () => {
     })
 
     it("should NOT call installation API when pre-flight validation fails", async () => {
-      const mockFetch = jest.fn().mockResolvedValueOnce({
+      const mockFetch = vi.fn().mockResolvedValueOnce({
         ok: true,
         status: 200,
         json: async () => ({ apps: [] }), // App not found
@@ -256,7 +265,7 @@ describe("cloudron_install_app", () => {
     })
 
     it("should install app with optional parameters (env, portBindings, accessRestriction)", async () => {
-      const mockFetch = jest
+      const mockFetch = vi
         .fn()
         .mockResolvedValueOnce({
           ok: true,
@@ -549,7 +558,7 @@ describe("cloudron_install_app", () => {
     })
 
     it("should use POST HTTP method and correct endpoint", async () => {
-      const mockFetch = jest
+      const mockFetch = vi
         .fn()
         .mockResolvedValueOnce({
           ok: true,
@@ -604,7 +613,7 @@ describe("cloudron_install_app", () => {
 
   describe("Integration: Full installation workflow", () => {
     it("should complete full installation workflow with all checks", async () => {
-      const consoleWarnSpy = jest.spyOn(console, "warn").mockImplementation()
+      const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation()
 
       global.fetch = createMockFetch({
         "GET https://my.example.com/api/v1/appstore/apps?search=io.example.app":

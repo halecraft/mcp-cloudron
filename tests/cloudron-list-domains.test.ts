@@ -1,3 +1,12 @@
+import {
+  afterAll,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest"
 /**
  * Tests for cloudron_list_domains tool
  * Validates GET /api/v1/domains endpoint
@@ -25,7 +34,7 @@ describe("cloudron_list_domains tool", () => {
   })
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   // Test Anchor 1: GET /api/v1/domains returns domain list

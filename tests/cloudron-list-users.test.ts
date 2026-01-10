@@ -1,3 +1,12 @@
+import {
+  afterAll,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest"
 /**
  * Tests for cloudron_list_users MCP tool
  */
@@ -24,7 +33,7 @@ describe("cloudron_list_users tool", () => {
   })
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   it("should list all users successfully", async () => {
@@ -174,7 +183,7 @@ describe("cloudron_list_users tool", () => {
   })
 
   it("should handle network error", async () => {
-    global.fetch = jest.fn(() =>
+    global.fetch = vi.fn(() =>
       Promise.reject(new Error("Network connection failed")),
     )
 

@@ -1,3 +1,12 @@
+import {
+  afterAll,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest"
 /**
  * Tests for cloudron_list_backups MCP tool
  * Validates backup listing, sorting, and error handling
@@ -26,7 +35,7 @@ describe("cloudron_list_backups tool", () => {
   })
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   describe("successful backup listing", () => {
@@ -248,7 +257,7 @@ describe("cloudron_list_backups tool", () => {
     })
 
     it("should handle network error", async () => {
-      global.fetch = jest.fn().mockRejectedValue(new Error("Network timeout"))
+      global.fetch = vi.fn().mockRejectedValue(new Error("Network timeout"))
 
       const client = new CloudronClient()
       await expect(client.listBackups()).rejects.toThrow(CloudronError)

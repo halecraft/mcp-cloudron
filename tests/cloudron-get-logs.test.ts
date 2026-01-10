@@ -1,3 +1,4 @@
+import { beforeEach, describe, expect, it, vi } from "vitest"
 /**
  * Test Suite: cloudron_get_logs
  * Validates app and service log retrieval with type parameter
@@ -19,13 +20,13 @@ import {
 } from "./helpers/cloudron-mock.js"
 
 // Mock fetch globally
-global.fetch = jest.fn()
+global.fetch = vi.fn()
 
 describe("cloudron_get_logs", () => {
   let client: CloudronClient
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
     client = new CloudronClient({
       baseUrl: "https://test.cloudron.io",
       token: "test-token",
@@ -42,7 +43,7 @@ describe("cloudron_get_logs", () => {
         ],
       }
 
-      ;(global.fetch as jest.Mock).mockResolvedValueOnce(
+      ;(global.fetch as vi.Mock).mockResolvedValueOnce(
         mockSuccessResponse(mockLogs),
       )
 
@@ -84,7 +85,7 @@ describe("cloudron_get_logs", () => {
         ],
       }
 
-      ;(global.fetch as jest.Mock).mockResolvedValueOnce(
+      ;(global.fetch as vi.Mock).mockResolvedValueOnce(
         mockSuccessResponse(mockLogs),
       )
 
@@ -98,7 +99,7 @@ describe("cloudron_get_logs", () => {
 
     it("should clamp lines parameter to max 1000", async () => {
       const mockLogs = { logs: [] }
-      ;(global.fetch as jest.Mock).mockResolvedValueOnce(
+      ;(global.fetch as vi.Mock).mockResolvedValueOnce(
         mockSuccessResponse(mockLogs),
       )
 
@@ -112,7 +113,7 @@ describe("cloudron_get_logs", () => {
 
     it("should clamp lines parameter to min 1", async () => {
       const mockLogs = { logs: [] }
-      ;(global.fetch as jest.Mock).mockResolvedValueOnce(
+      ;(global.fetch as vi.Mock).mockResolvedValueOnce(
         mockSuccessResponse(mockLogs),
       )
 
@@ -134,7 +135,7 @@ describe("cloudron_get_logs", () => {
         ],
       }
 
-      ;(global.fetch as jest.Mock).mockResolvedValueOnce(
+      ;(global.fetch as vi.Mock).mockResolvedValueOnce(
         mockSuccessResponse(mockLogs),
       )
 
@@ -161,7 +162,7 @@ describe("cloudron_get_logs", () => {
         logs: ["2025-12-24T12:00:00.123Z [DEBUG] Debug message"],
       }
 
-      ;(global.fetch as jest.Mock).mockResolvedValueOnce(
+      ;(global.fetch as vi.Mock).mockResolvedValueOnce(
         mockSuccessResponse(mockLogs),
       )
 
@@ -179,7 +180,7 @@ describe("cloudron_get_logs", () => {
         logs: ["Dec 24 12:00:00 host service[1234]: [INFO] Syslog message"],
       }
 
-      ;(global.fetch as jest.Mock).mockResolvedValueOnce(
+      ;(global.fetch as vi.Mock).mockResolvedValueOnce(
         mockSuccessResponse(mockLogs),
       )
 
@@ -195,7 +196,7 @@ describe("cloudron_get_logs", () => {
         logs: ["[WARN] Simple warning message"],
       }
 
-      ;(global.fetch as jest.Mock).mockResolvedValueOnce(
+      ;(global.fetch as vi.Mock).mockResolvedValueOnce(
         mockSuccessResponse(mockLogs),
       )
 
@@ -212,7 +213,7 @@ describe("cloudron_get_logs", () => {
         logs: ["Plain text log entry without formatting"],
       }
 
-      ;(global.fetch as jest.Mock).mockResolvedValueOnce(
+      ;(global.fetch as vi.Mock).mockResolvedValueOnce(
         mockSuccessResponse(mockLogs),
       )
 
@@ -225,7 +226,7 @@ describe("cloudron_get_logs", () => {
 
     it("should handle empty logs array", async () => {
       const mockLogs = { logs: [] }
-      ;(global.fetch as jest.Mock).mockResolvedValueOnce(
+      ;(global.fetch as vi.Mock).mockResolvedValueOnce(
         mockSuccessResponse(mockLogs),
       )
 
@@ -235,9 +236,7 @@ describe("cloudron_get_logs", () => {
     })
 
     it("should handle missing logs field", async () => {
-      ;(global.fetch as jest.Mock).mockResolvedValueOnce(
-        mockSuccessResponse({}),
-      )
+      ;(global.fetch as vi.Mock).mockResolvedValueOnce(mockSuccessResponse({}))
 
       const result = await client.getLogs("app-123", "app")
 
@@ -247,7 +246,7 @@ describe("cloudron_get_logs", () => {
 
   describe("Error handling", () => {
     it("should return 404 for invalid app ID", async () => {
-      ;(global.fetch as jest.Mock).mockResolvedValueOnce(
+      ;(global.fetch as vi.Mock).mockResolvedValueOnce(
         mockErrorResponse(404, "App not found"),
       )
 
@@ -257,7 +256,7 @@ describe("cloudron_get_logs", () => {
     })
 
     it("should return 404 for invalid service ID", async () => {
-      ;(global.fetch as jest.Mock).mockResolvedValueOnce(
+      ;(global.fetch as vi.Mock).mockResolvedValueOnce(
         mockErrorResponse(404, "Service not found"),
       )
 
@@ -279,7 +278,7 @@ describe("cloudron_get_logs", () => {
     })
 
     it("should handle authentication errors", async () => {
-      ;(global.fetch as jest.Mock).mockResolvedValueOnce(
+      ;(global.fetch as vi.Mock).mockResolvedValueOnce(
         mockErrorResponse(401, "Invalid token"),
       )
 
@@ -289,7 +288,7 @@ describe("cloudron_get_logs", () => {
     })
 
     it("should handle server errors", async () => {
-      ;(global.fetch as jest.Mock).mockResolvedValueOnce(
+      ;(global.fetch as vi.Mock).mockResolvedValueOnce(
         mockErrorResponse(500, "Internal server error"),
       )
 
@@ -302,7 +301,7 @@ describe("cloudron_get_logs", () => {
   describe("URL encoding", () => {
     it("should properly encode app IDs with special characters", async () => {
       const mockLogs = { logs: ["Log entry"] }
-      ;(global.fetch as jest.Mock).mockResolvedValueOnce(
+      ;(global.fetch as vi.Mock).mockResolvedValueOnce(
         mockSuccessResponse(mockLogs),
       )
 
@@ -316,7 +315,7 @@ describe("cloudron_get_logs", () => {
 
     it("should properly encode service names with special characters", async () => {
       const mockLogs = { logs: ["Log entry"] }
-      ;(global.fetch as jest.Mock).mockResolvedValueOnce(
+      ;(global.fetch as vi.Mock).mockResolvedValueOnce(
         mockSuccessResponse(mockLogs),
       )
 

@@ -2,6 +2,7 @@
  * Mock Cloudron API responses for testing
  */
 
+import { vi } from "vitest"
 import type { App, CloudronStatus, TaskStatus } from "../../src/types"
 
 export const mockApps: App[] = [
@@ -175,7 +176,7 @@ export interface MockFetchOptions {
 export function createMockFetch(
   responses: Record<string, MockResponseConfig>,
 ): typeof fetch {
-  return jest.fn((url: string | URL | Request, options?: MockFetchOptions) => {
+  return vi.fn((url: string | URL | Request, options?: MockFetchOptions) => {
     const urlString = typeof url === "string" ? url : url.toString()
     const method = options?.method || "GET"
     const key = `${method} ${urlString}`

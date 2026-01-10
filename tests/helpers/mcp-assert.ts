@@ -2,6 +2,7 @@
  * MCP response schema validation helpers
  */
 
+import { expect } from "vitest"
 import type { MCPToolResponse } from "../../src/tools/response"
 
 /**

@@ -1,3 +1,12 @@
+import {
+  afterAll,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest"
 /**
  * Test cloudron_validate_operation tool
  * Pre-flight validation for destructive operations
@@ -29,7 +38,7 @@ describe("cloudron_validate_operation tool", () => {
   })
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   describe("uninstall_app operation", () => {

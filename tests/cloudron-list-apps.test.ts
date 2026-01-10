@@ -3,6 +3,15 @@
  * Demonstrates testing pattern for MCP tools
  */
 
+import {
+  afterAll,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest"
 import { CloudronClient } from "../src/cloudron-client"
 import {
   cleanupTestEnv,
@@ -25,7 +34,7 @@ describe("cloudron_list_apps tool", () => {
   })
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   it("should list all installed apps successfully", async () => {
@@ -119,7 +128,7 @@ describe("cloudron_list_apps tool", () => {
   })
 
   it("should handle network error", async () => {
-    global.fetch = jest.fn(() =>
+    global.fetch = vi.fn(() =>
       Promise.reject(new Error("Network connection failed")),
     )
 

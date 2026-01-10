@@ -1,3 +1,12 @@
+import {
+  afterAll,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest"
 /**
  * Test cloudron_cancel_task tool
  * Cancel running async operations (kill switch)
@@ -25,7 +34,7 @@ describe("cloudron_cancel_task tool", () => {
   })
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   it("should cancel a running task successfully", async () => {
@@ -86,7 +95,7 @@ describe("cloudron_cancel_task tool", () => {
   it("should verify task state transitions to cancelled", async () => {
     // First GET returns running state
     // Then DELETE returns cancelled state
-    global.fetch = jest.fn(
+    global.fetch = vi.fn(
       (url: string | URL | Request, options?: RequestInit) => {
         const urlString = typeof url === "string" ? url : url.toString()
         const method = options?.method || "GET"
@@ -143,7 +152,7 @@ describe("cloudron_cancel_task tool", () => {
 
   it("should use DELETE HTTP method", async () => {
     let capturedMethod: string | undefined
-    global.fetch = jest.fn(
+    global.fetch = vi.fn(
       (_url: string | URL | Request, options?: RequestInit) => {
         capturedMethod = options?.method
         return Promise.resolve({
@@ -164,7 +173,7 @@ describe("cloudron_cancel_task tool", () => {
 
   it("should call correct API endpoint", async () => {
     let capturedUrl: string | undefined
-    global.fetch = jest.fn(
+    global.fetch = vi.fn(
       (url: string | URL | Request, _options?: RequestInit) => {
         capturedUrl = typeof url === "string" ? url : url.toString()
         return Promise.resolve({
