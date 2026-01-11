@@ -1,0 +1,9 @@
+{
+  "name": "appId",
+  "in": "path",
+  "description": "App ID",
+  "required": true,
+  "schema": {
+    "type": "string"
+  }
+}

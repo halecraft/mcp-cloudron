@@ -1,0 +1,90 @@
+{
+  "type": "object",
+  "discriminator": {
+    "propertyName": "provider",
+    "mapping": {
+      "AWS Route53": "./AWSRoute53.json",
+      "Bunny": "./Bunny.json",
+      "Cloudflare": "./Cloudflare.json",
+      "Digital Ocean": "./Digital Ocean.json",
+      "deSEC": "./deSEC.json",
+      "DNSimple": "./DNSimple.json",
+      "Gandi LiveDNS": "./Gandi LiveDNS.json",
+      "GoDaddy": "./GoDaddy.json",
+      "Google Cloud DNS": "./Google Cloud DNS.json",
+      "Hetzner": "./Hetzner.json",
+      "Linode": "./Linode.json",
+      "Name.com": "./Name.com.json",
+      "Namecheap": "./Namecheap.json",
+      "Netcup": "./Netcup.json",
+      "OVH": "./OVH.json",
+      "Porkbun": "./Porkbun.json",
+      "Vultr": "./Vultr.json",
+      "Wildcard": "./Wildcard.json",
+      "Manual": "./Manual.json",
+      "No-Op": "./No-Op.json"
+    }
+  },
+  "oneOf": [
+    {
+      "$ref": "./AWSRoute53.json"
+    },
+    {
+      "$ref": "./Bunny.json"
+    },
+    {
+      "$ref": "./Cloudflare.json"
+    },
+    {
+      "$ref": "./Digital Ocean.json"
+    },
+    {
+      "$ref": "./deSEC.json"
+    },
+    {
+      "$ref": "./DNSimple.json"
+    },
+    {
+      "$ref": "./Gandi LiveDNS.json"
+    },
+    {
+      "$ref": "./GoDaddy.json"
+    },
+    {
+      "$ref": "./Google Cloud DNS.json"
+    },
+    {
+      "$ref": "./Hetzner.json"
+    },
+    {
+      "$ref": "./Linode.json"
+    },
+    {
+      "$ref": "./Name.com.json"
+    },
+    {
+      "$ref": "./Namecheap.json"
+    },
+    {
+      "$ref": "./Netcup.json"
+    },
+    {
+      "$ref": "./OVH.json"
+    },
+    {
+      "$ref": "./Porkbun.json"
+    },
+    {
+      "$ref": "./Vultr.json"
+    },
+    {
+      "$ref": "./Wildcard.json"
+    },
+    {
+      "$ref": "./Manual.json"
+    },
+    {
+      "$ref": "./No-Op.json"
+    }
+  ]
+}

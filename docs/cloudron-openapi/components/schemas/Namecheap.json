@@ -1,0 +1,35 @@
+{
+  "allOf": [
+    {
+      "$ref": "./domainBase.json"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "config": {
+          "type": "object",
+          "description": "Specifies config for Namecheap DNS.",
+          "properties": {
+            "username": {
+              "type": "string",
+              "description": "Username for accessing Namecheap services.",
+              "example": "namecheapUser"
+            },
+            "token": {
+              "type": "string",
+              "description": "Token used for authentication with Namecheap DNS.",
+              "example": "NaM3ch43pDn5T0k3n1234567890"
+            }
+          },
+          "required": [
+            "token",
+            "username"
+          ]
+        }
+      },
+      "required": [
+        "config"
+      ]
+    }
+  ]
+}

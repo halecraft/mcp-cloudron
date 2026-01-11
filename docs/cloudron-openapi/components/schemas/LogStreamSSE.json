@@ -1,0 +1,33 @@
+{
+  "description": "[Server Side Events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events) compatible event stream\n",
+  "type": "array",
+  "format": "event-stream",
+  "items": {
+    "oneOf": [
+      {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          }
+        }
+      },
+      {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "realtimeTimestamp": {
+                "type": "number"
+              },
+              "message": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+}

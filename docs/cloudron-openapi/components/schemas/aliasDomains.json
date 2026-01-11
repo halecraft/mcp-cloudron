@@ -1,0 +1,10 @@
+{
+  "type": "array",
+  "items": {
+    "type": "string"
+  },
+  "description": "Alias domains for the application.",
+  "example": [
+    "your.alias.domains.com"
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "get": {
+    "operationId": "getIPv6",
+    "summary": "Get IPv6 Address",
+    "description": "Gets the configured IPv6 address of the server",
+    "tags": [
+      "Network"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "read"
+        ]
+      },
+      {
+        "query_auth": [
+          "read"
+        ]
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "properties": {
+                "ip": {
+                  "type": "string",
+                  "description": "An IPv6 address. Can be `null` when IPv6 is disabled.",
+                  "example": "2402:3a80:423:eb84:d72e:b50:7c58:83eb"
+                }
+              }
+            }
+          }
+        }
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/network_ipv6/get.sh"
+        }
+      }
+    ]
+  }
+}

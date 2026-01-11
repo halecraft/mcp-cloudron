@@ -1,0 +1,16 @@
+{
+  "type": "object",
+  "description": "Configuration for the fallback TLS certificate.",
+  "properties": {
+    "cert": {
+      "type": "string",
+      "description": "The TLS certificate in PEM format.",
+      "example": "-----BEGIN CERTIFICATE..."
+    },
+    "key": {
+      "type": "string",
+      "description": "The private key corresponding to the TLS certificate.",
+      "example": "-----BEGIN PRIVATE KEY..."
+    }
+  }
+}

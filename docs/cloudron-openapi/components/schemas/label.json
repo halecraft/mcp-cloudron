@@ -1,0 +1,8 @@
+{
+  "type": [
+    "null",
+    "string"
+  ],
+  "description": "A custom label for the application.",
+  "example": "Office"
+}

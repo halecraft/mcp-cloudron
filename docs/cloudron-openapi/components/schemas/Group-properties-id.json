@@ -1,0 +1,5 @@
+{
+  "type": "string",
+  "description": "Group Id",
+  "example": "gid-bd6d2757-320c-4c8c-b429-b283a8bd7647"
+}

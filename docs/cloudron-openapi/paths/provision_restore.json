@@ -1,0 +1,112 @@
+{
+  "post": {
+    "summary": "Restore from backup",
+    "operationId": "restoreProvision",
+    "description": "Resotre",
+    "tags": [
+      "Provision"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "write"
+        ]
+      },
+      {
+        "query_auth": [
+          "write"
+        ]
+      }
+    ],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "properties": {
+              "backupConfig": {
+                "type": "object",
+                "required": [
+                  "provider",
+                  "format",
+                  "password"
+                ],
+                "properties": {
+                  "provider": {
+                    "type": "string",
+                    "description": "The backup service provider (e.g., AWS, Azure).",
+                    "example": "AWS"
+                  },
+                  "format": {
+                    "type": "string",
+                    "description": "The format of the backup file (e.g., tar, zip).",
+                    "example": "tar"
+                  },
+                  "password": {
+                    "type": "string",
+                    "description": "The password used to encrypt the backup.",
+                    "example": "securepassword123"
+                  }
+                }
+              },
+              "encryptedFilenames": {
+                "type": "boolean",
+                "example": true,
+                "description": "Enables or disables encrypted file names."
+              },
+              "remotePath": {
+                "type": "string",
+                "description": "The remote path where backups are stored (e.g., s3://mybucket/backups/).",
+                "example": "s3://mybucket/backups/"
+              },
+              "version": {
+                "type": "string",
+                "description": "The version of the provisioning script or configuration.",
+                "example": "1.0.0"
+              },
+              "ipv4Config": {
+                "type": "object",
+                "description": "Configuration settings for IPv4."
+              },
+              "ipv6Config": {
+                "type": "object",
+                "description": "Configuration settings for IPv6."
+              },
+              "skipDnsSetup": {
+                "type": "boolean",
+                "description": "Enable or disable to skip the DNS setup.",
+                "example": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "200": {
+        "$ref": "../components/responses/no_content.json"
+      },
+      "400": {
+        "$ref": "../components/responses/bad_field.json"
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/provision_restore/post.sh"
+        }
+      }
+    ]
+  }
+}

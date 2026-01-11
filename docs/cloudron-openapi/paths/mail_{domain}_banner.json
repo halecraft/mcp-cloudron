@@ -1,0 +1,76 @@
+{
+  "post": {
+    "operationId": "setBanner",
+    "summary": "Set mail signature",
+    "description": "Set mail signature",
+    "tags": [
+      "Mail"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "write"
+        ]
+      },
+      {
+        "query_auth": [
+          "write"
+        ]
+      }
+    ],
+    "parameters": [
+      {
+        "$ref": "../components/parameters/parameters-domain.json"
+      }
+    ],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "properties": {
+              "text": {
+                "type": "string",
+                "description": "Your mail signature as a text.",
+                "example": "Warm regards, your Cloudron Team"
+              },
+              "html": {
+                "type": "string",
+                "description": "Your mail signature as HTML.",
+                "example": "<h5> Warm regards, your Cloudron Team </h5>"
+              }
+            },
+            "required": [
+              "text"
+            ]
+          }
+        }
+      }
+    },
+    "responses": {
+      "202": {
+        "$ref": "../components/responses/accepted.json"
+      },
+      "400": {
+        "$ref": "../components/responses/bad_field.json"
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/mail_{domain}_banner/post.sh"
+        }
+      }
+    ]
+  }
+}

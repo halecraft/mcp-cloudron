@@ -1,0 +1,14 @@
+{
+  "name": "format",
+  "in": "query",
+  "description": "Format of the lines in the log file",
+  "required": false,
+  "schema": {
+    "type": "string",
+    "default": "json",
+    "enum": [
+      "json",
+      "short"
+    ]
+  }
+}

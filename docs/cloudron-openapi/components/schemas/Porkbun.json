@@ -1,0 +1,35 @@
+{
+  "allOf": [
+    {
+      "$ref": "./domainBase.json"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "config": {
+          "type": "object",
+          "description": "Specifies config for Porkbun DNS.",
+          "properties": {
+            "apiKey": {
+              "type": "string",
+              "description": "API key used for authentication with Porkbun DNS.",
+              "example": "pk1_e155f9c9189f93def53cb5ecfa10a9d2a8ee9b3a64a11f4991820ed50ab3cc0c"
+            },
+            "secretApiKey": {
+              "type": "string",
+              "description": "Secret API key used for authentication with Porkbun DNS.",
+              "example": "sk1_b4ecec1ce8bc228663280634216a6fd2a06cb195a03fd95f29576057fb0a8b67"
+            }
+          },
+          "required": [
+            "apiKey",
+            "secretApiKey"
+          ]
+        }
+      },
+      "required": [
+        "config"
+      ]
+    }
+  ]
+}

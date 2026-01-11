@@ -1,0 +1,44 @@
+{
+  "allOf": [
+    {
+      "$ref": "./domainBase.json"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "config": {
+          "type": "object",
+          "description": "Specifies config for Cloudflare DNS.",
+          "properties": {
+            "tokenType": {
+              "type": "string",
+              "enum": [
+                "GlobalApiKey",
+                "ApiToken"
+              ],
+              "description": "Type of token used for authentication with Cloudflare."
+            },
+            "token": {
+              "type": "string",
+              "description": "Token used for authentication with Cloudflare.",
+              "example": "as342gfd123AJShjdsa21"
+            },
+            "email": {
+              "type": "string",
+              "description": "Email associated with the Cloudflare DNS account. Only required when using a \"GlobalApiKey\" token.",
+              "example": "example@example.org"
+            }
+          },
+          "required": [
+            "email",
+            "tokenType",
+            "token"
+          ]
+        }
+      },
+      "required": [
+        "config"
+      ]
+    }
+  ]
+}

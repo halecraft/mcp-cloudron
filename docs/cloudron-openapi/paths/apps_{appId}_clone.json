@@ -1,0 +1,111 @@
+{
+  "post": {
+    "operationId": "cloneApp",
+    "summary": "Clone app",
+    "description": "Clone an app.",
+    "tags": [
+      "Apps"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "write"
+        ]
+      },
+      {
+        "query_auth": [
+          "write"
+        ]
+      }
+    ],
+    "parameters": [
+      {
+        "$ref": "../components/parameters/appId.json"
+      }
+    ],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "properties": {
+              "backupId": {
+                "type": "string",
+                "description": "ID of the backup used for the restore.",
+                "example": "app_v2.2.2_ff231fee"
+              },
+              "subdomain": {
+                "type": "string",
+                "description": "The subdomain on which the application runs.",
+                "example": "test"
+              },
+              "domain": {
+                "type": "string",
+                "description": "The main domain on which the application runs.",
+                "example": "cloudron.io"
+              },
+              "ports": {
+                "type": "object",
+                "description": "Object containing port bindings information.",
+                "example": {}
+              },
+              "overwriteDns": {
+                "type": "boolean",
+                "description": "Indicates whether DNS settings should be overwritten.",
+                "example": false
+              },
+              "skipDnsSetup": {
+                "type": "boolean",
+                "description": "Indicates whether DNS setup should be skipped.",
+                "example": true
+              }
+            },
+            "required": [
+              "subdomain",
+              "domain",
+              "backupId"
+            ]
+          }
+        }
+      }
+    },
+    "responses": {
+      "201": {
+        "description": "Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "example": "c5a5db16-30c4-4202-bfdd-f5bdad6297888"
+                },
+                "taskId": {
+                  "$ref": "../components/schemas/taskId.json"
+                }
+              }
+            }
+          }
+        }
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/apps_{appId}_clone/post.sh"
+        }
+      }
+    ]
+  }
+}

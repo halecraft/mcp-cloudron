@@ -1,0 +1,121 @@
+{
+  "get": {
+    "operationId": "getCloudronTimeZone",
+    "summary": "Get Cloudron Time Zone",
+    "description": "TimeZone used for various cron jobs like backup, updates, date display in emails etc. Note that server time zone and database is always UTC.",
+    "tags": [
+      "Cloudron"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "read"
+        ]
+      },
+      {
+        "query_auth": [
+          "read"
+        ]
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "timeZone": {
+                  "type": "string",
+                  "description": "The [Time Zone Identifier](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)",
+                  "default": "UTC",
+                  "example": "de"
+                }
+              }
+            }
+          }
+        }
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/cloudron_time_zone/get.sh"
+        }
+      }
+    ]
+  },
+  "post": {
+    "operationId": "setCloudronTimeZone",
+    "summary": "Set Cloudron Time Zone",
+    "description": "TimeZone used for various cron jobs like backup, updates, date display in emails etc. Note that server time zone and database is always UTC.\n",
+    "tags": [
+      "Cloudron"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "write"
+        ]
+      },
+      {
+        "query_auth": [
+          "write"
+        ]
+      }
+    ],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "properties": {
+              "timeZone": {
+                "type": "string",
+                "description": "The [Time Zone Identifier](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)",
+                "default": "UTC",
+                "example": "Europe/Zurich"
+              }
+            },
+            "required": [
+              "language"
+            ]
+          }
+        }
+      }
+    },
+    "responses": {
+      "200": {
+        "$ref": "../components/responses/no_content.json"
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/cloudron_time_zone/post.sh"
+        }
+      }
+    ]
+  }
+}

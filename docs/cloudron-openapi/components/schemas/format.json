@@ -1,0 +1,5 @@
+{
+  "type": "string",
+  "description": "Backup file format.",
+  "example": "tgz"
+}

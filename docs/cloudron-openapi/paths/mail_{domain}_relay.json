@@ -1,0 +1,99 @@
+{
+  "post": {
+    "operationId": "setMailRelay",
+    "summary": "Set mail relay",
+    "description": "Set mail relay",
+    "tags": [
+      "Mail"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "write"
+        ]
+      },
+      {
+        "query_auth": [
+          "write"
+        ]
+      }
+    ],
+    "parameters": [
+      {
+        "$ref": "../components/parameters/parameters-domain.json"
+      }
+    ],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "properties": {
+              "provider": {
+                "type": "string",
+                "description": "Provider for mail relay.",
+                "example": "mailgun"
+              },
+              "host": {
+                "type": "string",
+                "description": "The mail relay host.",
+                "example": "your.mailgun.host.de"
+              },
+              "port": {
+                "type": "number",
+                "description": "Port used for mails.",
+                "example": 578
+              },
+              "username": {
+                "type": "string",
+                "description": "Username for mail relay.",
+                "example": "mailgun_username"
+              },
+              "password": {
+                "type": "string",
+                "description": "Password for mail relay.",
+                "example": "mailgun_password"
+              },
+              "acceptSelfSignedCerts": {
+                "type": "boolean",
+                "description": "Indicates whether self-signed certificates are accepted."
+              },
+              "forceFromAddress": {
+                "type": "boolean",
+                "description": "Indicates whether to force a specific \"From\" address."
+              }
+            },
+            "required": [
+              "provider"
+            ]
+          }
+        }
+      }
+    },
+    "responses": {
+      "202": {
+        "$ref": "../components/responses/accepted.json"
+      },
+      "400": {
+        "$ref": "../components/responses/bad_field.json"
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/mail_{domain}_relay/post.sh"
+        }
+      }
+    ]
+  }
+}

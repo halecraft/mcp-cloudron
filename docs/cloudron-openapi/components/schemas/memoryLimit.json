@@ -1,0 +1,5 @@
+{
+  "type": "number",
+  "description": "The memory limit for the app in bytes.",
+  "example": 123432345
+}

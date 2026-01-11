@@ -1,0 +1,722 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Cloudron API",
+    "version": "1.0.0",
+    "contact": {
+      "url": "https://forum.cloudron.io"
+    },
+    "x-logo": {
+      "url": "/img/cloudron-banner.png"
+    },
+    "license": {
+      "name": "Apache 2.0",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+    },
+    "description": "# Introduction\n\nCloudron provides a RESTful API to manage apps, users, groups, domains and other resources.\n\nAll of the functionality in the Cloudron Dashboard is available through the API, allowing you to script complex actions.\n\nIf you are an app developer, the [Cloudron CLI tool](https://www.npmjs.com/package/cloudron) implements a workflow that allows\nyou to develop apps on your Cloudron. The CLI tool uses the REST API documented here.\n\n## Requests\n\nThe API follows standard HTTP REST API conventions.\n\n|Method|Usage|\n|--- |--- |\n|GET| Retrieveal operations |\n|DELETE| Destroys a resource |\n|POST| Create new objects or start a new task. Also used to update parts of a resource |\n|PUT| Idempotent operation that replaces a resource |\n|PATCH| API does not support PATCH |\n|HEAD| Read response headers and get no response |\n\n## HTTP Statuses\n\nThe API follows standard HTTP REST API response conventions.\n\n2xx responses indicate success. 4xx responses indicate request errors. 5xx responses indicate server errors.\n\n|Name|Description|\n|--- |--- |\n|200 | Success. Operation succeeded, response body contains more information |\n|204 | Success. Operation succeeded, empty response body |\n|401 | Access Denied. Usually caused by missing, invalid or expired token|\n|403 | Forbidden. Authenticated but operation not permitted. Usually caused by insufficient role/permissions |\n|5xx | Internal Server error |\n\n## Pagination\n\nWhen listing objects, query parameters `page` and `per_page` can be passed in. Note that these parameters have index\nstarting from 1.\n\n## API Token\n\nTo use the REST API, you must first create an [API token](https://docs.cloudron.io/profile/#api-tokens). This token can be provided\nin two ways:\n  * Via the request query parameter `?access_token=<token>`\n  * Via the Authorization header `Bearer <token>`\n\nAPI Tokens can be created as `Readonly` or `Read and Write`. With `Readonly` token, only GET operations can be performed.\n\n## cURL Examples\n\nWe use `curl` to demonstrate how to use the API. The Cloudron Dashboard Domain and the API Token are variable fields.\nYou can export them in your shell as follows:\n\n```\nexport CLOUDRON_DOMAIN=my.domain.com\nexport CLOUDRON_TOKEN=your_token_here\n```\n\nTo list the domains using cURL and the `Authorization` header:\n\n```\n  curl -H 'ContentType: application/json' -H \"Authorization: Bearer $CLOUDRON_TOKEN\" https://$CLOUDRON_DOMAIN/api/v1/domains\n```\n\nAlternately, to use the query parameter:\n\n```\n  curl -H 'ContentType: application/json' \"https://$CLOUDRON_DOMAIN/api/v1/domains?access_token=$CLOUDRON_TOKEN\"\n```\n\n# Authorization\n\n<!-- Redoc-Inject: <security-definitions> -->\n"
+  },
+  "servers": [
+    {
+      "url": "https://{cloudron_domain}/api/v1",
+      "description": "Cloudron API",
+      "variables": {
+        "cloudron_domain": {
+          "default": "my.cloudron.example",
+          "description": "The Cloudron Dashboard Domain"
+        }
+      }
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearer_auth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "To use the Bearer Authentication, you must first create an [API token](https://docs.cloudron.io/profile/#api-tokens).\nThe API Token can be passed via the Authorization header `Bearer <token>`:\n```\n  curl -H 'ContentType: application/json' -H 'Authorization: Bearer $CLOUDRON_TOKEN' https://$CLOUDRON_DOMAIN/api/v1/domains\n```\n"
+      },
+      "query_auth": {
+        "type": "apiKey",
+        "name": "access_token",
+        "in": "query",
+        "description": "To use the Query Parameter Authentication, you must first create an [API token](https://docs.cloudron.io/profile/#api-tokens).\nThe API Token can be passed via the  `access_token` query parameter:\n```\n  curl -H 'ContentType: application/json' 'https://$CLOUDRON_DOMAIN/api/v1/domains?access_token=$CLOUDRON_TOKEN'\n```\n"
+      }
+    }
+  },
+  "security": [
+    {
+      "bearer_auth": []
+    },
+    {
+      "query_auth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Apps",
+      "description": "Handle your cloudron apps using the apps api."
+    },
+    {
+      "name": "Applinks",
+      "description": "Applinks are apps that you externally added to your app overview."
+    },
+    {
+      "name": "App Passwords",
+      "description": "App passwords can be used as a security measure in desktop, email & mobile clients. For example, if you are trying out a new mobile app from an untrusted vendor, you can generate a temporary password that provides access to a specific app. This way your main password does not get compromised (and thus providing access to other apps as well).\n"
+    },
+    {
+      "name": "Backups",
+      "description": "Handling the backups."
+    },
+    {
+      "name": "Branding",
+      "description": "The Branding configuration can be used to customize various aspects of the Cloudron like it's name, logo and footer."
+    },
+    {
+      "name": "Cloudron",
+      "description": "Cloudron Healthcheck route and various global configuration like language & timezone can be found here."
+    },
+    {
+      "name": "Dashboard",
+      "description": "Configuration of your cloudron server."
+    },
+    {
+      "name": "Docker",
+      "description": "Docker related configuration."
+    },
+    {
+      "name": "Domains",
+      "description": "Web addresses for accessing your server and apps. Read more about Cloudron domain settings in our [knowledgebase](https://docs.cloudron.io/domains/)."
+    },
+    {
+      "name": "Directory Server",
+      "description": "Directory Server Configuration"
+    },
+    {
+      "name": "Eventlog",
+      "description": "Cloudron server activity can be monitored using the Eventlog API."
+    },
+    {
+      "name": "External LDAP",
+      "description": "The External Directory connector allows users from your existing LDAP or active directory to authenticate with Cloudron."
+    },
+    {
+      "name": "Groups",
+      "description": "Groups provide a convenient way to group users. You can assign one or more groups to apps to restrict who can access for an app."
+    },
+    {
+      "name": "Mail",
+      "description": "Configuration for your mail domains."
+    },
+    {
+      "name": "Mailserver",
+      "description": "Configuration, Logs and Information about the mailserver."
+    },
+    {
+      "name": "Network",
+      "description": "Networking and Firewall related configuration."
+    },
+    {
+      "name": "Notifications",
+      "description": "Cloudron displays notifications in the dashboard for various events like: app down, app out of memory, low disk space, updates available, app update etc. The notifications can be read by clicking on the bell icon in the navigation bar.\n"
+    },
+    {
+      "name": "OIDC",
+      "description": "OpenID Connect. It allows clients to verify the identity of end-users based on the authentication performed by an authorization server.\n"
+    },
+    {
+      "name": "Profile",
+      "description": "User's profile information"
+    },
+    {
+      "name": "Provision",
+      "description": "This endpoint allows users to provision and configure domain settings. It validates and applies various configurations such as provider details, domain name, zone information, TLS settings, and optional IPv4 and IPv6 configurations."
+    },
+    {
+      "name": "Reverse Proxy",
+      "description": "The Reverse Proxy manages the nginx config and TLS certificates."
+    },
+    {
+      "name": "Services",
+      "description": "Services that are used on your Cloudron instance such as 'mail', 'mysql' and way more."
+    },
+    {
+      "name": "System",
+      "description": "Server related information."
+    },
+    {
+      "name": "Tasks",
+      "description": "Tasks are asynchronous operations performed in the background. Each task can be monitored separately using the task id."
+    },
+    {
+      "name": "Tokens",
+      "description": "Tokens are used for API authentication."
+    },
+    {
+      "name": "Updater",
+      "description": "Updater checks and manages updates of the apps and the platform."
+    },
+    {
+      "name": "Users",
+      "description": "Add, update and remove users from Cloudron User Directory."
+    },
+    {
+      "name": "User Directory",
+      "description": "Settings & Configuration for [Cloudron User Directory](https://docs.cloudron.io/user-directory/)."
+    },
+    {
+      "name": "Volumes",
+      "description": "Definition of storage volumes including their properties and configurations."
+    }
+  ],
+  "paths": {
+    "/apps": {
+      "$ref": "paths/apps.json"
+    },
+    "/apps/{appId}": {
+      "$ref": "paths/apps_{appId}.json"
+    },
+    "/apps/{appId}/icon": {
+      "$ref": "paths/apps_{appId}_icon.json"
+    },
+    "/apps/{appId}/uninstall": {
+      "$ref": "paths/apps_{appId}_uninstall.json"
+    },
+    "/apps/{appId}/repair": {
+      "$ref": "paths/apps_{appId}_repair.json"
+    },
+    "/apps/{appId}/check_for_updates": {
+      "$ref": "paths/apps_{appId}_check_for_updates.json"
+    },
+    "/apps/{appId}/update": {
+      "$ref": "paths/apps_{appId}_update.json"
+    },
+    "/apps/{appId}/restore": {
+      "$ref": "paths/apps_{appId}_restore.json"
+    },
+    "/apps/{appId}/import": {
+      "$ref": "paths/apps_{appId}_import.json"
+    },
+    "/apps/{appId}/export": {
+      "$ref": "paths/apps_{appId}_export.json"
+    },
+    "/apps/{appId}/start": {
+      "$ref": "paths/apps_{appId}_start.json"
+    },
+    "/apps/{appId}/stop": {
+      "$ref": "paths/apps_{appId}_stop.json"
+    },
+    "/apps/{appId}/restart": {
+      "$ref": "paths/apps_{appId}_restart.json"
+    },
+    "/apps/{appId}/logstream": {
+      "$ref": "paths/apps_{appId}_logstream.json"
+    },
+    "/apps/{appId}/logs": {
+      "$ref": "paths/apps_{appId}_logs.json"
+    },
+    "/apps/{appId}/eventlog": {
+      "$ref": "paths/apps_{appId}_eventlog.json"
+    },
+    "/apps/{appId}/task": {
+      "$ref": "paths/apps_{appId}_task.json"
+    },
+    "/apps/{appId}/clone": {
+      "$ref": "paths/apps_{appId}_clone.json"
+    },
+    "/apps/{appId}/exec": {
+      "$ref": "paths/apps_{appId}_exec.json"
+    },
+    "/apps/{appId}/configure/access_restriction": {
+      "$ref": "paths/apps_{appId}_configure_access_restriction.json"
+    },
+    "/apps/{appId}/configure/operators": {
+      "$ref": "paths/apps_{appId}_configure_operators.json"
+    },
+    "/apps/{appId}/configure/label": {
+      "$ref": "paths/apps_{appId}_configure_label.json"
+    },
+    "/apps/{appId}/configure/tags": {
+      "$ref": "paths/apps_{appId}_configure_tags.json"
+    },
+    "/apps/{appId}/configure/icon": {
+      "$ref": "paths/apps_{appId}_configure_icon.json"
+    },
+    "/apps/{appId}/configure/notes": {
+      "$ref": "paths/apps_{appId}_configure_notes.json"
+    },
+    "/apps/{appId}/configure/memory_limit": {
+      "$ref": "paths/apps_{appId}_configure_memory_limit.json"
+    },
+    "/apps/{appId}/configure/cpu_quota": {
+      "$ref": "paths/apps_{appId}_configure_cpu_quota.json"
+    },
+    "/apps/{appId}/configure/automatic_backup": {
+      "$ref": "paths/apps_{appId}_configure_automatic_backup.json"
+    },
+    "/apps/{appId}/configure/automatic_update": {
+      "$ref": "paths/apps_{appId}_configure_automatic_update.json"
+    },
+    "/apps/{appId}/configure/reverse_proxy": {
+      "$ref": "paths/apps_{appId}_configure_reverse_proxy.json"
+    },
+    "/apps/{appId}/configure/cert": {
+      "$ref": "paths/apps_{appId}_configure_cert.json"
+    },
+    "/apps/{appId}/configure/debug_mode": {
+      "$ref": "paths/apps_{appId}_configure_debug_mode.json"
+    },
+    "/apps/{appId}/configure/mailbox": {
+      "$ref": "paths/apps_{appId}_configure_mailbox.json"
+    },
+    "/apps/{appId}/configure/inbox": {
+      "$ref": "paths/apps_{appId}_configure_inbox.json"
+    },
+    "/apps/{appId}/configure/turn": {
+      "$ref": "paths/apps_{appId}_configure_turn.json"
+    },
+    "/apps/{appId}/configure/redis": {
+      "$ref": "paths/apps_{appId}_configure_redis.json"
+    },
+    "/apps/{appId}/configure/env": {
+      "$ref": "paths/apps_{appId}_configure_env.json"
+    },
+    "/apps/{appId}/configure/storage": {
+      "$ref": "paths/apps_{appId}_configure_storage.json"
+    },
+    "/apps/{appId}/configure/location": {
+      "$ref": "paths/apps_{appId}_configure_location.json"
+    },
+    "/apps/{appId}/configure/mounts": {
+      "$ref": "paths/apps_{appId}_configure_mounts.json"
+    },
+    "/apps/{appId}/configure/crontab": {
+      "$ref": "paths/apps_{appId}_configure_crontab.json"
+    },
+    "/apps/{appId}/configure/upstream_uri": {
+      "$ref": "paths/apps_{appId}_configure_upstream_uri.json"
+    },
+    "/apps/{appId}/backups": {
+      "$ref": "paths/apps_{appId}_backups.json"
+    },
+    "/apps/{appId}/backups/{backupId}": {
+      "$ref": "paths/apps_{appId}_backups_{backupId}.json"
+    },
+    "/apps/{appId}/backups/{backupId}/download": {
+      "$ref": "paths/apps_{appId}_backups_{backupId}_download.json"
+    },
+    "/applinks": {
+      "$ref": "paths/applinks.json"
+    },
+    "/applinks/{id}": {
+      "$ref": "paths/applinks_{id}.json"
+    },
+    "/applinks/{id}/icon": {
+      "$ref": "paths/applinks_{id}_icon.json"
+    },
+    "/app_passwords": {
+      "$ref": "paths/app_passwords.json"
+    },
+    "/app_passwords/{passwordId}": {
+      "$ref": "paths/app_passwords_{passwordId}.json"
+    },
+    "/backups": {
+      "$ref": "paths/backups.json"
+    },
+    "/backups/mount_status": {
+      "$ref": "paths/backups_mount_status.json"
+    },
+    "/backups/create": {
+      "$ref": "paths/backups_create.json"
+    },
+    "/backups/cleanup": {
+      "$ref": "paths/backups_cleanup.json"
+    },
+    "/backups/remount": {
+      "$ref": "paths/backups_remount.json"
+    },
+    "/backups/config": {
+      "$ref": "paths/backups_config.json"
+    },
+    "/backups/config/storage": {
+      "$ref": "paths/backups_config_storage.json"
+    },
+    "/backups/policy": {
+      "$ref": "paths/backups_policy.json"
+    },
+    "/backups/{backupId}": {
+      "$ref": "paths/backups_{backupId}.json"
+    },
+    "/branding/cloudron_avatar": {
+      "$ref": "paths/branding_cloudron_avatar.json"
+    },
+    "/branding/cloudron_name": {
+      "$ref": "paths/branding_cloudron_name.json"
+    },
+    "/branding/cloudron_background": {
+      "$ref": "paths/branding_cloudron_background.json"
+    },
+    "/branding/footer": {
+      "$ref": "paths/branding_footer.json"
+    },
+    "/cloudron/status": {
+      "$ref": "paths/cloudron_status.json"
+    },
+    "/cloudron/avatar": {
+      "$ref": "paths/cloudron_avatar.json"
+    },
+    "/cloudron/background": {
+      "$ref": "paths/cloudron_background.json"
+    },
+    "/cloudron/languages": {
+      "$ref": "paths/cloudron_languages.json"
+    },
+    "/cloudron/language": {
+      "$ref": "paths/cloudron_language.json"
+    },
+    "/cloudron/time_zone": {
+      "$ref": "paths/cloudron_time_zone.json"
+    },
+    "/dashboard/config": {
+      "$ref": "paths/dashboard_config.json"
+    },
+    "/dashboard/startPrepareLocation": {
+      "$ref": "paths/dashboard_startPrepareLocation.json"
+    },
+    "/dashboard/location": {
+      "$ref": "paths/dashboard_location.json"
+    },
+    "/directory_server/config": {
+      "$ref": "paths/directory_server_config.json"
+    },
+    "/docker/registry_config": {
+      "$ref": "paths/docker_registry_config.json"
+    },
+    "/domains": {
+      "$ref": "paths/domains.json"
+    },
+    "/domains/sync_dns": {
+      "$ref": "paths/domains_sync_dns.json"
+    },
+    "/domains/{domain}": {
+      "$ref": "paths/domains_{domain}.json"
+    },
+    "/domains/{domain}/config": {
+      "$ref": "paths/domains_{domain}_config.json"
+    },
+    "/domains/{domain}/wellknown": {
+      "$ref": "paths/domains_{domain}_wellknown.json"
+    },
+    "/domains/{domain}/dns_check": {
+      "$ref": "paths/domains_{domain}_dns_check.json"
+    },
+    "/eventlog": {
+      "$ref": "paths/eventlog.json"
+    },
+    "/eventlog/{eventId}": {
+      "$ref": "paths/eventlog_{eventId}.json"
+    },
+    "/external_ldap/config": {
+      "$ref": "paths/external_ldap_config.json"
+    },
+    "/external_ldap/sync": {
+      "$ref": "paths/external_ldap_sync.json"
+    },
+    "/mail/{domain}": {
+      "$ref": "paths/mail_{domain}.json"
+    },
+    "/mail/{domain}/lists": {
+      "$ref": "paths/mail_{domain}_lists.json"
+    },
+    "/mail/{domain}/lists/{name}": {
+      "$ref": "paths/mail_{domain}_lists_{name}.json"
+    },
+    "/mail/{domain}/enable": {
+      "$ref": "paths/mail_{domain}_enable.json"
+    },
+    "/mail/{domain}/status": {
+      "$ref": "paths/mail_{domain}_status.json"
+    },
+    "/mail/{domain}/mail_from_validation": {
+      "$ref": "paths/mail_{domain}_mail_from_validation.json"
+    },
+    "/mail/{domain}/catch_all": {
+      "$ref": "paths/mail_{domain}_catch_all.json"
+    },
+    "/mail/{domain}/relay": {
+      "$ref": "paths/mail_{domain}_relay.json"
+    },
+    "/mail/{domain}/banner": {
+      "$ref": "paths/mail_{domain}_banner.json"
+    },
+    "/mail/{domain}/send_test_mail": {
+      "$ref": "paths/mail_{domain}_send_test_mail.json"
+    },
+    "/mail/{domain}/mailbox_count": {
+      "$ref": "paths/mail_{domain}_mailbox_count.json"
+    },
+    "/mail/{domain}/mailboxes": {
+      "$ref": "paths/mail_{domain}_mailboxes.json"
+    },
+    "/mail/{domain}/mailboxes/{name}": {
+      "$ref": "paths/mail_{domain}_mailboxes_{name}.json"
+    },
+    "/mail/{domain}/mailboxes/{name}/aliases": {
+      "$ref": "paths/mail_{domain}_mailboxes_{name}_aliases.json"
+    },
+    "/mailserver/eventlog": {
+      "$ref": "paths/mailserver_eventlog.json"
+    },
+    "/mailserver/clear_eventlog": {
+      "$ref": "paths/mailserver_clear_eventlog.json"
+    },
+    "/mailserver/location": {
+      "$ref": "paths/mailserver_location.json"
+    },
+    "/mailserver/max_email_size": {
+      "$ref": "paths/mailserver_max_email_size.json"
+    },
+    "/mailserver/spam_acl": {
+      "$ref": "paths/mailserver_spam_acl.json"
+    },
+    "/mailserver/spam_custom_config": {
+      "$ref": "paths/mailserver_spam_custom_config.json"
+    },
+    "/mailserver/dnsbl_config": {
+      "$ref": "paths/mailserver_dnsbl_config.json"
+    },
+    "/mailserver/solr_config": {
+      "$ref": "paths/mailserver_solr_config.json"
+    },
+    "/mailserver/mailbox_sharing": {
+      "$ref": "paths/mailserver_mailbox_sharing.json"
+    },
+    "/mailserver/virtual_all_mail": {
+      "$ref": "paths/mailserver_virtual_all_mail.json"
+    },
+    "/mailserver/usage": {
+      "$ref": "paths/mailserver_usage.json"
+    },
+    "/groups": {
+      "$ref": "paths/groups.json"
+    },
+    "/groups/{groupId}": {
+      "$ref": "paths/groups_{groupId}.json"
+    },
+    "/groups/{groupId}/members": {
+      "$ref": "paths/groups_{groupId}_members.json"
+    },
+    "/groups/{groupId}/name": {
+      "$ref": "paths/groups_{groupId}_name.json"
+    },
+    "/network/blocklist": {
+      "$ref": "paths/network_blocklist.json"
+    },
+    "/network/dynamic_dns'": {
+      "$ref": "paths/network_dynamic_dns'.json"
+    },
+    "/network/ipv4_config": {
+      "$ref": "paths/network_ipv4_config.json"
+    },
+    "/network/ipv6_config": {
+      "$ref": "paths/network_ipv6_config.json"
+    },
+    "/network/ipv4": {
+      "$ref": "paths/network_ipv4.json"
+    },
+    "/network/ipv6": {
+      "$ref": "paths/network_ipv6.json"
+    },
+    "/notifications": {
+      "$ref": "paths/notifications.json"
+    },
+    "/notifications/{notificationId}": {
+      "$ref": "paths/notifications_{notificationId}.json"
+    },
+    "/oidc/clients": {
+      "$ref": "paths/oidc_clients.json"
+    },
+    "/oidc/clients/{clientId}": {
+      "$ref": "paths/oidc_clients_{clientId}.json"
+    },
+    "/oidc/sessions": {
+      "$ref": "paths/oidc_sessions.json"
+    },
+    "/profile": {
+      "$ref": "paths/profile.json"
+    },
+    "/profile/avatar": {
+      "$ref": "paths/profile_avatar.json"
+    },
+    "/profile/avatar/{userId}": {
+      "$ref": "paths/profile_avatar_{userId}.json"
+    },
+    "/profile/background_image": {
+      "$ref": "paths/profile_background_image.json"
+    },
+    "/profile/password": {
+      "$ref": "paths/profile_password.json"
+    },
+    "/profile/twofactorauthentication_secret": {
+      "$ref": "paths/profile_twofactorauthentication_secret.json"
+    },
+    "/profile/twofactorauthentication_enable": {
+      "$ref": "paths/profile_twofactorauthentication_enable.json"
+    },
+    "/profile/twofactorauthentication_disable": {
+      "$ref": "paths/profile_twofactorauthentication_disable.json"
+    },
+    "/provision/setup": {
+      "$ref": "paths/provision_setup.json"
+    },
+    "/provision/restore": {
+      "$ref": "paths/provision_restore.json"
+    },
+    "/provision/activate": {
+      "$ref": "paths/provision_activate.json"
+    },
+    "/reverseproxy/renew_certs": {
+      "$ref": "paths/reverseproxy_renew_certs.json"
+    },
+    "/reverseproxy/trusted_ips": {
+      "$ref": "paths/reverseproxy_trusted_ips.json"
+    },
+    "/services": {
+      "$ref": "paths/services.json"
+    },
+    "/services/platform_status": {
+      "$ref": "paths/services_platform_status.json"
+    },
+    "/services/{service}": {
+      "$ref": "paths/services_{service}.json"
+    },
+    "/services/{service}/graphs": {
+      "$ref": "paths/services_{service}_graphs.json"
+    },
+    "/services/{service}/logs": {
+      "$ref": "paths/services_{service}_logs.json"
+    },
+    "/services/{service}/logstream": {
+      "$ref": "paths/services_{service}_logstream.json"
+    },
+    "/services/{service}/restart": {
+      "$ref": "paths/services_{service}_restart.json"
+    },
+    "/services/{service}/rebuild": {
+      "$ref": "paths/services_{service}_rebuild.json"
+    },
+    "/system/info": {
+      "$ref": "paths/system_info.json"
+    },
+    "/system/reboot": {
+      "$ref": "paths/system_reboot.json"
+    },
+    "/system/cpus": {
+      "$ref": "paths/system_cpus.json"
+    },
+    "/system/disk_usage": {
+      "$ref": "paths/system_disk_usage.json"
+    },
+    "/system/block_devices": {
+      "$ref": "paths/system_block_devices.json"
+    },
+    "/system/memory": {
+      "$ref": "paths/system_memory.json"
+    },
+    "/system/logs/{unit}": {
+      "$ref": "paths/system_logs_{unit}.json"
+    },
+    "/system/logstream/{unit}": {
+      "$ref": "paths/system_logstream_{unit}.json"
+    },
+    "/tasks": {
+      "$ref": "paths/tasks.json"
+    },
+    "/tasks/{taskId}": {
+      "$ref": "paths/tasks_{taskId}.json"
+    },
+    "/tasks/{taskId}/logs": {
+      "$ref": "paths/tasks_{taskId}_logs.json"
+    },
+    "/tasks/{taskId}/logstream": {
+      "$ref": "paths/tasks_{taskId}_logstream.json"
+    },
+    "/tasks/{taskId}/stop": {
+      "$ref": "paths/tasks_{taskId}_stop.json"
+    },
+    "/tokens": {
+      "$ref": "paths/tokens.json"
+    },
+    "/tokens/{tokenId}": {
+      "$ref": "paths/tokens_{tokenId}.json"
+    },
+    "/updater/updates": {
+      "$ref": "paths/updater_updates.json"
+    },
+    "/updater/check_for_updates": {
+      "$ref": "paths/updater_check_for_updates.json"
+    },
+    "/updater/update": {
+      "$ref": "paths/updater_update.json"
+    },
+    "/updater/autoupdate_pattern": {
+      "$ref": "paths/updater_autoupdate_pattern.json"
+    },
+    "/users": {
+      "$ref": "paths/users.json"
+    },
+    "/users/{userId}": {
+      "$ref": "paths/users_{userId}.json"
+    },
+    "/users/{userId}/role": {
+      "$ref": "paths/users_{userId}_role.json"
+    },
+    "/users/{userId}/active": {
+      "$ref": "paths/users_{userId}_active.json"
+    },
+    "/users/{userId}/profile": {
+      "$ref": "paths/users_{userId}_profile.json"
+    },
+    "/users/{userId}/password": {
+      "$ref": "paths/users_{userId}_password.json"
+    },
+    "/users/{userId}/ghost": {
+      "$ref": "paths/users_{userId}_ghost.json"
+    },
+    "/users/{userId}/groups": {
+      "$ref": "paths/users_{userId}_groups.json"
+    },
+    "/users/{userId}/password_reset_link": {
+      "$ref": "paths/users_{userId}_password_reset_link.json"
+    },
+    "/users/{userId}/send_password_reset_email": {
+      "$ref": "paths/users_{userId}_send_password_reset_email.json"
+    },
+    "/users/{userId}/invite_link": {
+      "$ref": "paths/users_{userId}_invite_link.json"
+    },
+    "/users/{userId}/send_invite_email": {
+      "$ref": "paths/users_{userId}_send_invite_email.json"
+    },
+    "/users/{userId}/twofactorauthentication_disable": {
+      "$ref": "paths/users_{userId}_twofactorauthentication_disable.json"
+    },
+    "/user_directory": {
+      "$ref": "paths/user_directory.json"
+    },
+    "/volumes": {
+      "$ref": "paths/volumes.json"
+    },
+    "/volumes/{id}": {
+      "$ref": "paths/volumes_{id}.json"
+    },
+    "/volumes/{id}/status": {
+      "$ref": "paths/volumes_{id}_status.json"
+    },
+    "/volumes/{id}/remount": {
+      "$ref": "paths/volumes_{id}_remount.json"
+    },
+    "/volumes/{id}/files/{filename}": {
+      "$ref": "paths/volumes_{id}_files_{filename}.json"
+    }
+  }
+}

@@ -1,0 +1,116 @@
+{
+  "get": {
+    "operationId": "getCloudronAvatar",
+    "summary": "Get Cloudron Avatar (icon)",
+    "description": "Get the Cloudron Avatar. The Cloudron avatar (icon) is used in Email templates, Dashboard header and the Login pages.",
+    "tags": [
+      "Branding"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "read"
+        ]
+      },
+      {
+        "query_auth": [
+          "read"
+        ]
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Success",
+        "content": {
+          "image/png": {
+            "schema": {
+              "type": "string",
+              "format": "binary"
+            }
+          }
+        }
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/branding_cloudron_avatar/get.sh"
+        }
+      }
+    ]
+  },
+  "post": {
+    "operationId": "setCloudronAvatar",
+    "summary": "Set Cloudron Avatar (icon)",
+    "description": "Set the Cloudron Avatar. The Cloudron avatar (icon) is used in Email templates, Dashboard header and the Login pages.",
+    "tags": [
+      "Branding"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "write"
+        ]
+      },
+      {
+        "query_auth": [
+          "write"
+        ]
+      }
+    ],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "multipart/form-data": {
+          "schema": {
+            "type": "object",
+            "properties": {
+              "avatar": {
+                "type": "string",
+                "format": "binary"
+              }
+            },
+            "required": [
+              "avatar"
+            ]
+          }
+        }
+      }
+    },
+    "responses": {
+      "200": {
+        "$ref": "../components/responses/no_content.json"
+      },
+      "400": {
+        "$ref": "../components/responses/bad_field.json"
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/branding_cloudron_avatar/post.sh"
+        }
+      }
+    ]
+  }
+}

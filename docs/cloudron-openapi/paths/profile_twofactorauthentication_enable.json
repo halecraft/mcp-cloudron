@@ -1,0 +1,69 @@
+{
+  "post": {
+    "operationId": "enableTwoFactorAuthentication",
+    "summary": "Enable 2FA",
+    "description": "Enables Two Factor Authentication. Enabling 2FA is a two step process:\n  * Call the [Set 2FA Secret](#operation/setTwoFactorAuthenticationSecret) endpoint to generate a secret. The response contains the secret and a qrcode\n  * Call this endpoint with a TOTP Token (generated off the above secret) to enable 2FA\n",
+    "tags": [
+      "Profile"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "write"
+        ]
+      },
+      {
+        "query_auth": [
+          "write"
+        ]
+      }
+    ],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "properties": {
+              "totpToken": {
+                "type": "string",
+                "description": "Current TOTP Token based off the [generate secret](#operation/setTwoFactorAuthenticationSecret)"
+              }
+            },
+            "required": [
+              "totpToken"
+            ]
+          }
+        }
+      }
+    },
+    "responses": {
+      "204": {
+        "$ref": "../components/responses/no_content.json"
+      },
+      "400": {
+        "$ref": "../components/responses/bad_field.json"
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "412": {
+        "$ref": "../components/responses/precondition_failed.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/profile_twofactorauthentication_enable/post.sh"
+        }
+      }
+    ]
+  }
+}

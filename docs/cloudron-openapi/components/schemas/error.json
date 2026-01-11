@@ -1,0 +1,19 @@
+{
+  "type": "object",
+  "properties": {
+    "status": {
+      "description": "A short identifier corresponding to the HTTP status code returned. For  example, the ID for a response returning a 401 status code would be \"Unauthorized\".",
+      "type": "string",
+      "example": "HTTP Status Message"
+    },
+    "message": {
+      "description": "A message providing additional information about the error, including  details to help resolve it when possible.",
+      "type": "string",
+      "example": "Something bad happenned"
+    }
+  },
+  "required": [
+    "status",
+    "message"
+  ]
+}

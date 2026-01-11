@@ -1,0 +1,35 @@
+{
+  "allOf": [
+    {
+      "$ref": "./domainBase.json"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "config": {
+          "type": "object",
+          "description": "Specifies config for Name.com DNS.",
+          "properties": {
+            "username": {
+              "type": "string",
+              "description": "Username for accessing Name.com services.",
+              "example": "nameComUser"
+            },
+            "token": {
+              "type": "string",
+              "description": "Token used for authentication with Name.com DNS.",
+              "example": "NaM3cOmDn5T0k3n1234567890"
+            }
+          },
+          "required": [
+            "token",
+            "username"
+          ]
+        }
+      },
+      "required": [
+        "config"
+      ]
+    }
+  ]
+}

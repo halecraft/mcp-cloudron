@@ -1,0 +1,19 @@
+{
+  "type": "object",
+  "properties": {
+    "lockUserProfiles": {
+      "type": "boolean",
+      "description": "If profile changes by users is disabled",
+      "example": true
+    },
+    "mandatory2FA": {
+      "type": "boolean",
+      "description": "If two factor authentication for all users is enforced",
+      "example": true
+    }
+  },
+  "required": [
+    "lockUserProfiles",
+    "mandatory2FA"
+  ]
+}

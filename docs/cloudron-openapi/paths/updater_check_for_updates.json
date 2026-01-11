@@ -1,0 +1,56 @@
+{
+  "post": {
+    "operationId": "checkForUpdates",
+    "summary": "Check for updates",
+    "description": "Gets information of any pending update to apps and the platform by contacting cloudron.io App Store. This call can take a while since it has to get the update information of each installed app. Use the [getUpdates](#operation/getUpdates) endpoint to get the update information since the last check.\n",
+    "tags": [
+      "Updater"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "read"
+        ]
+      },
+      {
+        "query_auth": [
+          "read"
+        ]
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "updates": {
+                  "$ref": "../components/schemas/UpdateInfo.json"
+                }
+              }
+            }
+          }
+        }
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/updater_check_for_updates/post.sh"
+        }
+      }
+    ]
+  }
+}

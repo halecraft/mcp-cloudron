@@ -1,0 +1,5 @@
+{
+  "type": "string",
+  "description": "Automatic update pattern in [cron](https://crontab.guru/) format.\n",
+  "example": "00 00 1,3,5,23 * * *"
+}

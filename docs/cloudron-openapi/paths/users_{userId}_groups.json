@@ -1,0 +1,85 @@
+{
+  "put": {
+    "operationId": "setLocalGroup",
+    "summary": "Set user group",
+    "description": "Set user group.\nThe role 'user-manager' is required to make this api call.\n",
+    "tags": [
+      "Users"
+    ],
+    "parameters": [
+      {
+        "$ref": "../components/parameters/parameters-userId.json"
+      }
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "write"
+        ]
+      },
+      {
+        "query_auth": [
+          "write"
+        ]
+      }
+    ],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "properties": {
+              "groupIds": {
+                "description": "Array of groupIds",
+                "type": "array",
+                "uniqueItems": true,
+                "example": [
+                  "gid-9eb38938-95a7-4fc7-8c15-e02fa341cdae",
+                  "gid-9ebewj349-95a7-4fc7-85fd-43278sdawae"
+                ],
+                "items": {
+                  "description": "groupId",
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "groupIds"
+            ]
+          }
+        }
+      }
+    },
+    "responses": {
+      "204": {
+        "$ref": "../components/responses/no_content.json"
+      },
+      "400": {
+        "$ref": "../components/responses/bad_field.json"
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "404": {
+        "$ref": "../components/responses/not_found.json"
+      },
+      "409": {
+        "$ref": "../components/responses/conflict.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/users_{userId}_groups/put.sh"
+        }
+      }
+    ]
+  }
+}

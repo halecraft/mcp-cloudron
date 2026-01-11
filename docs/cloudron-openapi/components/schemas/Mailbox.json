@@ -1,0 +1,69 @@
+{
+  "description": "Mailbox",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "example": "public"
+    },
+    "type": {
+      "type": "string",
+      "example": "mailbox"
+    },
+    "ownerId": {
+      "type": "string",
+      "example": "uid-92c987b8-c4d7-440b-a34a-54a3854983b8"
+    },
+    "ownerType": {
+      "type": "string",
+      "example": "user"
+    },
+    "aliasName": {
+      "type": "string",
+      "example": "public"
+    },
+    "aliasDomain": {
+      "type": "string",
+      "example": "your.mail.domain.com"
+    },
+    "creationTime": {
+      "type": "string",
+      "example": "2024-04-01T13:47:50.000Z"
+    },
+    "membersOnly": {
+      "type": "boolean",
+      "example": false
+    },
+    "domain": {
+      "type": "string",
+      "example": "your.mail.domain.com"
+    },
+    "active": {
+      "type": "boolean",
+      "example": true
+    },
+    "enablePop3": {
+      "type": "boolean",
+      "example": false
+    },
+    "storageQuota": {
+      "type": "number",
+      "example": 0
+    },
+    "messagesQuota": {
+      "type": "number",
+      "example": 0
+    },
+    "members": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "description": "User ID's"
+      },
+      "example": [
+        "uid-92c987b8-c4d7-440b-a34a-54a3854983b8",
+        "uid-92c987b8-c4d7-440b-a34a-jkl3827lki12"
+      ]
+    }
+  }
+}

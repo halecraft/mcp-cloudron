@@ -1,0 +1,12 @@
+{
+  "type": "array",
+  "items": {
+    "type": "string"
+  },
+  "description": "Tags for categorizing and filtering the application.",
+  "example": [
+    "dev",
+    "dev",
+    "dev"
+  ]
+}

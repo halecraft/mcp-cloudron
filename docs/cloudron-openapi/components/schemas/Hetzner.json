@@ -1,0 +1,29 @@
+{
+  "allOf": [
+    {
+      "$ref": "./domainBase.json"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "config": {
+          "type": "object",
+          "description": "Specifies config for Hetzner DNS.",
+          "properties": {
+            "token": {
+              "type": "string",
+              "description": "Token used for authentication with Hetzner DNS.",
+              "example": "HtZn3rAP1T0k3n9876543210HeTzNeRaPiToKeN"
+            }
+          },
+          "required": [
+            "token"
+          ]
+        }
+      },
+      "required": [
+        "config"
+      ]
+    }
+  ]
+}

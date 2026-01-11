@@ -1,0 +1,9 @@
+{
+  "name": "eventId",
+  "in": "path",
+  "description": "Event Id",
+  "required": true,
+  "schema": {
+    "type": "string"
+  }
+}

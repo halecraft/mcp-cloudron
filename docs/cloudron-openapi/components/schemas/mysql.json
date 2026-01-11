@@ -1,0 +1,49 @@
+{
+  "description": "Service information for MySQL service.",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "example": "mysql"
+    },
+    "status": {
+      "type": "string",
+      "example": "active"
+    },
+    "memoryUsed": {
+      "type": "integer",
+      "example": 505319424
+    },
+    "memoryPercent": {
+      "type": "integer",
+      "example": 62
+    },
+    "error": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "example": null
+    },
+    "healthcheck": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "example": true
+        }
+      }
+    },
+    "config": {
+      "type": "object",
+      "example": {
+        "memoryLimit": 805306368,
+        "recoveryMode": false
+      }
+    },
+    "defaultMemoryLimit": {
+      "type": "integer",
+      "example": 805306368
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "type": "array",
+  "items": {
+    "type": "string"
+  },
+  "description": "Domains that redirect to the application.",
+  "example": [
+    "your.redirect.domains.com"
+  ]
+}

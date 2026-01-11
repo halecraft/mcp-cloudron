@@ -1,0 +1,26 @@
+{
+  "type": "object",
+  "properties": {
+    "domain": {
+      "type": "string",
+      "description": "The domain name.",
+      "example": "desec.your.domain.io"
+    },
+    "zoneName": {
+      "$ref": "./zoneName.json"
+    },
+    "provider": {
+      "$ref": "./definitions-provider.json"
+    },
+    "tlsConfig": {
+      "$ref": "./tlsConfig.json"
+    },
+    "fallbackCertificate": {
+      "$ref": "./fallbackCertificate.json"
+    }
+  },
+  "required": [
+    "domain",
+    "provider"
+  ]
+}

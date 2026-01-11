@@ -1,0 +1,10 @@
+{
+  "type": "array",
+  "items": {
+    "type": "string"
+  },
+  "description": "Secondary domains associated with the application.",
+  "example": [
+    "your.secondary.domains.com"
+  ]
+}

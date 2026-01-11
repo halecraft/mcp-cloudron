@@ -1,0 +1,5 @@
+{
+  "type": "string",
+  "description": "The footer is a markdown string. It can be templated with the following variables:\n  * `%YEAR%` - the current year\n  * `%VERSION%` - current Cloudron version\n",
+  "example": "All Rights Reserved (c) 2010-%YEAR%"
+}

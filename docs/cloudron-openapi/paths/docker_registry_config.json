@@ -1,0 +1,106 @@
+{
+  "get": {
+    "operationId": "getDockerRegistryConfig",
+    "summary": "Get Private Container Registry Config",
+    "description": "A private docker registry can be setup to pull the docker images of custom apps.",
+    "tags": [
+      "Docker"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "read"
+        ]
+      },
+      {
+        "query_auth": [
+          "read"
+        ]
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "../components/schemas/RegistryConfig.json"
+            }
+          }
+        }
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/docker_registry_config/get.sh"
+        }
+      }
+    ]
+  },
+  "post": {
+    "operationId": "setDockerRegistryConfig",
+    "summary": "Set Private Container Registry Config",
+    "description": "A private docker registry can be setup to pull the docker images of custom apps.",
+    "tags": [
+      "Docker"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "write"
+        ]
+      },
+      {
+        "query_auth": [
+          "write"
+        ]
+      }
+    ],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "$ref": "../components/schemas/RegistryConfig.json"
+          }
+        }
+      }
+    },
+    "responses": {
+      "200": {
+        "$ref": "../components/responses/no_content.json"
+      },
+      "400": {
+        "$ref": "../components/responses/bad_field.json"
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/docker_registry_config/post.sh"
+        }
+      }
+    ]
+  }
+}

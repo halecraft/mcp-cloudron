@@ -1,0 +1,122 @@
+{
+  "get": {
+    "operationId": "getBackgroundImage",
+    "summary": "Get Background Image",
+    "description": "Get the user's custom background image for the dashboard.\nUse the `hasBackgroundImage` property of the [profile](#operation/getProfile) endpoint to determine if the user has a custom background image.\n",
+    "tags": [
+      "Profile"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "read"
+        ]
+      },
+      {
+        "query_auth": [
+          "read"
+        ]
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Success",
+        "content": {
+          "image/png": {
+            "schema": {
+              "type": "string",
+              "format": "binary"
+            }
+          }
+        }
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/profile_background_image/get.sh"
+        }
+      }
+    ]
+  },
+  "post": {
+    "operationId": "setBackgroundImage",
+    "summary": "Set Background Image (icon)",
+    "description": "Set the user's background image for the dashboard",
+    "tags": [
+      "Profile"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "write"
+        ]
+      },
+      {
+        "query_auth": [
+          "write"
+        ]
+      }
+    ],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "multipart/form-data": {
+          "schema": {
+            "type": "object",
+            "properties": {
+              "backgroundImage": {
+                "type": "string",
+                "format": "binary"
+              }
+            },
+            "required": [
+              "backgroundImage"
+            ]
+          }
+        }
+      }
+    },
+    "responses": {
+      "200": {
+        "$ref": "../components/responses/no_content.json"
+      },
+      "400": {
+        "$ref": "../components/responses/bad_field.json"
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL (set)",
+        "source": {
+          "$ref": "../code_samples/cURL(set)/profile_background_image/postundefined"
+        }
+      },
+      {
+        "lang": "cURL (clear)",
+        "source": {
+          "$ref": "../code_samples/cURL(clear)/profile_background_image/postundefined"
+        }
+      }
+    ]
+  }
+}

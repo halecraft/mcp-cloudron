@@ -1,0 +1,49 @@
+{
+  "description": "Service information for MongoDB service.",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "example": "mongodb"
+    },
+    "status": {
+      "type": "string",
+      "example": "active"
+    },
+    "memoryUsed": {
+      "type": "integer",
+      "example": 363716608
+    },
+    "memoryPercent": {
+      "type": "integer",
+      "example": 16
+    },
+    "error": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "example": null
+    },
+    "healthcheck": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "example": true
+        }
+      }
+    },
+    "config": {
+      "type": "object",
+      "example": {
+        "memoryLimit": 2147483648,
+        "recoveryMode": false
+      }
+    },
+    "defaultMemoryLimit": {
+      "type": "integer",
+      "example": 805306368
+    }
+  }
+}

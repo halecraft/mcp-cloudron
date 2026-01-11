@@ -1,0 +1,57 @@
+{
+  "post": {
+    "operationId": "clearEvents",
+    "summary": "Clear eventlogs",
+    "description": "Clear eventlogs.",
+    "tags": [
+      "Mailserver"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "read"
+        ]
+      },
+      {
+        "query_auth": [
+          "read"
+        ]
+      }
+    ],
+    "parameters": [
+      {
+        "name": "till",
+        "in": "query",
+        "description": "Filter to give time range in which evenlogs should be cleared.",
+        "required": false,
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 1
+        }
+      }
+    ],
+    "responses": {
+      "200": {
+        "$ref": "../components/responses/no_content.json"
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/mailserver_clear_eventlog/post.sh"
+        }
+      }
+    ]
+  }
+}

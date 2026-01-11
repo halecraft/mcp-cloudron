@@ -1,0 +1,10 @@
+{
+  "name": "per_page",
+  "in": "query",
+  "description": "Items per page",
+  "schema": {
+    "type": "integer",
+    "minimum": 1,
+    "default": 25
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "type": "object",
+  "description": "Name of the domain",
+  "properties": {
+    "domain": {
+      "type": "string",
+      "description": "The domain name.",
+      "example": "desec.your.domain.io"
+    },
+    "zoneName": {
+      "$ref": "./zoneName.json"
+    },
+    "provider": {
+      "$ref": "./definitions-provider.json"
+    },
+    "config": {
+      "type": "object",
+      "description": "Configuration settings based on the provider."
+    },
+    "tlsConfig": {
+      "$ref": "./tlsConfig.json"
+    },
+    "fallbackCertificate": {
+      "$ref": "./fallbackCertificate.json"
+    },
+    "wellKnown": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "description": "A `Map` with the following Key and Value.\n* The `Key` of the map is the URI scheme as a string\n* The `Value` of the map is the content of the URI scheme as a string\nOnce set, cURL `https://domain/.well-known/$uri-scheme` should return the content.\n",
+      "example": {
+        "dnt-policy.txt": "Do Not Track Compliance Policy",
+        "ads.txt": "https://example.com/ads.txt"
+      }
+    }
+  }
+}

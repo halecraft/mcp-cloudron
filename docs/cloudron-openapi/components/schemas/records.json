@@ -1,0 +1,144 @@
+{
+  "type": "object",
+  "description": "Domain Status",
+  "properties": {
+    "dns": {
+      "type": "object",
+      "properties": {
+        "spf": {
+          "type": "object",
+          "properties": {
+            "domain": {
+              "type": "string",
+              "example": "your.cloudron.site.com"
+            },
+            "name": {
+              "type": "string",
+              "example": "@"
+            },
+            "type": {
+              "type": "string",
+              "example": "TXT"
+            },
+            "value": {
+              "type": "string",
+              "example": "v=spf1 a:your.cloudron.site-ovh.de a:your.maildomain.com ~all"
+            },
+            "expected": {
+              "type": "string",
+              "example": "v=spf1 a:your.cloudron.site-ovh.de a:your.maildomain.com ~all"
+            },
+            "status": {
+              "type": "boolean",
+              "example": true
+            },
+            "errorMessage": {
+              "type": "string",
+              "example": "Error!"
+            }
+          }
+        },
+        "dkim": {
+          "type": "object",
+          "properties": {
+            "domain": {
+              "type": "string",
+              "example": "cloudron._domainkey.your.cloudron.site.de"
+            },
+            "name": {
+              "type": "string",
+              "example": "cloudron._domainkey"
+            },
+            "type": {
+              "type": "string",
+              "example": "TXT"
+            },
+            "value": {
+              "type": "string",
+              "example": "\"v=DKIM1; t=s; p=MIGfMA0GCSqGS4gjh2QEBAQUAA4GJAKSKBiQKBgQCjJ8vxsY3tATVVJZEiYTq6wgWEptSkwEgaPDR423497EHJHJGdN1KTg9lv3bFH6mcNYUejhIGDs22HdYM7dBtX4FeY/XrzP8q+8fHJJdkjasgdjwRbR3j+lmP83DkuaatRheX/y4g1qTWYWzgoTyw87UmemQSQ2367821gQIDAQAB\"\n"
+            },
+            "expected": {
+              "type": "string",
+              "example": "\"v=DKIM1; t=s; p=MIGfMA0GCSqGS4gjh2QEBAQUAA4GJAKSKBiQKBgQCjJ8vxsY3tATVVJZEiYTq6wgWEptSkwEgaPDR423497EHJHJGdN1KTg9lv3bFH6mcNYUejhIGDs22HdYM7dBtX4FeY/XrzP8q+8fHJJdkjasgdjwRbR3j+lmP83DkuaatRheX/y4g1qTWYWzgoTyw87UmemQSQ2367821gQIDAQAB                \n"
+            },
+            "status": {
+              "type": "boolean",
+              "example": true
+            },
+            "errorMessage": {
+              "type": "string",
+              "example": "Error!"
+            }
+          }
+        },
+        "ptr": {
+          "type": "object",
+          "properties": {
+            "domain": {
+              "type": "string",
+              "example": "[IPV4.ADDRESS].in-addr.arpa"
+            },
+            "name": {
+              "type": "string",
+              "example": "[IPV4 ADDRESS]"
+            },
+            "type": {
+              "type": "string",
+              "example": "PTR"
+            },
+            "value": {
+              "type": "string",
+              "example": "v2137868127121.powersrv.de"
+            },
+            "expected": {
+              "type": "string",
+              "example": "your.cloudron.site.com"
+            },
+            "status": {
+              "type": "boolean",
+              "example": false
+            },
+            "errorMessage": {
+              "type": "string",
+              "example": "Error!"
+            }
+          }
+        }
+      }
+    },
+    "rbl": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean"
+        },
+        "ip": {
+          "type": "string"
+        },
+        "servers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "relay": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "type": "string",
+          "example": "OK"
+        },
+        "status": {
+          "type": "boolean",
+          "example": true
+        },
+        "errorMessage": {
+          "type": "string",
+          "example": "Error!"
+        }
+      }
+    }
+  }
+}

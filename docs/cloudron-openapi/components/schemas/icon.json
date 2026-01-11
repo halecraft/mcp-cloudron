@@ -1,0 +1,5 @@
+{
+  "type": "string",
+  "description": "This can be an icon, png, jpeg depending on the upstream site. When a custom icon is set, this is the icon which was previously uploaded.",
+  "example": "< base64 encoded image >"
+}

@@ -1,0 +1,3 @@
+curl -X POST \
+-H "Content-Type: application/json" \
+-H "Authorization: Bearer $CLOUDRON_TOKEN" "https://$CLOUDRON_DOMAIN/api/v1/domains/$DOMAIN/config" --data '{"provider":"bunny","config":{"accessKey": "abc123def456ghi789jkl012mno345pqr678stu901vwx234yz"},"zoneName":"desec.your.domain.org", "fallbackCertificate":{"cert":"-----BEGIN CERTIFICATE...", "key": "-----BEGIN PRIVATE KEY..."},"tlsConfig":{"provider": "letsencrypt-prod", "wildcard": false}}'

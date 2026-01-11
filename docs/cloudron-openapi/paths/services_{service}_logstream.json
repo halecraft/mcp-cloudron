@@ -1,0 +1,82 @@
+{
+  "get": {
+    "operationId": "geServiceLogstream",
+    "summary": "Get Service logstream",
+    "description": "Get Service logs. Use this endpoint to stream logs (`tail -f` style). If you want to download logs, use the [logs](#operation/getServiceLogs) endpoint instead. This endpoint implements [Server Side Events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events). Use the [EventSource](https://developer.mozilla.org/en-US/docs/Web/API/EventSource) interface to parse the returned stream.\n",
+    "tags": [
+      "Services"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "read"
+        ]
+      },
+      {
+        "query_auth": [
+          "read"
+        ]
+      }
+    ],
+    "parameters": [
+      {
+        "$ref": "../components/parameters/service.json"
+      },
+      {
+        "name": "lines",
+        "in": "query",
+        "description": "Last lines displayed.",
+        "required": true,
+        "schema": {
+          "type": "number"
+        }
+      },
+      {
+        "name": "format",
+        "in": "query",
+        "description": "Defines the format of the logs.",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "json",
+            "short"
+          ],
+          "default": "json"
+        }
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Success",
+        "content": {
+          "text/event-stream": {
+            "schema": {
+              "$ref": "../components/schemas/LogStreamSSE.json"
+            }
+          }
+        }
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "404": {
+        "$ref": "../components/responses/not_found.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/services_{service}_logstream/get.sh"
+        }
+      }
+    ]
+  }
+}

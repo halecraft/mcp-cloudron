@@ -1,0 +1,101 @@
+{
+  "get": {
+    "operationId": "getServiceGraphs",
+    "summary": "Get service graphs",
+    "description": "Get graphs of the service",
+    "tags": [
+      "Services"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "read"
+        ]
+      },
+      {
+        "query_auth": [
+          "read"
+        ]
+      }
+    ],
+    "parameters": [
+      {
+        "$ref": "../components/parameters/service.json"
+      },
+      {
+        "name": "fromMinutes",
+        "in": "query",
+        "description": "Filter by minutes.",
+        "required": true,
+        "schema": {
+          "type": "number"
+        }
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "cpu": {
+                  "type": "array"
+                },
+                "memory": {
+                  "type": "array"
+                },
+                "blockRead": {
+                  "type": "array"
+                },
+                "blockWrite": {
+                  "type": "array"
+                },
+                "networkRead": {
+                  "type": "array"
+                },
+                "networkWrite": {
+                  "type": "array"
+                },
+                "blockReadTotal": {
+                  "type": "number"
+                },
+                "blockWriteTotal": {
+                  "type": "number"
+                },
+                "networkReadTotal": {
+                  "type": "number"
+                },
+                "networkWriteTotal": {
+                  "type": "number"
+                },
+                "cpuCount": {
+                  "type": "number",
+                  "example": 4
+                }
+              }
+            }
+          }
+        }
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/services_{service}_graphs/get.sh"
+        }
+      }
+    ]
+  }
+}

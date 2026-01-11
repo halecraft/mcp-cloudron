@@ -1,0 +1,1 @@
+curl "https://$CLOUDRON_DOMAIN/api/v1/profile/avatar/$USER_ID"

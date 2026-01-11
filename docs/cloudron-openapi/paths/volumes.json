@@ -1,0 +1,162 @@
+{
+  "post": {
+    "operationId": "addVolume",
+    "summary": "Add volume",
+    "description": "Add volume. Note that the data in the cURL has to be adjusted based on the mountType. \n",
+    "tags": [
+      "Volumes"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "write"
+        ]
+      },
+      {
+        "query_auth": [
+          "write"
+        ]
+      }
+    ],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "$ref": "../components/schemas/volumeByMountType.json"
+          }
+        }
+      }
+    },
+    "responses": {
+      "201": {
+        "description": "Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "$ref": "../components/schemas/Volume-properties-id.json"
+                }
+              }
+            }
+          }
+        }
+      },
+      "400": {
+        "$ref": "../components/responses/bad_field.json"
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL (CIFS)",
+        "source": {
+          "$ref": "../code_samples/cURL(CIFS)/volumes/postundefined"
+        }
+      },
+      {
+        "lang": "cURL (FILESYSTEM)",
+        "source": {
+          "$ref": "../code_samples/cURL(FILESYSTEM)/volumes/postundefined"
+        }
+      },
+      {
+        "lang": "cURL (MOUNTPOINT)",
+        "source": {
+          "$ref": "../code_samples/cURL(MOUNTPOINT)/volumes/postundefined"
+        }
+      },
+      {
+        "lang": "cURL (EXT4)",
+        "source": {
+          "$ref": "../code_samples/cURL(EXT4)/volumes/postundefined"
+        }
+      },
+      {
+        "lang": "cURL (XFS)",
+        "source": {
+          "$ref": "../code_samples/cURL(XFS)/volumes/postundefined"
+        }
+      },
+      {
+        "lang": "cURL (SSHFS)",
+        "source": {
+          "$ref": "../code_samples/cURL(SSHFS)/volumes/postundefined"
+        }
+      },
+      {
+        "lang": "cURL (NFS)",
+        "source": {
+          "$ref": "../code_samples/cURL(NFS)/volumes/postundefined"
+        }
+      }
+    ]
+  },
+  "get": {
+    "operationId": "getVolumes",
+    "summary": "List volumes",
+    "description": "List volumes",
+    "tags": [
+      "Volumes"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "read"
+        ]
+      },
+      {
+        "query_auth": [
+          "read"
+        ]
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "volumes": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "../components/schemas/Volume.json"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/volumes/get.sh"
+        }
+      }
+    ]
+  }
+}

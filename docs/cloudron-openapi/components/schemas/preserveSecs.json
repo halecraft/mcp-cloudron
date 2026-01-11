@@ -1,0 +1,5 @@
+{
+  "type": "number",
+  "description": "Number of seconds to preserve the backup.",
+  "example": 0
+}

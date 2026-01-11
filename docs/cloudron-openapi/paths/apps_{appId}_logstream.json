@@ -1,0 +1,80 @@
+{
+  "get": {
+    "operationId": "getLAppogStream",
+    "summary": "Get app logstream",
+    "description": "Get app logs. Use this endpoint to stream logs (`tail -f` style). If you want to download logs, use the [logs](#operation/getLogs) endpoint instead. This endpoint implements [Server Side Events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events). Use the [EventSource](https://developer.mozilla.org/en-US/docs/Web/API/EventSource) interface to parse the returned stream.\n",
+    "tags": [
+      "Apps"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "read"
+        ]
+      },
+      {
+        "query_auth": [
+          "read"
+        ]
+      }
+    ],
+    "parameters": [
+      {
+        "name": "lines",
+        "in": "query",
+        "description": "Last lines displayed.",
+        "required": false,
+        "schema": {
+          "type": "number"
+        }
+      },
+      {
+        "name": "format",
+        "in": "query",
+        "description": "Defines the format of the logs.",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "json",
+            "short"
+          ],
+          "default": "json"
+        }
+      },
+      {
+        "$ref": "../components/parameters/appId.json"
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Success",
+        "content": {
+          "text/event-stream": {
+            "schema": {
+              "$ref": "../components/schemas/LogStreamSSE.json"
+            }
+          }
+        }
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "404": {
+        "$ref": "../components/responses/not_found.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      },
+      "x-codeSamples": [
+        {
+          "lang": "cURL",
+          "source": "curl \\\n  -H \"Accept: text/event-stream\" \\\n  -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/apps/$APPID/logstream/$UNIT?lines=100\""
+        }
+      ]
+    }
+  }
+}

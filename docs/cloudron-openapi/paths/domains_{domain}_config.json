@@ -1,0 +1,62 @@
+{
+  "post": {
+    "operationId": "setDomainConfig",
+    "summary": "Set domain config",
+    "description": "Set domain config.",
+    "tags": [
+      "Domains"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "write"
+        ]
+      },
+      {
+        "query_auth": [
+          "write"
+        ]
+      }
+    ],
+    "parameters": [
+      {
+        "$ref": "../components/parameters/domain.json"
+      }
+    ],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "$ref": "../components/schemas/domainByProvider.json"
+          }
+        }
+      }
+    },
+    "responses": {
+      "204": {
+        "$ref": "../components/responses/no_content.json"
+      },
+      "400": {
+        "$ref": "../components/responses/bad_field.json"
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/domains_{domain}_config/post.sh"
+        }
+      }
+    ]
+  }
+}

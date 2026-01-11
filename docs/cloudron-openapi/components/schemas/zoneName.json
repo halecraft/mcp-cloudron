@@ -1,0 +1,5 @@
+{
+  "type": "string",
+  "description": "Specifying the web address for the server.",
+  "example": "desec.your.domain.org"
+}

@@ -1,0 +1,80 @@
+{
+  "description": "Task",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Task Id",
+      "example": "364"
+    },
+    "type": {
+      "type": "string",
+      "description": "Type of task",
+      "enum": [
+        "app",
+        "backup",
+        "update",
+        "checkCerts",
+        "syncDyndns",
+        "prepareDashboardLocation",
+        "cleanBackups",
+        "syncExternalLdap",
+        "changeMailLocation",
+        "syncDnsRecords",
+        "updateDiskUsage"
+      ],
+      "example": "cleanBackups"
+    },
+    "percent": {
+      "type": "integer",
+      "description": "Task progress",
+      "minimum": 1,
+      "maximum": 100
+    },
+    "message": {
+      "type": "string",
+      "description": "Progress message",
+      "example": "Checking expired certs for removal"
+    },
+    "error": {
+      "type": "object",
+      "description": "If the task errored, this contains the error",
+      "properties": {
+        "message": {
+          "type": "string",
+          "description": "Error message"
+        },
+        "code": {
+          "type": "integer",
+          "description": "Error code. Possible codes are `stopped`, `crashed` & `timeout`"
+        }
+      }
+    },
+    "active": {
+      "type": "boolean",
+      "description": "If the task is currently running"
+    },
+    "pending": {
+      "type": "boolean",
+      "description": "If the task is scheduled to run"
+    },
+    "creationTime": {
+      "type": "string",
+      "description": "Time when task was created",
+      "example": "2023-09-07T13:18:35.000Z"
+    },
+    "result": {
+      "type": "object",
+      "description": "Result of the task. The fields depends on the type type"
+    },
+    "ts": {
+      "type": "string",
+      "description": "Time when task was last updated",
+      "example": "2023-09-07T13:18:35.000Z"
+    },
+    "success": {
+      "type": "boolean",
+      "description": "If the task succeeded. If it succeeded, the `result` contains the result. Otherwise, `error` contains the error message"
+    }
+  }
+}

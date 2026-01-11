@@ -1,0 +1,1 @@
+curl -H "Authorization: Bearer $CLOUDRON_TOKEN" "https://$CLOUDRON_DOMAIN/api/v1/branding/cloudron_name" --form avatar=@localfilename.png

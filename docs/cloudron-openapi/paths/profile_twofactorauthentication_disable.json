@@ -1,0 +1,70 @@
+{
+  "post": {
+    "operationId": "disableTwoFactorAuthentication",
+    "summary": "Disable 2FA",
+    "description": "Disable 2FA",
+    "tags": [
+      "Profile"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "write"
+        ]
+      },
+      {
+        "query_auth": [
+          "write"
+        ]
+      }
+    ],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "properties": {
+              "password": {
+                "type": "string",
+                "description": "Current password",
+                "example": "current_password"
+              }
+            },
+            "required": [
+              "password"
+            ]
+          }
+        }
+      }
+    },
+    "responses": {
+      "204": {
+        "$ref": "../components/responses/no_content.json"
+      },
+      "400": {
+        "$ref": "../components/responses/bad_field.json"
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "412": {
+        "$ref": "../components/responses/precondition_failed.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/profile_twofactorauthentication_disable/post.sh"
+        }
+      }
+    ]
+  }
+}

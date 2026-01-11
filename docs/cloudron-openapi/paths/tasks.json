@@ -1,0 +1,76 @@
+{
+  "get": {
+    "operationId": "getTasks",
+    "summary": "List Tasks",
+    "description": "List tasks",
+    "tags": [
+      "Tasks"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "read"
+        ]
+      },
+      {
+        "query_auth": [
+          "read"
+        ]
+      }
+    ],
+    "parameters": [
+      {
+        "$ref": "../components/parameters/PaginationPage.json"
+      },
+      {
+        "$ref": "../components/parameters/PaginationPerPage.json"
+      },
+      {
+        "name": "type",
+        "in": "query",
+        "description": "Filter by Task Type",
+        "required": false,
+        "schema": {
+          "$ref": "../components/schemas/type.json"
+        }
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "tasks": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "../components/schemas/Task.json"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/tasks/get.sh"
+        }
+      }
+    ]
+  }
+}

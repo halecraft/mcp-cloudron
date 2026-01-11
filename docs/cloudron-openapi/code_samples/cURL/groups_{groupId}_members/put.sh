@@ -1,0 +1,1 @@
+curl -X PUT -H "Content-Type: application/json" -H "Authorization: Bearer $CLOUDRON_TOKEN" "https://$CLOUDRON_DOMAIN/api/v1/users/$GROUP_ID/members" --data '{"userIds" : ["uid-9eb38938-95a7-4fc7-8c15-e02fa341cdae"]}'

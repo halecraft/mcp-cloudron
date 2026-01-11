@@ -1,0 +1,22 @@
+{
+  "type": "object",
+  "description": "Policy settings for backups.",
+  "properties": {
+    "schedule": {
+      "type": "string",
+      "example": "00 00 23 * * *",
+      "description": "Backup schedule in cron format or similar."
+    },
+    "retention": {
+      "type": "object",
+      "description": "Retention policy for backups.",
+      "properties": {
+        "keepWWithinSecs": {
+          "type": "number",
+          "description": "Number of seconds to keep weekly backups.",
+          "example": 172300
+        }
+      }
+    }
+  }
+}

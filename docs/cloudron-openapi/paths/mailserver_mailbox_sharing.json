@@ -1,0 +1,119 @@
+{
+  "get": {
+    "operationId": "getMailboxSharing",
+    "summary": "Get mailbox sharing",
+    "description": "Check if mailbox sharing is enabled or not.",
+    "tags": [
+      "Mailserver"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "read"
+        ]
+      },
+      {
+        "query_auth": [
+          "read"
+        ]
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "example": true,
+                  "description": "Information if mailbox sharing is enabled or not."
+                }
+              }
+            }
+          }
+        }
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/mailserver_mailbox_sharing/get.sh"
+        }
+      }
+    ]
+  },
+  "post": {
+    "operationId": "setMailboxSharing",
+    "summary": "Set mailbox sharing",
+    "description": "Enable or disable mailbox sharing.",
+    "tags": [
+      "Mailserver"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "write"
+        ]
+      },
+      {
+        "query_auth": [
+          "write"
+        ]
+      }
+    ],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "properties": {
+              "enabled": {
+                "type": "boolean",
+                "example": true,
+                "description": "Information if mailbox sharing is enabled or not."
+              }
+            },
+            "required": [
+              "enabled"
+            ]
+          }
+        }
+      }
+    },
+    "responses": {
+      "200": {
+        "$ref": "../components/responses/no_content.json"
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/mailserver_mailbox_sharing/post.sh"
+        }
+      }
+    ]
+  }
+}

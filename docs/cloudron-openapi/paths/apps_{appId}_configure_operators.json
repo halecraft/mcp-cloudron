@@ -1,0 +1,81 @@
+{
+  "post": {
+    "operationId": "setAppOperators",
+    "summary": "Set operators",
+    "description": "Set who can access and also configure the app.",
+    "tags": [
+      "Apps"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "write"
+        ]
+      },
+      {
+        "query_auth": [
+          "write"
+        ]
+      }
+    ],
+    "parameters": [
+      {
+        "$ref": "../components/parameters/appId.json"
+      }
+    ],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "properties": {
+              "accessRestriction": {
+                "type": "object",
+                "properties": {
+                  "users": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "example": "uid-321dsa...",
+                      "description": "Array of userId's that are allowed to access the app."
+                    }
+                  },
+                  "groups": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "example": "gid-321dsa...",
+                      "description": "Array of groupId's that are allowed to access the app."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "200": {
+        "$ref": "../components/responses/no_content.json"
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/apps_{appId}_configure_operators/post.sh"
+        }
+      }
+    ]
+  }
+}

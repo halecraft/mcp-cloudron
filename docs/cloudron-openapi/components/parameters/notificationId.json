@@ -1,0 +1,9 @@
+{
+  "name": "notificationId",
+  "in": "path",
+  "description": "Notification Id",
+  "required": true,
+  "schema": {
+    "type": "string"
+  }
+}

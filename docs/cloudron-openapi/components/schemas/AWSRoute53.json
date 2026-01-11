@@ -1,0 +1,35 @@
+{
+  "allOf": [
+    {
+      "$ref": "./domainBase.json"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "config": {
+          "type": "object",
+          "description": "Specifies config for AWS Route53",
+          "properties": {
+            "accessKeyId": {
+              "type": "string",
+              "description": "Access key id for AWS Route53 domain.",
+              "example": "sd321dgjh23483267asjhsdadsa"
+            },
+            "secretAccessKey": {
+              "type": "string",
+              "description": "Secret access key for AWS Route53 domain.",
+              "example": "YOUR_AWS_SECRET_ACCESS_KEY"
+            }
+          },
+          "required": [
+            "accessKeyId",
+            "secretAccessKey"
+          ]
+        }
+      },
+      "required": [
+        "config"
+      ]
+    }
+  ]
+}

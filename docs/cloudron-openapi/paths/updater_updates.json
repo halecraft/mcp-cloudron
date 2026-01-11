@@ -1,0 +1,56 @@
+{
+  "get": {
+    "operationId": "getUpdates",
+    "summary": "Get Pending Updates",
+    "description": "Gets information of any pending update to apps and the platform. This endpoint returns the cached update information and does not contact cloudron.io App Store. The update information could be stale and if you want the latest information use the [checkForUpdates](#operation/checkForUpdates) endpoint.\n",
+    "tags": [
+      "Updater"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "read"
+        ]
+      },
+      {
+        "query_auth": [
+          "read"
+        ]
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "updates": {
+                  "$ref": "../components/schemas/UpdateInfo.json"
+                }
+              }
+            }
+          }
+        }
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/updater_updates/get.sh"
+        }
+      }
+    ]
+  }
+}

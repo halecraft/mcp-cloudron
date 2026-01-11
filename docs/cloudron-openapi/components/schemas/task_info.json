@@ -1,0 +1,10 @@
+{
+  "type": "object",
+  "properties": {
+    "taskId": {
+      "type": "integer",
+      "description": "Use the task id to track the status of the task using the Task API",
+      "example": 295
+    }
+  }
+}

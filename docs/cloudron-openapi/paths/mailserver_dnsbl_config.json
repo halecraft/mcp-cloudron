@@ -1,0 +1,125 @@
+{
+  "get": {
+    "operationId": "getDnsBlConfig",
+    "summary": "Get DNSBL config",
+    "description": "Get the \"Domain Name Sytem Blacklist\" configurations.",
+    "tags": [
+      "Mailserver"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "read"
+        ]
+      },
+      {
+        "query_auth": [
+          "read"
+        ]
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "zones": {
+                  "description": "An array of DNSBL zones to be queried by the mail server. \nEach zone represents a DNS-based blacklist that the server will use to check the origin of incoming emails. \nIP addresses found in these zones are typically associated with known spam sources. \nMail servers query these DNSBL zones during the email validation process to determine the reputation of the sender's IP address.\n",
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "example": "your.spamcan.org"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/mailserver_dnsbl_config/get.sh"
+        }
+      }
+    ]
+  },
+  "post": {
+    "operationId": "setDnsBlConfig",
+    "summary": "Set DNSBL config",
+    "description": "Set the \"Domain Name Sytem Blacklist\" configurations.",
+    "tags": [
+      "Mailserver"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "write"
+        ]
+      },
+      {
+        "query_auth": [
+          "write"
+        ]
+      }
+    ],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "properties": {
+              "zones": {
+                "description": "An array of DNSBL zones to be queried by the mail server. \nEach zone represents a DNS-based blacklist that the server will use to check the origin of incoming emails. \nIP addresses found in these zones are typically associated with known spam sources. \nMail servers query these DNSBL zones during the email validation process to determine the reputation of the sender's IP address.\n**Existing domains also have to be inside that array, otherwise zones array will be replaced by the the one sent with this call.**\n",
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "example": "your.spamcan.org"
+                }
+              }
+            },
+            "required": [
+              "zones"
+            ]
+          }
+        }
+      }
+    },
+    "responses": {
+      "200": {
+        "$ref": "../components/responses/no_content.json"
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/mailserver_dnsbl_config/post.sh"
+        }
+      }
+    ]
+  }
+}

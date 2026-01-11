@@ -1,0 +1,1 @@
+curl -X POST -H "Content-Type: application/json" -H "Authorization: Bearer $CLOUDRON_TOKEN" "https://$CLOUDRON_DOMAIN/api/v1/reverseproxy/trusted_ips" --data '{"trustedIps":"# My IPv4 Proxy\n10.244.0.0/16"}'

@@ -1,0 +1,9 @@
+{
+  "name": "clientId",
+  "in": "path",
+  "description": "ID of an OpenID Connect Client.",
+  "required": true,
+  "schema": {
+    "type": "string"
+  }
+}

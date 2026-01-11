@@ -1,0 +1,5 @@
+{
+  "description": "Newline separated list of IP entries. Each entry is an IP address or an IP address range in CIDR notation. Lines starting with `#` are treated as comments.\n",
+  "type": "string",
+  "example": "# This is a IPv4 range\n5.75.0.0/16\n# This is an IPv6 address\n2604:a880:1:4a::2:7000"
+}

@@ -1,0 +1,185 @@
+{
+  "get": {
+    "operationId": "getVolume",
+    "summary": "Get volume",
+    "description": "Get volume",
+    "tags": [
+      "Volumes"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "read"
+        ]
+      },
+      {
+        "query_auth": [
+          "read"
+        ]
+      }
+    ],
+    "parameters": [
+      {
+        "$ref": "../components/parameters/parameters-id.json"
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "../components/schemas/Volume.json"
+            }
+          }
+        }
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/volumes_{id}/get.sh"
+        }
+      }
+    ]
+  },
+  "post": {
+    "operationId": "updateVolume",
+    "summary": "Update volume",
+    "description": "Update volume. A volume can only be updated when it has the mount type `CIFS`, `NFS` or `SSHFS`.",
+    "tags": [
+      "Volumes"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "write"
+        ]
+      },
+      {
+        "query_auth": [
+          "write"
+        ]
+      }
+    ],
+    "parameters": [
+      {
+        "$ref": "../components/parameters/parameters-id.json"
+      }
+    ],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "oneOf": [
+              {
+                "$ref": "../components/schemas/cifsMountOptions.json"
+              },
+              {
+                "$ref": "../components/schemas/nfsMountOptions.json"
+              },
+              {
+                "$ref": "../components/schemas/sshfsMountOptions.json"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "responses": {
+      "204": {
+        "$ref": "../components/responses/no_content.json"
+      },
+      "400": {
+        "$ref": "../components/responses/bad_field.json"
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL (CIFS)",
+        "source": {
+          "$ref": "../code_samples/cURL(CIFS)/volumes_{id}/postundefined"
+        }
+      },
+      {
+        "lang": "cURL (SSHFS)",
+        "source": {
+          "$ref": "../code_samples/cURL(SSHFS)/volumes_{id}/postundefined"
+        }
+      },
+      {
+        "lang": "cURL (NFS)",
+        "source": {
+          "$ref": "../code_samples/cURL(NFS)/volumes_{id}/postundefined"
+        }
+      }
+    ]
+  },
+  "delete": {
+    "operationId": "deleteVolume",
+    "summary": "Delete volume",
+    "description": "Delete volume",
+    "tags": [
+      "Volumes"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "read"
+        ]
+      },
+      {
+        "query_auth": [
+          "read"
+        ]
+      }
+    ],
+    "parameters": [
+      {
+        "$ref": "../components/parameters/parameters-id.json"
+      }
+    ],
+    "responses": {
+      "204": {
+        "$ref": "../components/responses/no_content.json"
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/volumes_{id}/delete.sh"
+        }
+      }
+    ]
+  }
+}

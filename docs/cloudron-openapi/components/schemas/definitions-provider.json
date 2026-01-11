@@ -1,0 +1,26 @@
+{
+  "type": "string",
+  "enum": [
+    "route53",
+    "bunny",
+    "cloudflare",
+    "digitalocean",
+    "dnsimple",
+    "gandi",
+    "godaddy",
+    "gcdns",
+    "hetzner",
+    "linode",
+    "namecom",
+    "namecheap",
+    "netcup",
+    "ovh",
+    "porkbun",
+    "vultr",
+    "wildcard",
+    "manual",
+    "noop"
+  ],
+  "description": "The provider for your domain. Available provider:\n\n|Provider |Description |\n|--- |--- |\n| route53 | AWS Route53 |\n| bunny | Bunny |\n| cloudflare |Cloudflare |\n| digitalocean | DigitalOcean |\n| dnsimple | DNSimple |\n| gandi | Gandi LiveDNS |\n| godaddy |GoDaddy |\n| gcdns |Google Cloud DNS |\n| hetzner |Hetzner |\n| linode |Linode |\n| namecom |Name.com |\n| namecheap |Namecheap |\n| netcup |Netcup |\n| ovh | OVH |\n| porkbun | Porkbun |\n| vultr | Vultr |\n| wildcard | Wildcard |\n| manual | Manual |\n| noop | No-op |\n",
+  "example": "route53"
+}

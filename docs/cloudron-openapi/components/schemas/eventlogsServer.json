@@ -1,0 +1,85 @@
+{
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "ts": {
+        "type": "number",
+        "example": 1716283785401,
+        "description": "Timestamp of the event."
+      },
+      "type": {
+        "type": "string",
+        "example": "delivered",
+        "description": "Type of the event."
+      },
+      "direction": {
+        "type": "string",
+        "example": "outbound",
+        "description": "Direction of the event."
+      },
+      "uuid": {
+        "type": "string",
+        "example": "6455AF14-CEGF-2253-D57B-E94A6C0F8493.2.2",
+        "description": "Unique ID of the event."
+      },
+      "messageId": {
+        "type": "string",
+        "example": "<hgsdagj4h234hjAHSGJh234gjh.your.domain.org>",
+        "description": "ID of the message of the event."
+      },
+      "mailFrom": {
+        "type": "string",
+        "example": "<mail.from@your.domain.org>",
+        "description": "Sender of the message."
+      },
+      "spamStatus": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "description": "Spam status of the message."
+      },
+      "mailbox": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "description": "Mailbox to which the event belongs."
+      },
+      "rcpTo": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "<rcp@your.domain.org>"
+        },
+        "description": "Recipient of the message."
+      },
+      "server": {
+        "type": "object",
+        "properties": {
+          "hostName": {
+            "type": "string",
+            "example": "your.cloudron.domain.org",
+            "description": "Hostname of the server."
+          },
+          "ip": {
+            "type": "string",
+            "example": "YOUR_IP_ADDRESS",
+            "description": "IP address of the server."
+          },
+          "port": {
+            "type": "integer",
+            "example": 27,
+            "description": "Port of the server."
+          }
+        }
+      },
+      "response": {
+        "type": "string",
+        "example": "Message Queued [...]",
+        "description": "Response message from the server."
+      }
+    }
+  }
+}

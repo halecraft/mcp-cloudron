@@ -1,0 +1,120 @@
+{
+  "get": {
+    "operationId": "getCloudronName",
+    "summary": "Get Cloudron Name",
+    "description": "Get the Cloudron Name. The Cloudron name is used in Email templates, Dashboard header and the Login pages.",
+    "tags": [
+      "Branding"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "read"
+        ]
+      },
+      {
+        "query_auth": [
+          "read"
+        ]
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/branding_cloudron_name/get.sh"
+        }
+      }
+    ]
+  },
+  "post": {
+    "operationId": "setCloudronName",
+    "summary": "Set Cloudron Name",
+    "description": "Set the Cloudron Name. The Cloudron name is used in Email templates, Dashboard header and the Login pages.",
+    "tags": [
+      "Branding"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "write"
+        ]
+      },
+      {
+        "query_auth": [
+          "write"
+        ]
+      }
+    ],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "properties": {
+              "name": {
+                "type": "string",
+                "minimum": 1,
+                "maximum": 64
+              }
+            },
+            "required": [
+              "name"
+            ]
+          }
+        }
+      }
+    },
+    "responses": {
+      "200": {
+        "$ref": "../components/responses/no_content.json"
+      },
+      "400": {
+        "$ref": "../components/responses/bad_field.json"
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/branding_cloudron_name/post.sh"
+        }
+      }
+    ]
+  }
+}

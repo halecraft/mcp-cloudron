@@ -1,0 +1,9 @@
+{
+  "name": "domain",
+  "in": "path",
+  "description": "Mail domain",
+  "required": true,
+  "schema": {
+    "type": "string"
+  }
+}

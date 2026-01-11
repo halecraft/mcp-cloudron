@@ -1,0 +1,9 @@
+{
+  "name": "name",
+  "in": "path",
+  "description": "Mailbox name",
+  "required": true,
+  "schema": {
+    "type": "string"
+  }
+}

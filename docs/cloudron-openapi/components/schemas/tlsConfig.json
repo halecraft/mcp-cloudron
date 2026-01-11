@@ -1,0 +1,16 @@
+{
+  "type": "object",
+  "description": "Configuration for TLS.",
+  "properties": {
+    "provider": {
+      "type": "string",
+      "description": "The provider of the TLS certificate",
+      "example": "letsencrypt-prod"
+    },
+    "wildcard": {
+      "type": "boolean",
+      "description": "Indicates whether the TLS certificate is a wildcard certificate.",
+      "example": false
+    }
+  }
+}

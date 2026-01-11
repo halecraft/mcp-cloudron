@@ -1,0 +1,1 @@
+curl -X POST -H "Content-Type: application/json" -H "Authorization: Bearer $CLOUDRON_TOKEN" "https://$CLOUDRON_DOMAIN/api/v1/docker/registry_config" --data '{"provider":"digitalocean","serverAddress":"registry.digitalocean.com/cloudron","username":"username","password":"password"}'

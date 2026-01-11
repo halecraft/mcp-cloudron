@@ -1,0 +1,76 @@
+{
+  "post": {
+    "operationId": "sendInviteEmail",
+    "summary": "Send invite email",
+    "description": "Send invite email.\nThe role 'user-manager' is required to make this api call.\n",
+    "tags": [
+      "Users"
+    ],
+    "parameters": [
+      {
+        "$ref": "../components/parameters/parameters-userId.json"
+      }
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "write"
+        ]
+      },
+      {
+        "query_auth": [
+          "write"
+        ]
+      }
+    ],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "properties": {
+              "email": {
+                "type": "string",
+                "description": "The email address, that should receive the invite link."
+              }
+            },
+            "required": [
+              "email"
+            ]
+          }
+        }
+      }
+    },
+    "responses": {
+      "202": {
+        "$ref": "../components/responses/accepted.json"
+      },
+      "400": {
+        "$ref": "../components/responses/bad_field.json"
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "404": {
+        "$ref": "../components/responses/not_found.json"
+      },
+      "409": {
+        "$ref": "../components/responses/conflict.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/users_{userId}_send_invite_email/post.sh"
+        }
+      }
+    ]
+  }
+}

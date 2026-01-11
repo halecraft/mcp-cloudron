@@ -1,0 +1,5 @@
+{
+  "type": "string",
+  "description": "User Id.",
+  "example": "uid-3f07b9e7-8cf2-494b-95cc-93dd05fc5bbc"
+}

@@ -1,0 +1,20 @@
+{
+  "required": [
+    "provider"
+  ],
+  "type": "object",
+  "description": "Specifies the IPConfig provider",
+  "properties": {
+    "provider": {
+      "type": "string",
+      "description": "The provider type determines how IP address is determined for use in IPv4 (A) or IPv6 (AAAA) records Sort order:\n  * `noop` - Disable setting DNS record\n  * `fixed` - Use static IP for DNS records\n  * `interface` - Use the IP address attached to the interface for DNS records\n  * `generic` - Automatically detect public IP by calling `cloudron.io`\n",
+      "enum": [
+        "noop",
+        "fixed",
+        "interface",
+        "generic"
+      ],
+      "example": "generic"
+    }
+  }
+}

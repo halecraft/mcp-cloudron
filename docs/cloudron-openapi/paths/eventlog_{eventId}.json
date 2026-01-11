@@ -1,0 +1,59 @@
+{
+  "get": {
+    "operationId": "getEvent",
+    "summary": "Get Event",
+    "description": "Get event by ID",
+    "tags": [
+      "Eventlog"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "read"
+        ]
+      },
+      {
+        "query_auth": [
+          "read"
+        ]
+      }
+    ],
+    "parameters": [
+      {
+        "$ref": "../components/parameters/eventId.json"
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "../components/schemas/Event.json"
+            }
+          }
+        }
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "404": {
+        "$ref": "../components/responses/not_found.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/eventlog_{eventId}/get.sh"
+        }
+      }
+    ]
+  }
+}

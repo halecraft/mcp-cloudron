@@ -1,0 +1,62 @@
+{
+  "get": {
+    "operationId": "getInviteLink",
+    "summary": "Get invite link",
+    "description": "Get invite link",
+    "tags": [
+      "Users"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "read"
+        ]
+      },
+      {
+        "query_auth": [
+          "read"
+        ]
+      }
+    ],
+    "parameters": [
+      {
+        "$ref": "../components/parameters/parameters-userId.json"
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "inviteLink": {
+                  "type": "string",
+                  "example": "https://{$CLOUDRON_DOMAIN}/setupaccount.html?inviteToken=d00108026451e32ba73fd1e46dc5f6b23e67e966ca89f70c67dc940b04492f6f&email=api%40example.com&username=test&displayName=Testing%20API"
+                }
+              }
+            }
+          }
+        }
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/users_{userId}_invite_link/get.sh"
+        }
+      }
+    ]
+  }
+}

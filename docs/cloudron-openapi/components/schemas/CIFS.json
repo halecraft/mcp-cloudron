@@ -1,0 +1,53 @@
+{
+  "allOf": [
+    {
+      "$ref": "./volumeBase.json"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "mountOptions": {
+          "type": "object",
+          "description": "Specifies extra settings for mounting a filesystem. Needed properties vary based on the mountType.",
+          "properties": {
+            "host": {
+              "type": "string",
+              "description": "Host address (if applicable).",
+              "example": "example.com"
+            },
+            "remoteDir": {
+              "type": "string",
+              "description": "Remote directory for network-mounted volumes.",
+              "example": "/backup"
+            },
+            "username": {
+              "type": "string",
+              "description": "Username for accessing the volume (if applicable).",
+              "example": "u328893"
+            },
+            "password": {
+              "type": "string",
+              "description": "Password for accessing the volume (if applicable).",
+              "example": "your_password"
+            },
+            "seal": {
+              "type": "boolean",
+              "description": "Indicates whether the volume is sealed.",
+              "example": true
+            }
+          },
+          "required": [
+            "host",
+            "remoteDir",
+            "username",
+            "password",
+            "seal"
+          ]
+        }
+      },
+      "required": [
+        "mountOptions"
+      ]
+    }
+  ]
+}

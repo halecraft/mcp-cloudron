@@ -1,0 +1,1 @@
+curl -X POST -H "Content-Type: application/json" -H "Authorization: Bearer $CLOUDRON_TOKEN" "https://$CLOUDRON_DOMAIN/api/v1/app_passwords" --data '{"name":"NC Mobile App", "identifier": "114c0b44-6cdd-494d-88a0-0d961006e724"}'

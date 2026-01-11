@@ -1,0 +1,119 @@
+{
+  "get": {
+    "operationId": "getSpamCustomConfig",
+    "summary": "Get spam custom config",
+    "description": "Get spam custom config.",
+    "tags": [
+      "Mailserver"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "read"
+        ]
+      },
+      {
+        "query_auth": [
+          "read"
+        ]
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "config": {
+                  "type": "string",
+                  "description": "The configuration settings for the mail server's spam filter. \nThis includes rules and criteria for identifying and blocking spam emails.\nThe configuration is written in a domain-specific language that utilizes regular expressions\nto specify conditions for email addresses that should be blocked or flagged as spam.\nIt also includes scoring mechanisms to determine the likelihood that an email is spam, \nand descriptions for each rule to explain its purpose and functionality.\n\nExplanation of the example:\n| Line                                                                                                             | Explanation                                                                                                                    |\n|------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------|\n| `header TO_ADDRESS_TO_BLOCK To =~ /^(mail@your.domain\\\\.io\\|mail@your.domain\\\\.org)$/i`                          | Defines a rule to block emails sent to specific addresses using a case-insensitive regex pattern.                              |\n| `score TO_ADDRESS_TO_BLOCK 10.0`                                                                                 | Assigns a spam score of 10.0 to emails that match the rule `TO_ADDRESS_TO_BLOCK`.                                              |\n| `describe TO_ADDRESS_TO_BLOCK Emails sent to blocked addresses are likely spam.`                                 | Provides a human-readable explanation of the rule's purpose, indicating that emails sent to blocked addresses are likely spam. |\n",
+                  "example": "header TO_ADDRESS_TO_BLOCK To =~ /^(mail@your.domain\\\\.io|mail@your.domain\\\\.org)$/i \nscore TO_ADDRESS_TO_BLOCK 10.0 \ndescribe TO_ADDRESS_TO_BLOCK Emails sent to blocked addresses are likely spam.\n"
+                }
+              }
+            }
+          }
+        }
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/mailserver_spam_custom_config/get.sh"
+        }
+      }
+    ]
+  },
+  "post": {
+    "operationId": "setSpamCustomConfig",
+    "summary": "Set spam custom config",
+    "description": "Set spam custom config.",
+    "tags": [
+      "Mailserver"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "write"
+        ]
+      },
+      {
+        "query_auth": [
+          "write"
+        ]
+      }
+    ],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "properties": {
+              "config": {
+                "type": "string",
+                "description": "The configuration settings for the mail server's spam filter using SpamAssassin. \nThis includes rules and criteria for identifying and blocking spam emails.\nThe configuration is written in a domain-specific language that utilizes regular expressions\nto specify conditions for email addresses that should be blocked or flagged as spam.\nIt also includes scoring mechanisms to determine the likelihood that an email is spam, \nand descriptions for each rule to explain its purpose and functionality.\nExplanation of the example:\n| Line                                                                                                             | Explanation                                                                                                                    |\n|------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------|\n| `header TO_ADDRESS_TO_BLOCK To =~ /^(mail@your.domain\\\\.io\\|mail@your.domain\\\\.org)$/i`                          | Defines a rule to block emails sent to specific addresses using a case-insensitive regex pattern.                              |\n| `score TO_ADDRESS_TO_BLOCK 10.0`                                                                                 | Assigns a spam score of 10.0 to emails that match the rule `TO_ADDRESS_TO_BLOCK`.                                              |\n| `describe TO_ADDRESS_TO_BLOCK Emails sent to blocked addresses are likely spam.`                                 | Provides a human-readable explanation of the rule's purpose, indicating that emails sent to blocked addresses are likely spam. |\n",
+                "example": "header TO_ADDRESS_TO_BLOCK To =~ /^(mail@your.domain\\\\.io|mail@your.domain\\\\.org)$/i \nscore TO_ADDRESS_TO_BLOCK 10.0 \ndescribe TO_ADDRESS_TO_BLOCK Emails sent to blocked addresses are likely spam.\n"
+              }
+            },
+            "required": [
+              "config"
+            ]
+          }
+        }
+      }
+    },
+    "responses": {
+      "200": {
+        "$ref": "../components/responses/no_content.json"
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/mailserver_spam_custom_config/post.sh"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "type": "string",
+  "description": "The health status of the application (e.g., healthy, unhealthy).",
+  "example": "healthy"
+}

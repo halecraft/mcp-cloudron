@@ -1,0 +1,119 @@
+{
+  "get": {
+    "operationId": "getSolrConfig",
+    "summary": "Get Solr config",
+    "description": "Check if solr is enabled or not.",
+    "tags": [
+      "Mailserver"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "read"
+        ]
+      },
+      {
+        "query_auth": [
+          "read"
+        ]
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "example": true,
+                  "description": "Information if solr is enabled or not."
+                }
+              }
+            }
+          }
+        }
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/mailserver_solr_config/get.sh"
+        }
+      }
+    ]
+  },
+  "post": {
+    "operationId": "setSolrConfig",
+    "summary": "Set Solr config",
+    "description": "Enable or disable solr.",
+    "tags": [
+      "Mailserver"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "write"
+        ]
+      },
+      {
+        "query_auth": [
+          "write"
+        ]
+      }
+    ],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "properties": {
+              "enabled": {
+                "type": "boolean",
+                "example": true,
+                "description": "Information if solr is enabled or not."
+              }
+            },
+            "required": [
+              "enabled"
+            ]
+          }
+        }
+      }
+    },
+    "responses": {
+      "200": {
+        "$ref": "../components/responses/no_content.json"
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/mailserver_solr_config/post.sh"
+        }
+      }
+    ]
+  }
+}

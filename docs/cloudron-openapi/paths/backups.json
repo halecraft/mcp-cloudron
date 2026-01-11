@@ -1,0 +1,67 @@
+{
+  "get": {
+    "operationId": "listBackups",
+    "summary": "List backups",
+    "description": "List backups.",
+    "tags": [
+      "Backups"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "read"
+        ]
+      },
+      {
+        "query_auth": [
+          "read"
+        ]
+      }
+    ],
+    "parameters": [
+      {
+        "$ref": "../components/parameters/PaginationPage.json"
+      },
+      {
+        "$ref": "../components/parameters/PaginationPerPage.json"
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "backups": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "../components/schemas/items.json"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/backups/get.sh"
+        }
+      }
+    ]
+  }
+}

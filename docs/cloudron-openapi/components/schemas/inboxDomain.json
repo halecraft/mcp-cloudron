@@ -1,0 +1,8 @@
+{
+  "type": [
+    "string",
+    "null"
+  ],
+  "description": "Domain associated with the app's inbox.",
+  "example": null
+}

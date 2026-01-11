@@ -1,0 +1,51 @@
+{
+  "type": "object",
+  "properties": {
+    "provider": {
+      "type": "string",
+      "description": "External LDAP Provider",
+      "enum": [
+        "ad",
+        "cloudron",
+        "jumpcloud",
+        "okta",
+        "univention",
+        "other",
+        "noop"
+      ],
+      "example": "jumpcloud"
+    },
+    "url": {
+      "type": "string",
+      "description": "Address of the Docker Registry",
+      "example": "docker.io"
+    },
+    "baseDn": {
+      "type": "string",
+      "description": "Base DN for users"
+    },
+    "usernameField": {
+      "type": "string",
+      "description": "LDAP Field to use as the username"
+    },
+    "filter": {
+      "type": "string",
+      "description": "LDAP Filter to use for filtering users"
+    },
+    "groupBaseDn": {
+      "type": "string",
+      "description": "Base DN for groups"
+    },
+    "bindDn": {
+      "type": "string",
+      "description": "LDAP authentication username"
+    },
+    "bindPassword": {
+      "type": "string",
+      "description": "LDAP authentication password"
+    }
+  },
+  "required": [
+    "provider"
+  ]
+}

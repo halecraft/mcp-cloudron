@@ -1,0 +1,9 @@
+{
+  "name": "taskId",
+  "in": "path",
+  "description": "Task Id",
+  "required": true,
+  "schema": {
+    "type": "string"
+  }
+}

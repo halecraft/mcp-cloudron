@@ -1,0 +1,88 @@
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique identifier for the backup.",
+      "example": "box_v2.2.2_ff231fee"
+    },
+    "remotePath": {
+      "type": "string",
+      "description": "Path where the backup is stored remotely.",
+      "example": "2024-05-11-210000-872/box_v2.2.2"
+    },
+    "label": {
+      "type": "string",
+      "description": "Label for the backup.",
+      "example": "backupLabel"
+    },
+    "identifier": {
+      "type": "string",
+      "description": "Identifier for the type of backup.",
+      "example": "box"
+    },
+    "creationTime": {
+      "type": "string",
+      "description": "Time when the backup was created.",
+      "example": "22024-05-11T21:35:48.000Z\""
+    },
+    "packageVersion": {
+      "type": "string",
+      "description": "Version of the backup package.",
+      "example": "2.2.2"
+    },
+    "type": {
+      "type": "string",
+      "description": "Type of the backup.",
+      "example": "box"
+    },
+    "state": {
+      "type": "string",
+      "description": "State of the backup.",
+      "example": "normal"
+    },
+    "format": {
+      "type": "string",
+      "description": "Format of the backup file.",
+      "example": "tgz"
+    },
+    "preserveSecs": {
+      "type": "number",
+      "description": "Number of seconds to preserve the backup.",
+      "example": 0
+    },
+    "encryptionVersion": {
+      "type": [
+        "null",
+        "number"
+      ],
+      "description": "Version of the encryption used.",
+      "example": 2
+    },
+    "dependsOn": {
+      "type": "array",
+      "description": "List of dependencies for the backup.",
+      "items": {
+        "type": "string",
+        "example": [
+          "app_3a09fbae-a1bc-4ec8-b3b9-6d72b3cf84d2_v1.1.0_9f3e294c",
+          "app_7b02debb-c1cd-4db6-a4c2-8e95a4ef02d1_v1.1.0_4b7d8a2e",
+          "app_e82bfcde-d2ef-4fdc-c8c1-5a94b5da06e3_v1.1.0_7c6f9b3d",
+          "app_1f93bdea-b3cd-4f2d-a9a5-2b83a5ec19f2_v1.1.0_2d9c8b4a",
+          "app_4d7aecfb-a3de-4cfb-b7b8-1c72b9fd93d4_v1.1.0_8a1b2c3d"
+        ]
+      }
+    },
+    "manifest": {
+      "type": "object",
+      "description": "Manifest containing additional information about the backup.",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Name of the manifest.",
+          "example": "Manifest"
+        }
+      }
+    }
+  }
+}

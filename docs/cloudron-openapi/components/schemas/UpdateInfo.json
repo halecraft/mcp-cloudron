@@ -1,0 +1,13 @@
+{
+  "type": "object",
+  "description": "Update Information",
+  "properties": {
+    "box": {
+      "$ref": "./BoxUpdateInfo.json"
+    }
+  },
+  "additionalProperties": {
+    "x-additionalPropertiesName": "appId",
+    "$ref": "./AppUpdateInfo.json"
+  }
+}

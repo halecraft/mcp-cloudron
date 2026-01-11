@@ -1,0 +1,68 @@
+{
+  "post": {
+    "operationId": "setAppIcon",
+    "summary": "Set icon",
+    "description": "Set app icon.",
+    "tags": [
+      "Apps"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "write"
+        ]
+      },
+      {
+        "query_auth": [
+          "write"
+        ]
+      }
+    ],
+    "parameters": [
+      {
+        "$ref": "../components/parameters/appId.json"
+      }
+    ],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "properties": {
+              "icon": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "example": "Base-64 encoded image string.",
+                "description": "Base-64 encoded image string. An empty string means null."
+              }
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "200": {
+        "$ref": "../components/responses/no_content.json"
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/apps_{appId}_configure_icon/post.sh"
+        }
+      }
+    ]
+  }
+}

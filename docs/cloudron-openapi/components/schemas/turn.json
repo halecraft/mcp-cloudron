@@ -1,0 +1,44 @@
+{
+  "description": "Service information for TURN service.",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "example": "turn"
+    },
+    "status": {
+      "type": "string",
+      "example": "active"
+    },
+    "memoryUsed": {
+      "type": "integer",
+      "example": 18948096
+    },
+    "memoryPercent": {
+      "type": "integer",
+      "example": 7
+    },
+    "error": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "example": null
+    },
+    "healthcheck": {
+      "type": "object",
+      "example": null
+    },
+    "config": {
+      "type": "object",
+      "example": {
+        "memoryLimit": 268435456,
+        "recoveryMode": false
+      }
+    },
+    "defaultMemoryLimit": {
+      "type": "integer",
+      "example": 268435456
+    }
+  }
+}

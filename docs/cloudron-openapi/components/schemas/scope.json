@@ -1,0 +1,7 @@
+{
+  "type": "object",
+  "description": "Token permissions. This is a map of routes with r (read) or rw (read write) permission",
+  "example": {
+    "*": "rw"
+  }
+}

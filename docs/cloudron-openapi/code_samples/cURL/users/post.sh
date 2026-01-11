@@ -1,0 +1,1 @@
+curl -X POST -H "Content-Type: application/json" -H "Authorization: Bearer $CLOUDRON_TOKEN" "https://$CLOUDRON_DOMAIN/api/v1/users" --data '{"username":"Example","email":"example@example.com","password":"insertYourPassword","displayName":"Example", "role":"user","fallbackEmail":"fallback@test.com"}'

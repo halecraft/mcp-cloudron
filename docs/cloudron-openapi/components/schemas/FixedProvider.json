@@ -1,0 +1,17 @@
+{
+  "allOf": [
+    {
+      "$ref": "./IPConfigProviderOnly.json"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "ip": {
+          "type": "string",
+          "description": "A fixed IPv4 or IPv6 Address",
+          "example": "3.4.6.7"
+        }
+      }
+    }
+  ]
+}

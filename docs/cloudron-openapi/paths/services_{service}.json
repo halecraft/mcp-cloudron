@@ -1,0 +1,162 @@
+{
+  "get": {
+    "operationId": "getService",
+    "summary": "Get service",
+    "description": "Get information about a service.",
+    "tags": [
+      "Services"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "read"
+        ]
+      },
+      {
+        "query_auth": [
+          "read"
+        ]
+      }
+    ],
+    "parameters": [
+      {
+        "$ref": "../components/parameters/service.json"
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "../components/schemas/mail.json"
+                },
+                {
+                  "$ref": "../components/schemas/docker.json"
+                },
+                {
+                  "$ref": "../components/schemas/graphite.json"
+                },
+                {
+                  "$ref": "../components/schemas/mongodb.json"
+                },
+                {
+                  "$ref": "../components/schemas/mysql.json"
+                },
+                {
+                  "$ref": "../components/schemas/nginx.json"
+                },
+                {
+                  "$ref": "../components/schemas/postgresql.json"
+                },
+                {
+                  "$ref": "../components/schemas/sftp.json"
+                },
+                {
+                  "$ref": "../components/schemas/turn.json"
+                },
+                {
+                  "$ref": "../components/schemas/unbound.json"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/services_{service}/get.sh"
+        }
+      }
+    ]
+  },
+  "post": {
+    "operationId": "configureService",
+    "summary": "Configure service",
+    "description": "This call is used to configure a service.",
+    "tags": [
+      "Services"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "write"
+        ]
+      },
+      {
+        "query_auth": [
+          "write"
+        ]
+      }
+    ],
+    "parameters": [
+      {
+        "$ref": "../components/parameters/service.json"
+      }
+    ],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "properties": {
+              "memoryLimit": {
+                "type": "number",
+                "description": "Limits the available memory. The unit used here is bytes.",
+                "example": 4294967296
+              },
+              "recoveryMode": {
+                "type": "boolean",
+                "description": "Enables or disables the recovery mode.",
+                "example": false
+              }
+            },
+            "required": [
+              "memoryLimit",
+              "recoveryMode"
+            ]
+          }
+        }
+      }
+    },
+    "responses": {
+      "202": {
+        "$ref": "../components/responses/accepted.json"
+      },
+      "400": {
+        "$ref": "../components/responses/bad_field.json"
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/services_{service}/post.sh"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "post": {
+    "operationId": "updateBackup",
+    "summary": "Update backup",
+    "description": "Update a backup by its ID.",
+    "tags": [
+      "Backups"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "write"
+        ]
+      },
+      {
+        "query_auth": [
+          "write"
+        ]
+      }
+    ],
+    "parameters": [
+      {
+        "$ref": "../components/parameters/backupId.json"
+      }
+    ],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "$ref": "../components/schemas/properties-label.json"
+              },
+              "preserveSecs": {
+                "$ref": "../components/schemas/preserveSecs.json"
+              }
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "200": {
+        "$ref": "../components/responses/no_content.json"
+      },
+      "400": {
+        "$ref": "../components/responses/bad_field.json"
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "409": {
+        "$ref": "../components/responses/conflict.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/backups_{backupId}/post.sh"
+        }
+      }
+    ]
+  }
+}

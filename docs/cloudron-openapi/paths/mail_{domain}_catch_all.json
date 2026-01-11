@@ -1,0 +1,78 @@
+{
+  "post": {
+    "operationId": "setCatchAllAdresses",
+    "summary": "Set catch all addresses",
+    "description": "Set catch all addresses",
+    "tags": [
+      "Mail"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "write"
+        ]
+      },
+      {
+        "query_auth": [
+          "write"
+        ]
+      }
+    ],
+    "parameters": [
+      {
+        "$ref": "../components/parameters/parameters-domain.json"
+      }
+    ],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "properties": {
+              "addresses": {
+                "type": "array",
+                "items": {
+                  "description": "mail address",
+                  "type": "string"
+                },
+                "example": [
+                  "catchall@example.de",
+                  "catch.all@example.de"
+                ],
+                "description": "It will set the addresses inside the array to catch all. If the array is empty, existing catch all addresses will be removed from catch all."
+              }
+            },
+            "required": [
+              "addresses"
+            ]
+          }
+        }
+      }
+    },
+    "responses": {
+      "202": {
+        "$ref": "../components/responses/accepted.json"
+      },
+      "400": {
+        "$ref": "../components/responses/bad_field.json"
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/mail_{domain}_catch_all/post.sh"
+        }
+      }
+    ]
+  }
+}

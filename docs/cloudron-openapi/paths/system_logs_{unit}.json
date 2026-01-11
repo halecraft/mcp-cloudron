@@ -1,0 +1,87 @@
+{
+  "get": {
+    "operationId": "downloadSystemLogs",
+    "summary": "Download system logs",
+    "description": "Download the system logs.",
+    "tags": [
+      "System"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "read"
+        ]
+      },
+      {
+        "query_auth": [
+          "read"
+        ]
+      }
+    ],
+    "parameters": [
+      {
+        "name": "unit",
+        "in": "path",
+        "description": "Unit for the logs.",
+        "required": true,
+        "schema": {
+          "type": "number"
+        }
+      },
+      {
+        "name": "lines",
+        "in": "query",
+        "description": "Last lines displayed.",
+        "required": false,
+        "schema": {
+          "type": "number"
+        }
+      },
+      {
+        "name": "format",
+        "in": "query",
+        "description": "Defines the format of the logs.",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "json",
+            "short"
+          ],
+          "default": "json"
+        }
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Success",
+        "content": {
+          "application/x-logs": {
+            "schema": {
+              "type": "string",
+              "format": "binary",
+              "description": "Each line in the returned logs is of the desired format. When the format is `json`, each line is a [NDJSON](https://en.wikipedia.org/wiki/JSON_streaming#Newline-Delimited_JSON) containing the fields `realtimeTimestamp` and `message`. The `Content-Disposition` header is set to `attachment; filename=\"box.log\"`.\n"
+            }
+          }
+        }
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/system_logs_{unit}/get.sh"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "post": {
+    "operationId": "remountVolume",
+    "summary": "Remount volume",
+    "description": "Remount volume",
+    "tags": [
+      "Volumes"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "read"
+        ]
+      },
+      {
+        "query_auth": [
+          "read"
+        ]
+      }
+    ],
+    "parameters": [
+      {
+        "$ref": "../components/parameters/parameters-id.json"
+      }
+    ],
+    "responses": {
+      "202": {
+        "$ref": "../components/responses/accepted.json"
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/volumes_{id}_remount/post.sh"
+        }
+      }
+    ]
+  }
+}

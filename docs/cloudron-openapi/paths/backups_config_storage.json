@@ -1,0 +1,82 @@
+{
+  "post": {
+    "operationId": "setStorage",
+    "summary": "Set storage",
+    "description": "Set storage",
+    "tags": [
+      "Backups"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "write"
+        ]
+      },
+      {
+        "query_auth": [
+          "write"
+        ]
+      }
+    ],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "properties": {
+              "provider": {
+                "$ref": "../components/schemas/provider.json"
+              },
+              "format": {
+                "$ref": "../components/schemas/format.json"
+              },
+              "password": {
+                "type": "string",
+                "description": "The password used for encryption or authentication during backup. Please ensure to use a strong, secure password.",
+                "example": "Your_Password"
+              },
+              "encryptedFilenames": {
+                "type": "boolean",
+                "description": "Specifies whether filenames in the backup should be encrypted for added security.",
+                "example": true
+              }
+            },
+            "required": [
+              "password",
+              "encryptedFilenames"
+            ]
+          }
+        }
+      }
+    },
+    "responses": {
+      "200": {
+        "$ref": "../components/responses/no_content.json"
+      },
+      "400": {
+        "$ref": "../components/responses/bad_field.json"
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "409": {
+        "$ref": "../components/responses/conflict.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/backups_config_storage/post.sh"
+        }
+      }
+    ]
+  }
+}

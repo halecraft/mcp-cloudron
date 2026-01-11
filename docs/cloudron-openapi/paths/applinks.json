@@ -1,0 +1,157 @@
+{
+  "get": {
+    "operationId": "getApplinks",
+    "summary": "List applinks",
+    "description": "List applinks",
+    "tags": [
+      "Applinks"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "read"
+        ]
+      },
+      {
+        "query_auth": [
+          "read"
+        ]
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "applinks": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "../components/schemas/Applink.json"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "400": {
+        "$ref": "../components/responses/bad_field.json"
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/applinks/get.sh"
+        }
+      }
+    ]
+  },
+  "post": {
+    "operationId": "addApplink",
+    "summary": "Add an applink",
+    "description": "Add an applink. The role 'admin' is required to make this API call.",
+    "tags": [
+      "Applinks"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "write"
+        ]
+      },
+      {
+        "query_auth": [
+          "write"
+        ]
+      }
+    ],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "properties": {
+              "upstreamUri": {
+                "type": "string",
+                "description": "The URI of the external app."
+              },
+              "label": {
+                "type": "string",
+                "description": "The display name of the external app. If empty it will fetch the name of the site you are adding."
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "description": "A tag associated with the external app. Can be empty."
+                },
+                "description": "Array of tags that the external app will have after creation. Can be empty."
+              },
+              "accessRestriction": {
+                "type": "object",
+                "description": "An object that includes arrays for user and group restrictions. If `null`, everyone can access the applink.",
+                "properties": {
+                  "users": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "uniqueItems": true
+                    }
+                  },
+                  "groups": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "uniqueItems": true
+                    }
+                  }
+                }
+              }
+            },
+            "required": [
+              "upstreamUri"
+            ]
+          }
+        }
+      }
+    },
+    "responses": {
+      "201": {
+        "$ref": "../components/responses/no_content.json"
+      },
+      "400": {
+        "$ref": "../components/responses/bad_field.json"
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/applinks/post.sh"
+        }
+      }
+    ]
+  }
+}

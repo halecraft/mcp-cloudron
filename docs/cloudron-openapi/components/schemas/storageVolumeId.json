@@ -1,0 +1,8 @@
+{
+  "type": [
+    "string",
+    "null"
+  ],
+  "description": "Identifier for the storage volume used by the app.",
+  "example": null
+}

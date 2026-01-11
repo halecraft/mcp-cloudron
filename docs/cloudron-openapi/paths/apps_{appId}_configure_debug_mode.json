@@ -1,0 +1,89 @@
+{
+  "post": {
+    "operationId": "setAppDebugMode",
+    "summary": "Set debug mode",
+    "description": "Set debug mode is an internal route that is used to debug an app.",
+    "tags": [
+      "Apps"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "write"
+        ]
+      },
+      {
+        "query_auth": [
+          "write"
+        ]
+      }
+    ],
+    "parameters": [
+      {
+        "$ref": "../components/parameters/appId.json"
+      }
+    ],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "properties": {
+              "debugMode": {
+                "type": "object",
+                "properties": {
+                  "cmd": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "description": "List of command-line arguments for the debug mode."
+                    },
+                    "example": [
+                      "/bin/bash",
+                      "-c",
+                      "echo \"Repair mode. [...]"
+                    ]
+                  },
+                  "readonlyRootfs": {
+                    "type": "boolean",
+                    "example": true,
+                    "description": "Indicates if the root filesystem should be mounted as read-only for added security."
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "202": {
+        "description": "Accepted",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "../components/schemas/task_info.json"
+            }
+          }
+        }
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/apps_{appId}_configure_debug_mode/post.sh"
+        }
+      }
+    ]
+  }
+}

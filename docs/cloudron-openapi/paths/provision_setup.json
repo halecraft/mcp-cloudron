@@ -1,0 +1,102 @@
+{
+  "post": {
+    "operationId": "setupProvision",
+    "summary": "Configure inital domain",
+    "description": "API endpoint to configure domain settings. To read more about the existing domain provider and their domain configs inside the **Domain Route**.",
+    "tags": [
+      "Provision"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "write"
+        ]
+      },
+      {
+        "query_auth": [
+          "write"
+        ]
+      }
+    ],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "properties": {
+              "domainConfig": {
+                "type": "object",
+                "required": [
+                  "provider",
+                  "domain",
+                  "config"
+                ],
+                "properties": {
+                  "provider": {
+                    "$ref": "../components/schemas/definitions-provider.json"
+                  },
+                  "domain": {
+                    "type": "string",
+                    "description": "The domain name."
+                  },
+                  "zoneName": {
+                    "type": "string",
+                    "description": "The zone name."
+                  },
+                  "config": {
+                    "type": "object",
+                    "description": "Configuration settings for the domain."
+                  },
+                  "tlsConfig": {
+                    "type": "object",
+                    "description": "TLS configuration settings.",
+                    "properties": {
+                      "provider": {
+                        "type": "string",
+                        "description": "The provider of the TLS configuration."
+                      }
+                    }
+                  }
+                }
+              },
+              "ipv4Config": {
+                "type": "object",
+                "description": "IPv4 configuration settings."
+              },
+              "ipv6Config": {
+                "type": "object",
+                "description": "IPv6 configuration settings."
+              }
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "200": {
+        "$ref": "../components/responses/no_content.json"
+      },
+      "400": {
+        "$ref": "../components/responses/bad_field.json"
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/provision_setup/post.sh"
+        }
+      }
+    ]
+  }
+}

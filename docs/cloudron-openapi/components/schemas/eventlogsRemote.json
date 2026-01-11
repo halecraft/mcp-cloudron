@@ -1,0 +1,110 @@
+{
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "ts": {
+        "type": "number",
+        "example": 1716283785401,
+        "description": "Timestamp of the event."
+      },
+      "type": {
+        "type": "string",
+        "example": "delivered",
+        "description": "Type of the event."
+      },
+      "direction": {
+        "type": "string",
+        "example": "outbound",
+        "description": "Direction of the event."
+      },
+      "uuid": {
+        "type": "string",
+        "example": "6455AF14-CEGF-2253-D57B-E94A6C0F8493.2.2",
+        "description": "Unique ID of the event."
+      },
+      "messageId": {
+        "type": "string",
+        "example": "<hgsdagj4h234hjAHSGJh234gjh.your.domain.org>",
+        "description": "ID of the message of the event."
+      },
+      "mailFrom": {
+        "type": "string",
+        "example": "<mail.from@your.domain.org>",
+        "description": "Sender of the message."
+      },
+      "spamStatus": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "description": "Spam status of the message."
+      },
+      "mailbox": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "description": "Mailbox to which the event belongs."
+      },
+      "rcpTo": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "<rcp@your.domain.org>"
+        },
+        "description": "Recipient of the message."
+      },
+      "remote": {
+        "type": "object",
+        "properties": {
+          "ip": {
+            "type": "string",
+            "example": "IP_ADDRESS",
+            "description": "IP address of the remote server."
+          },
+          "port": {
+            "type": "number",
+            "example": 5433,
+            "description": "Port of the remote server."
+          },
+          "host": {
+            "type": "string",
+            "example": "34a29as54-4sd5f-4234a5-agdf63-506b5343237eaa.[host]",
+            "description": "Hostname of the remote server."
+          },
+          "info": {
+            "type": "string",
+            "example": "34a29as54-4sd5f-4234a5-agdf63-506b5343237eaa.[host]",
+            "description": "Additional information about the remote server."
+          },
+          "closed": {
+            "type": "boolean",
+            "example": false,
+            "description": "Status indicating whether the connection is closed."
+          },
+          "is_private": {
+            "type": "boolean",
+            "example": false,
+            "description": "Status indicating whether the connection is private."
+          },
+          "is_local": {
+            "type": "boolean",
+            "example": false,
+            "description": "Status indicating whether the connection is local."
+          }
+        }
+      },
+      "authUser": {
+        "type": "string",
+        "example": "test@your.domain.org",
+        "description": "Authenticated user for the remote server."
+      },
+      "message": {
+        "type": "string",
+        "example": "Message Queued (...)",
+        "description": "Message of the event."
+      }
+    }
+  }
+}

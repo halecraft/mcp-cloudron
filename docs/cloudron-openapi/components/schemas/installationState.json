@@ -1,0 +1,5 @@
+{
+  "type": "string",
+  "description": "The installation status of the application (e.g., installed, not installed).",
+  "example": "installed"
+}

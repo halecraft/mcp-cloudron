@@ -1,0 +1,36 @@
+{
+  "type": "object",
+  "description": "App Update Information",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "The App Store Id",
+      "example": "org.wordpress.cloudronapp"
+    },
+    "creationDate": {
+      "type": "string",
+      "description": "Date when this app version was created",
+      "example": "2023-08-30T11:33:42.000Z"
+    },
+    "publishState": {
+      "type": "string",
+      "description": "Approval status of the app. Usually `approved`."
+    },
+    "ownerId": {
+      "type": "string",
+      "description": "Cloudron.io account owner id"
+    },
+    "manifest": {
+      "type": "object",
+      "description": "Cloudron [App Manifest](https://docs.cloudron.io/packaging/manifest/)"
+    },
+    "iconUrl": {
+      "type": "string",
+      "description": "URL to download the app icon for this version"
+    },
+    "unstable": {
+      "type": "boolean",
+      "description": "Whether this release is considered stable or not"
+    }
+  }
+}

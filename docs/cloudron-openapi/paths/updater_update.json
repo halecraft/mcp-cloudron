@@ -1,0 +1,67 @@
+{
+  "post": {
+    "operationId": "updateCloudron",
+    "summary": "Update Cloudron",
+    "description": "Updates Cloudron to the next available release. The update is started asynchronously and can be monitored using the [tasks API](#tag/Tasks).\n",
+    "tags": [
+      "Updater"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "write"
+        ]
+      },
+      {
+        "query_auth": [
+          "write"
+        ]
+      }
+    ],
+    "requestBody": {
+      "required": false,
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "properties": {
+              "skipBackup": {
+                "type": "boolean",
+                "description": "Whether backup should be skipped before performing the update.",
+                "default": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "202": {
+        "$ref": "../components/responses/task_started.json"
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "409": {
+        "$ref": "../components/responses/conflict.json"
+      },
+      "422": {
+        "$ref": "../components/responses/unprocessable_entity.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/updater_update/post.sh"
+        }
+      }
+    ]
+  }
+}

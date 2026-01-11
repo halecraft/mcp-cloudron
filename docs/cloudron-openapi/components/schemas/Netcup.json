@@ -1,0 +1,41 @@
+{
+  "allOf": [
+    {
+      "$ref": "./domainBase.json"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "config": {
+          "type": "object",
+          "description": "Specifies config for Netcup DNS.",
+          "properties": {
+            "customerNumber": {
+              "type": "string",
+              "description": "Customer ID or account number used for accessing Netcup services.",
+              "example": "NC1234567"
+            },
+            "apiKey": {
+              "type": "string",
+              "description": "API key used for authentication with Netcup DNS.",
+              "example": "N3tCupDn5T0k3n9876543210"
+            },
+            "apiPassword": {
+              "type": "string",
+              "description": "Password used alongside the API key for authentication with Netcup DNS.",
+              "example": "YOUR_PASSWORD"
+            }
+          },
+          "required": [
+            "customerNumber",
+            "apiKey",
+            "apiPassword"
+          ]
+        }
+      },
+      "required": [
+        "config"
+      ]
+    }
+  ]
+}

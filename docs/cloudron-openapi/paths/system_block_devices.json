@@ -1,0 +1,56 @@
+{
+  "get": {
+    "operationId": "getBlockDevices",
+    "summary": "Get block devices",
+    "description": "Get information of your sytem block devices.\n",
+    "tags": [
+      "System"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "read"
+        ]
+      },
+      {
+        "query_auth": [
+          "read"
+        ]
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "devices": {
+                  "$ref": "../components/schemas/devices.json"
+                }
+              }
+            }
+          }
+        }
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/system_block_devices/get.sh"
+        }
+      }
+    ]
+  }
+}

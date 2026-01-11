@@ -1,0 +1,8 @@
+{
+  "type": [
+    "null",
+    "string"
+  ],
+  "description": "Error message if there is an issue with the application's operation.",
+  "example": null
+}

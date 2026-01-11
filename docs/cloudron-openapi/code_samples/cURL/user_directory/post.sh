@@ -1,0 +1,1 @@
+curl -X POST -H "Content-Type: application/json" -H "Authorization: Bearer $CLOUDRON_TOKEN" "https://$CLOUDRON_DOMAIN/api/v1/user_directory/profile_config" --data '{ "lockUserProfiles": false, "mandatory2FA": false }'

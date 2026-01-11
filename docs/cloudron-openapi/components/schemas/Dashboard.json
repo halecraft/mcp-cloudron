@@ -1,0 +1,114 @@
+{
+  "description": "Configurations of your cloudron server.",
+  "type": "object",
+  "properties": {
+    "apiServerOrigin": {
+      "type": "string",
+      "example": "https://api.cloudron.io"
+    },
+    "webServerOrigin": {
+      "type": "string",
+      "example": "https://cloudron.io"
+    },
+    "consoleServerOrigin": {
+      "type": "string",
+      "example": "https://console.cloudron.io"
+    },
+    "adminDomain": {
+      "type": "string",
+      "example": "${YOUR_ADMIN_DOMAIN}"
+    },
+    "adminFqdn": {
+      "type": "string",
+      "example": "${YOUR_ADMIN_FQDN}"
+    },
+    "mailFqdn": {
+      "type": "string",
+      "example": "${YOUR_MAIL_FQDN}"
+    },
+    "version": {
+      "type": "string",
+      "example": "8.0.0"
+    },
+    "ubuntuVersion": {
+      "type": "string",
+      "example": "Ubuntu 22.04.4 LTS"
+    },
+    "isDemo": {
+      "type": "boolean",
+      "example": false
+    },
+    "cloudronName": {
+      "type": "string",
+      "example": "Your Cloudron Instance"
+    },
+    "footer": {
+      "type": "string",
+      "example": "\"Thanks for using Cloudron!\"\n"
+    },
+    "features": {
+      "type": "object",
+      "properties": {
+        "userMaxCount": {
+          "type": "boolean",
+          "example": true
+        },
+        "userGroups": {
+          "type": "boolean",
+          "example": true
+        },
+        "userRoles": {
+          "type": "boolean",
+          "example": true
+        },
+        "domainMaxCount": {
+          "example": null
+        },
+        "externalLdap": {
+          "type": "boolean",
+          "example": false
+        },
+        "privateDockerRegistry": {
+          "type": "boolean",
+          "example": false
+        },
+        "branding": {
+          "type": "boolean",
+          "example": true
+        },
+        "support": {
+          "type": "boolean",
+          "example": true
+        },
+        "directoryConfig": {
+          "type": "boolean",
+          "example": true
+        },
+        "profileConfig": {
+          "type": "boolean",
+          "example": true
+        },
+        "mailboxMaxCount": {
+          "type": "boolean",
+          "example": true
+        },
+        "emailPremium": {
+          "type": "boolean",
+          "example": true
+        }
+      }
+    },
+    "profileLocked": {
+      "type": "boolean",
+      "example": false
+    },
+    "mandatory2FA": {
+      "type": "boolean",
+      "example": false
+    },
+    "external2FA": {
+      "type": "boolean",
+      "example": false
+    }
+  }
+}

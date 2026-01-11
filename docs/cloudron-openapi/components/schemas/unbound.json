@@ -1,0 +1,33 @@
+{
+  "description": "Service information for Unbound service.",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "example": "unbound"
+    },
+    "status": {
+      "type": "string",
+      "example": "active"
+    },
+    "error": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "example": null
+    },
+    "healthcheck": {
+      "type": "object",
+      "example": null
+    },
+    "config": {
+      "type": "object",
+      "example": {}
+    },
+    "defaultMemoryLimit": {
+      "type": "integer",
+      "example": 0
+    }
+  }
+}

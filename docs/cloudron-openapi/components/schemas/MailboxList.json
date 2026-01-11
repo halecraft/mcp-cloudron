@@ -1,0 +1,86 @@
+{
+  "description": "Mailbox",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "The name of the mailbox.",
+      "example": "public"
+    },
+    "domain": {
+      "type": "string",
+      "description": "The domain of the mailbox.",
+      "example": "your.mail.domain.de"
+    },
+    "ownerId": {
+      "type": "string",
+      "description": "The ID of the owner of the mailbox.",
+      "example": "uid-92c987b8-c4d7-440b-a34a-54a3854983b8"
+    },
+    "ownerType": {
+      "type": "string",
+      "description": "The type of the owner of the mailbox.",
+      "example": "user"
+    },
+    "active": {
+      "type": "boolean",
+      "description": "Indicates whether the mailbox is active.",
+      "example": true
+    },
+    "enablePop3": {
+      "type": "boolean",
+      "description": "Indicates whether POP3 access is enabled for the mailbox.",
+      "example": false
+    },
+    "storageQuota": {
+      "type": "number",
+      "description": "The storage quota of the mailbox in bytes.",
+      "example": 0
+    },
+    "messagesQuota": {
+      "type": "number",
+      "description": "The messages quota of the mailbox.",
+      "example": 0
+    },
+    "members": {
+      "type": "array",
+      "description": "An array of user IDs who are members of the mailbox.",
+      "items": {
+        "type": "string",
+        "description": "User ID's"
+      },
+      "example": [
+        "uid-92c987b8-c4d7-440b-a34a-54a3854983b8",
+        "uid-92c987b8-c4d7-440b-a34a-jkl3827lki12"
+      ]
+    },
+    "membersOnly": {
+      "type": "boolean",
+      "description": "Indicates whether the mailbox is accessible only to its members.",
+      "example": true
+    },
+    "aliases": {
+      "type": "array",
+      "description": "An array of mailbox aliases.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The name of the mailbox alias."
+          },
+          "domain": {
+            "type": "string",
+            "description": "The domain of the mailbox alias."
+          }
+        },
+        "example": [
+          {
+            "name": "MailboxAlias",
+            "domain": "your.mail.domain.com"
+          }
+        ]
+      }
+    }
+  }
+}

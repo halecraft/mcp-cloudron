@@ -1,0 +1,5 @@
+{
+  "type": "string",
+  "description": "The current operational state of the application (e.g., running, stopped).",
+  "example": "running"
+}

@@ -1,0 +1,79 @@
+{
+  "description": "External added app.",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "The identifier of the external added app.",
+      "example": "365653e5-0b3c-46bf-b1bf-828d3de3362b"
+    },
+    "creationTime": {
+      "type": "string",
+      "description": "The time the app got added to \"My Apps\".",
+      "example": "2024-04-08T10:40:07.000Z"
+    },
+    "updateTime": {
+      "type": "string",
+      "description": "The time of the last update.",
+      "example": "2024-04-08T10:40:07.000Z"
+    },
+    "ts": {
+      "type": "number",
+      "description": "A timestamp for the creation.",
+      "example": 1712572807000
+    },
+    "label": {
+      "type": "string",
+      "description": "The display name of your external app.",
+      "example": "Cloudron Docs"
+    },
+    "upstreamUri": {
+      "type": "string",
+      "description": "The URi of the added app.",
+      "example": "https://docs.cloudron.io/"
+    },
+    "tags": {
+      "type": "array",
+      "description": "Tags to make sorting the apps more easy.",
+      "items": {
+        "type": "string"
+      },
+      "example": [
+        "external",
+        "dev"
+      ]
+    },
+    "accessRestriction": {
+      "type": "object",
+      "properties": {
+        "users": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "example": [
+            "uid-c431f056-704f-46df-a316-0e59fe654754",
+            "uid-c431f056-704f-46df-a316-0e59fd76553"
+          ],
+          "description": "The userId's of groups that are able to see the external app."
+        },
+        "groups": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "example": [
+            "gid-c431f056-704f-46df-a316-0e59fe654754",
+            "gid-c431f056-704f-46df-a316-0e59fe654754"
+          ],
+          "description": "The groupId's of groups that are able to see the external app."
+        }
+      }
+    },
+    "icon": {
+      "type": "string",
+      "description": "This can be an icon, png, jpeg depending on the upstream site. When a custom icon is set, this is the icon which was previously uploaded.",
+      "example": "< base64 encoded image >"
+    }
+  }
+}

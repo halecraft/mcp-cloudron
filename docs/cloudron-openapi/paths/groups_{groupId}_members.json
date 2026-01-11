@@ -1,0 +1,84 @@
+{
+  "put": {
+    "operationId": "setMembers",
+    "summary": "Set members",
+    "description": "Set members.\nThe role 'user-manager' is required to make this api call.\n",
+    "tags": [
+      "Groups"
+    ],
+    "parameters": [
+      {
+        "$ref": "../components/parameters/groupId.json"
+      }
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "write"
+        ]
+      },
+      {
+        "query_auth": [
+          "write"
+        ]
+      }
+    ],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "properties": {
+              "userIds": {
+                "type": "array",
+                "uniqueItems": true,
+                "example": [
+                  "uid-9eb38938-95a7-4fc7-8c15-e02fa341cdae",
+                  "uid-9ebewj349-95a7-4fc7-85fd-43278sdawae"
+                ],
+                "items": {
+                  "description": "userId",
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "userIds"
+            ]
+          }
+        }
+      }
+    },
+    "responses": {
+      "200": {
+        "$ref": "../components/responses/no_content.json"
+      },
+      "400": {
+        "$ref": "../components/responses/bad_field.json"
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "404": {
+        "$ref": "../components/responses/not_found.json"
+      },
+      "409": {
+        "$ref": "../components/responses/conflict.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/groups_{groupId}_members/put.sh"
+        }
+      }
+    ]
+  }
+}

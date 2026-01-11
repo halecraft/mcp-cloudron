@@ -1,0 +1,8 @@
+{
+  "type": [
+    "string",
+    "null"
+  ],
+  "description": "Restrictions on access to the application (e.g., admin only).",
+  "example": null
+}

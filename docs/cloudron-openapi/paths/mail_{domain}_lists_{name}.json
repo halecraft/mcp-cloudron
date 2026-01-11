@@ -1,0 +1,212 @@
+{
+  "get": {
+    "operationId": "getMailDomainListsByName",
+    "summary": "Get mail domain list",
+    "description": "Get mail domain list",
+    "tags": [
+      "Mail"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "read"
+        ]
+      },
+      {
+        "query_auth": [
+          "read"
+        ]
+      }
+    ],
+    "parameters": [
+      {
+        "$ref": "../components/parameters/parameters-domain.json"
+      },
+      {
+        "$ref": "../components/parameters/name.json"
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "list": {
+                  "$ref": "../components/schemas/List.json"
+                }
+              }
+            }
+          }
+        }
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "404": {
+        "$ref": "../components/responses/not_found.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/mail_{domain}_lists_{name}/get.sh"
+        }
+      }
+    ]
+  },
+  "post": {
+    "operationId": "updateMailDomainList",
+    "summary": "Update mail domain list",
+    "description": "Update mail domain list",
+    "tags": [
+      "Mail"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "write"
+        ]
+      },
+      {
+        "query_auth": [
+          "write"
+        ]
+      }
+    ],
+    "parameters": [
+      {
+        "$ref": "../components/parameters/parameters-domain.json"
+      },
+      {
+        "$ref": "../components/parameters/name.json"
+      }
+    ],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "properties": {
+              "members": {
+                "type": "array",
+                "description": "Array of members of the list.",
+                "items": {
+                  "type": "string",
+                  "description": "member",
+                  "example": [
+                    "user@example.org",
+                    "user2@example.org"
+                  ]
+                }
+              },
+              "membersOnly": {
+                "type": "boolean",
+                "example": false,
+                "description": "Set membersOnly on true or false."
+              },
+              "active": {
+                "type": "boolean",
+                "example": true,
+                "description": "Set active on true or false."
+              }
+            },
+            "required": [
+              "members"
+            ]
+          }
+        }
+      }
+    },
+    "responses": {
+      "204": {
+        "$ref": "../components/responses/no_content.json"
+      },
+      "400": {
+        "$ref": "../components/responses/bad_field.json"
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/mail_{domain}_lists_{name}/post.sh"
+        }
+      }
+    ]
+  },
+  "delete": {
+    "operationId": "deleteMailDomainListByName",
+    "summary": "Delete mail domain list",
+    "description": "Delete mail domain list",
+    "tags": [
+      "Mail"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "write"
+        ]
+      },
+      {
+        "query_auth": [
+          "write"
+        ]
+      }
+    ],
+    "parameters": [
+      {
+        "$ref": "../components/parameters/parameters-domain.json"
+      },
+      {
+        "$ref": "../components/parameters/name.json"
+      }
+    ],
+    "responses": {
+      "204": {
+        "$ref": "../components/responses/no_content.json"
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "404": {
+        "$ref": "../components/responses/not_found.json"
+      },
+      "409": {
+        "$ref": "../components/responses/conflict.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/mail_{domain}_lists_{name}/delete.sh"
+        }
+      }
+    ]
+  }
+}

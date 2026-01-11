@@ -1,0 +1,78 @@
+{
+  "post": {
+    "operationId": "setReverseProxyConfig",
+    "summary": "Set reverse proxy",
+    "description": "Set up configs like the 'robots.txt'.",
+    "tags": [
+      "Apps"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "write"
+        ]
+      },
+      {
+        "query_auth": [
+          "write"
+        ]
+      }
+    ],
+    "parameters": [
+      {
+        "$ref": "../components/parameters/appId.json"
+      }
+    ],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "properties": {
+              "robotTxt": {
+                "type": "boolean",
+                "example": true,
+                "description": "Enable for automatic updates of the app, disable if manual updates are preferred."
+              },
+              "csp": {
+                "type": [
+                  "null",
+                  "string"
+                ],
+                "example": "default-src 'self'; img-src 'self' data:; media-src 'self'",
+                "description": "Content Security Policy (CSP) directives to specify allowed sources for content."
+              },
+              "hstsPreload": {
+                "type": "boolean",
+                "example": false,
+                "description": "Enable HTTP Strict Transport Security (HSTS) preload list inclusion."
+              }
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "200": {
+        "$ref": "../components/responses/no_content.json"
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/apps_{appId}_configure_reverse_proxy/post.sh"
+        }
+      }
+    ]
+  }
+}

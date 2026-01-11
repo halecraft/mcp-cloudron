@@ -1,0 +1,118 @@
+{
+  "get": {
+    "operationId": "getCloudronLanguage",
+    "summary": "Get Cloudron Language",
+    "description": "The Cloudron Language is the language used for the Dashboard, Login Page, Invitation and Reset emails. Note that users can always set a different language for their Dashboard in their profile. The default language is `en` (English).",
+    "tags": [
+      "Cloudron"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "read"
+        ]
+      },
+      {
+        "query_auth": [
+          "read"
+        ]
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "language": {
+                  "type": "string",
+                  "description": "The Language ID",
+                  "default": "en",
+                  "example": "de"
+                }
+              }
+            }
+          }
+        }
+      },
+      "404": {
+        "$ref": "../components/responses/not_found.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/cloudron_language/get.sh"
+        }
+      }
+    ]
+  },
+  "post": {
+    "operationId": "setCloudronLanguage",
+    "summary": "Set Cloudron Language",
+    "description": "The Cloudron Language is the language used for the Dashboard, Login Page, Invitation and Reset emails. Note that users can always set a different language for their Dashboard in their profile. The default language is `en` (English).\n",
+    "tags": [
+      "Cloudron"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "write"
+        ]
+      },
+      {
+        "query_auth": [
+          "write"
+        ]
+      }
+    ],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "properties": {
+              "language": {
+                "type": "string",
+                "description": "The Language ID",
+                "default": "en",
+                "example": "de"
+              }
+            },
+            "required": [
+              "language"
+            ]
+          }
+        }
+      }
+    },
+    "responses": {
+      "200": {
+        "$ref": "../components/responses/no_content.json"
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/cloudron_language/post.sh"
+        }
+      }
+    ]
+  }
+}

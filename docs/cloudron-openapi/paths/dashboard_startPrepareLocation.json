@@ -1,0 +1,83 @@
+{
+  "post": {
+    "operationId": "startPrepareLocation",
+    "summary": "Set dashboard location",
+    "description": "Set your dashboard location.",
+    "tags": [
+      "Dashboard"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "write"
+        ]
+      },
+      {
+        "query_auth": [
+          "write"
+        ]
+      }
+    ],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "properties": {
+              "domain": {
+                "type": "string",
+                "example": "example.org",
+                "description": "The domain where the dashboard will be located at. The `my.` can't be changed. With the given example it would look like this: `my.example.org`.\n"
+              }
+            },
+            "required": [
+              "domain"
+            ]
+          }
+        }
+      }
+    },
+    "responses": {
+      "204": {
+        "description": "Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "taskId": {
+                  "type": "integer",
+                  "description": "Use the task id to track the status of the task using the Task API",
+                  "example": 295
+                }
+              }
+            }
+          }
+        }
+      },
+      "400": {
+        "$ref": "../components/responses/bad_field.json"
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "409": {
+        "$ref": "../components/responses/conflict.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/dashboard_startPrepareLocation/post.sh"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,91 @@
+{
+  "description": "Service information for Mail service.",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "example": "mail"
+    },
+    "status": {
+      "type": "string",
+      "example": "active"
+    },
+    "memoryUsed": {
+      "type": "integer",
+      "example": 755478528
+    },
+    "memoryPercent": {
+      "type": "integer",
+      "example": 17
+    },
+    "error": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "example": null
+    },
+    "healthcheck": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "example": true
+        },
+        "haraka": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "boolean",
+              "example": true
+            }
+          }
+        },
+        "dovecot": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "boolean",
+              "example": true
+            }
+          }
+        },
+        "spamd": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "boolean",
+              "example": true
+            }
+          }
+        },
+        "redis": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "boolean",
+              "example": true
+            }
+          }
+        },
+        "solr": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "boolean",
+              "example": true
+            }
+          }
+        }
+      }
+    },
+    "config": {
+      "type": "object",
+      "example": {}
+    },
+    "defaultMemoryLimit": {
+      "type": "integer",
+      "example": 536870912
+    }
+  }
+}

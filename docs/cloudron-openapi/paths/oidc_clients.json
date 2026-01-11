@@ -1,0 +1,140 @@
+{
+  "get": {
+    "operationId": "getOidcClients",
+    "summary": "List oidc clients",
+    "description": "List the existing OpenID Connect Clients.\n",
+    "tags": [
+      "OIDC"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "read"
+        ]
+      },
+      {
+        "query_auth": [
+          "read"
+        ]
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "clients": {
+                  "$ref": "../components/schemas/clients.json"
+                }
+              }
+            }
+          }
+        }
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/oidc_clients/get.sh"
+        }
+      }
+    ]
+  },
+  "post": {
+    "operationId": "addOidcClient",
+    "summary": "Add oidc client",
+    "description": "Add an oidc client to your Cloudron.\n",
+    "tags": [
+      "OIDC"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "read"
+        ]
+      },
+      {
+        "query_auth": [
+          "read"
+        ]
+      }
+    ],
+    "requestBody": {
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "The name of the client.",
+                "example": "Test Client"
+              },
+              "loginRedirectUri": {
+                "type": "string",
+                "description": "The URI to redirect to after login.",
+                "example": "your.oidc.uri.org"
+              },
+              "tokenSignatureAlgorithm": {
+                "type": "string",
+                "description": "The algorithm used to sign tokens.",
+                "enum": [
+                  "RS256",
+                  "EdDSA"
+                ],
+                "example": "EdDSA"
+              }
+            },
+            "required": [
+              "name",
+              "loginRedirectUri",
+              "tokenSignatureAlgorithm"
+            ]
+          }
+        }
+      }
+    },
+    "responses": {
+      "200": {
+        "description": "Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "../components/schemas/clients-items.json"
+            }
+          }
+        }
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/oidc_clients/post.sh"
+        }
+      }
+    ]
+  }
+}

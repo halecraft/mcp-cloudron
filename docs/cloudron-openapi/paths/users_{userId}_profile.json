@@ -1,0 +1,78 @@
+{
+  "post": {
+    "operationId": "updateUser",
+    "summary": "Update user",
+    "description": "Update user.\nUsername can only be updated when the user has no existing username!\n",
+    "tags": [
+      "Users"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "write"
+        ]
+      },
+      {
+        "query_auth": [
+          "write"
+        ]
+      }
+    ],
+    "parameters": [
+      {
+        "$ref": "../components/parameters/parameters-userId.json"
+      }
+    ],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "properties": {
+              "email": {
+                "type": "string",
+                "description": "Primary email for the user."
+              },
+              "displayName": {
+                "type": "string",
+                "description": "Display name for the user."
+              },
+              "fallbackEmail": {
+                "type": "string",
+                "description": "Incase the email is hosted on the same Cloudron, this email is used for password resets."
+              }
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "204": {
+        "$ref": "../components/responses/no_content.json"
+      },
+      "400": {
+        "$ref": "../components/responses/bad_field.json"
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "404": {
+        "$ref": "../components/responses/not_found.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/users_{userId}_profile/post.sh"
+        }
+      }
+    ]
+  }
+}

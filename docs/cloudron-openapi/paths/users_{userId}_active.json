@@ -1,0 +1,76 @@
+{
+  "put": {
+    "operationId": "setUserActive",
+    "summary": "Set active",
+    "description": "Set a user active or not\nA user can't set themselve as active or inactive.\nThe role 'user-manager' is required to make this api call.\n",
+    "tags": [
+      "Users"
+    ],
+    "parameters": [
+      {
+        "$ref": "../components/parameters/parameters-userId.json"
+      }
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "write"
+        ]
+      },
+      {
+        "query_auth": [
+          "write"
+        ]
+      }
+    ],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "properties": {
+              "active": {
+                "type": "boolean",
+                "description": "Specify whether the user is active or not."
+              }
+            },
+            "required": [
+              "active"
+            ]
+          }
+        }
+      }
+    },
+    "responses": {
+      "204": {
+        "$ref": "../components/responses/no_content.json"
+      },
+      "400": {
+        "$ref": "../components/responses/bad_field.json"
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "404": {
+        "$ref": "../components/responses/not_found.json"
+      },
+      "409": {
+        "$ref": "../components/responses/conflict.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/users_{userId}_active/put.sh"
+        }
+      }
+    ]
+  }
+}

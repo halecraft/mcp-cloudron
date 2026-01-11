@@ -1,0 +1,29 @@
+{
+  "required": [
+    "name",
+    "mountType"
+  ],
+  "type": "object",
+  "description": "Specifies the name and mountType of the volume.",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "A valid name for the volume should consist of printable characters and valid filesystem characters. This includes letters, numbers, spaces, and various symbols commonly accepted in filesystem naming conventions.",
+      "example": "Main Volume"
+    },
+    "mountType": {
+      "type": "string",
+      "description": "Indicates the method or protocol used to mount a volume, defining how the volume is accessed and interacted with within the system.  See more about [mount types](https://docs.cloudron.io/volumes/#mount-type).\n  * `cifs`: Network file system protocol commonly used for sharing files and printers in a network.\n  * `filesystem`: Refers to the type of volume that is mounted directly from the local filesystem.\n  * `ext4`: A filesystem type recognized for its performance, scalability, and support for large file sizes and partitions.\n  * `mountpoint`: Represents a location in the filesystem hierarchy where a volume is mounted.\n  * `nfs`: Network File System, a distributed file system protocol allowing a user on a client computer to access files over a network as if the files were locally stored.\n  * `sshfs`: SSH Filesystem, a network file system protocol built on the Secure Shell protocol.\n  * `xfs`: Another type of filesystem known for its scalability and high-performance features.\n",
+      "enum": [
+        "cifs",
+        "filesystem",
+        "ext4",
+        "mountpoint",
+        "nfs",
+        "sshfs",
+        "xfs"
+      ],
+      "example": "cifs"
+    }
+  }
+}

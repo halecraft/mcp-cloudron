@@ -1,0 +1,29 @@
+{
+  "description": "Groups provide a convenient way to group users. You can assign one or more groups to apps to restrict who can access for an app.\n",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Group Id",
+      "example": "gid-bd6d2757-320c-4c8c-b429-b283a8bd7647"
+    },
+    "name": {
+      "type": "string",
+      "description": "A label/ display name for a group.",
+      "example": "developer"
+    },
+    "source": {
+      "type": "string",
+      "description": "The source",
+      "example": ""
+    },
+    "userIds": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "example": "uid-3f07b9e7-8cf2-494b-95cc-93dd05fc5bbc"
+      },
+      "description": "Array of user ids that are part of this group"
+    }
+  }
+}

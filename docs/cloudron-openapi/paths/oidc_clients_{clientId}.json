@@ -1,0 +1,185 @@
+{
+  "get": {
+    "operationId": "getOidcClient",
+    "summary": "Get oidc client",
+    "description": "Get a specific OpenID Connect Clients.\n",
+    "tags": [
+      "OIDC"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "read"
+        ]
+      },
+      {
+        "query_auth": [
+          "read"
+        ]
+      }
+    ],
+    "parameters": [
+      {
+        "$ref": "../components/parameters/clientId.json"
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "../components/schemas/clients-items.json"
+            }
+          }
+        }
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/oidc_clients_{clientId}/get.sh"
+        }
+      }
+    ]
+  },
+  "post": {
+    "operationId": "updateOidcClient",
+    "summary": "Update oidc client",
+    "description": "Update OpenID Connect Client.\n",
+    "tags": [
+      "OIDC"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "read"
+        ]
+      },
+      {
+        "query_auth": [
+          "read"
+        ]
+      }
+    ],
+    "parameters": [
+      {
+        "$ref": "../components/parameters/clientId.json"
+      }
+    ],
+    "requestBody": {
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "The name of the client.",
+                "example": "Test Client"
+              },
+              "loginRedirectUri": {
+                "type": "string",
+                "description": "The URI to redirect to after login.",
+                "example": "your.oidc.uri.org"
+              },
+              "tokenSignatureAlgorithm": {
+                "type": "string",
+                "description": "The algorithm used to sign tokens.",
+                "enum": [
+                  "RS256",
+                  "EdDSA"
+                ],
+                "example": "EdDSA"
+              }
+            },
+            "required": [
+              "name",
+              "loginRedirectUri",
+              "tokenSignatureAlgorithm"
+            ]
+          }
+        }
+      }
+    },
+    "responses": {
+      "201": {
+        "$ref": "../components/responses/no_content.json"
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/oidc_clients_{clientId}/post.sh"
+        }
+      }
+    ]
+  },
+  "delete": {
+    "operationId": "deleteOidcClient",
+    "summary": "Delete oidc client",
+    "description": "Delete a specific OpenID Connect Clients.\n",
+    "tags": [
+      "OIDC"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "read"
+        ]
+      },
+      {
+        "query_auth": [
+          "read"
+        ]
+      }
+    ],
+    "parameters": [
+      {
+        "$ref": "../components/parameters/clientId.json"
+      }
+    ],
+    "responses": {
+      "204": {
+        "$ref": "../components/responses/no_content.json"
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/oidc_clients_{clientId}/delete.sh"
+        }
+      }
+    ]
+  }
+}

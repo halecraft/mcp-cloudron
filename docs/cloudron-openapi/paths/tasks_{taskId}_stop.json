@@ -1,0 +1,55 @@
+{
+  "post": {
+    "operationId": "stopTask",
+    "summary": "Stop Task",
+    "description": "Stops a task",
+    "tags": [
+      "Tasks"
+    ],
+    "parameters": [
+      {
+        "$ref": "../components/parameters/taskId.json"
+      }
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "write"
+        ]
+      },
+      {
+        "query_auth": [
+          "write"
+        ]
+      }
+    ],
+    "responses": {
+      "204": {
+        "$ref": "../components/responses/no_content.json"
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "404": {
+        "$ref": "../components/responses/not_found.json"
+      },
+      "409": {
+        "$ref": "../components/responses/conflict.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/tasks_{taskId}_stop/post.sh"
+        }
+      }
+    ]
+  }
+}

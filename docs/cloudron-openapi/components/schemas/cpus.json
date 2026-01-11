@@ -1,0 +1,73 @@
+{
+  "type": "array",
+  "example": [
+    {
+      "model": "AMD EPYC Processor",
+      "speed": 2445,
+      "times": {
+        "user": 43406350,
+        "nice": 595090,
+        "sys": 23041560,
+        "idle": 1932436310,
+        "irq": 0
+      }
+    },
+    {
+      "model": "AMD EPYC Processor",
+      "speed": 2445,
+      "times": {
+        "user": 43047330,
+        "nice": 605510,
+        "sys": 22909070,
+        "idle": 1932424940,
+        "irq": 0
+      }
+    }
+  ],
+  "items": {
+    "type": "object",
+    "properties": {
+      "model": {
+        "type": "string",
+        "example": "AMD EPYC Processor",
+        "description": "The model name of the CPU."
+      },
+      "speed": {
+        "type": "integer",
+        "example": 2555,
+        "description": "The speed of the CPU in MHz."
+      },
+      "times": {
+        "type": "object",
+        "description": "Object containing CPU times (in milliseconds).",
+        "properties": {
+          "user": {
+            "type": "integer",
+            "example": 234023,
+            "description": "Time spent in user mode."
+          },
+          "nice": {
+            "type": "integer",
+            "example": 321123,
+            "description": "Time spent in nice mode."
+          },
+          "sys": {
+            "type": "integer",
+            "example": 3214321,
+            "description": "Time spent in system mode."
+          },
+          "idle": {
+            "type": "integer",
+            "example": 3214432,
+            "description": "Time spent in idle mode."
+          },
+          "irq": {
+            "type": "integer",
+            "example": 0,
+            "description": "Time spent in IRQ mode."
+          }
+        }
+      }
+    }
+  }
+}

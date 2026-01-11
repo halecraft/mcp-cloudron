@@ -1,0 +1,37 @@
+{
+  "type": "object",
+  "description": "Cloudron Update Information",
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "The SemVer Version of the next Cloudron release"
+    },
+    "changelog": {
+      "type": "array",
+      "description": "Array of change log lines",
+      "items": {
+        "type": "string"
+      }
+    },
+    "sourceTarballUrl": {
+      "type": "string",
+      "description": "URL to download release tarball"
+    },
+    "sourceTarballSigUrl": {
+      "type": "string",
+      "description": "URL to download release tarball signature. The GPG public key is stored in `src/releases.gpg` of Cloudron git repo."
+    },
+    "boxVersionsUrl": {
+      "type": "string",
+      "description": "URL to download release versions file"
+    },
+    "boxVersionsSigUrl": {
+      "type": "string",
+      "description": "URL to download release versions file signature. The GPG public key is stored in `src/releases.gpg` of Cloudron git repo."
+    },
+    "unstable": {
+      "type": "boolean",
+      "description": "Whether this release is considered stable or not"
+    }
+  }
+}

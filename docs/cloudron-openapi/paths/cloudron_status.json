@@ -1,0 +1,44 @@
+{
+  "get": {
+    "operationId": "getStatus",
+    "summary": "Get Status",
+    "description": "Simple healthcheck route to check if Cloudron is running or not. This route does not require any authentication.",
+    "tags": [
+      "Cloudron"
+    ],
+    "security": [],
+    "responses": {
+      "200": {
+        "description": "Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "version": {
+                  "type": "string",
+                  "description": "The current Cloudron Version",
+                  "example": "7.6.0"
+                }
+              }
+            }
+          }
+        }
+      },
+      "404": {
+        "$ref": "../components/responses/not_found.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/cloudron_status/get.sh"
+        }
+      }
+    ]
+  }
+}

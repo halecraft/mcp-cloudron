@@ -1,0 +1,82 @@
+{
+  "post": {
+    "operationId": "syncDns",
+    "summary": "Sync DNS",
+    "description": "Sync DNS.",
+    "tags": [
+      "Domains"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "write"
+        ]
+      },
+      {
+        "query_auth": [
+          "write"
+        ]
+      }
+    ],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "properties": {
+              "domain": {
+                "type": "string",
+                "example": "your.domain.org",
+                "description": "The domain name that will sync the dns records. If no domain will be sent with this api call, it will sync the dns records of every domain on your Cloudron."
+              },
+              "type": {
+                "description": "If type is `mail` only dns records connected to the mail server will be synchronized. If it's an empty string, it will synchronize all dns records.",
+                "type": "string",
+                "example": ""
+              }
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "201": {
+        "description": "Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "taskId": {
+                  "type": "integer",
+                  "description": "Use the task id to track the status of the task using the Task API",
+                  "example": 295
+                }
+              }
+            }
+          }
+        }
+      },
+      "400": {
+        "$ref": "../components/responses/bad_field.json"
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/domains_sync_dns/post.sh"
+        }
+      }
+    ]
+  }
+}

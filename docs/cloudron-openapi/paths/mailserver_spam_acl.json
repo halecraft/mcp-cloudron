@@ -1,0 +1,139 @@
+{
+  "get": {
+    "operationId": "getSpamAcl",
+    "summary": "Get spam acl",
+    "description": "Get spam ACL.",
+    "tags": [
+      "Mailserver"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "read"
+        ]
+      },
+      {
+        "query_auth": [
+          "read"
+        ]
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "whitelist": {
+                  "type": "array",
+                  "description": "List of email addresses that are allowed (whitelisted).",
+                  "example": [
+                    "no-spam@mail.de"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "blacklist": {
+                  "type": "array",
+                  "description": "List of email addresses that are blocked (blacklisted).",
+                  "example": [
+                    "spam@mail.de"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/mailserver_spam_acl/get.sh"
+        }
+      }
+    ]
+  },
+  "post": {
+    "operationId": "setSpamAcl",
+    "summary": "Set spam acl",
+    "description": "Set spam acl.",
+    "tags": [
+      "Mailserver"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "write"
+        ]
+      },
+      {
+        "query_auth": [
+          "write"
+        ]
+      }
+    ],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "properties": {
+              "blacklist": {
+                "type": "array",
+                "description": "List of email addresses that are blocked (blacklisted). To remove emails from the blacklist, send an empty array.\n**Existing emails also have to be inside that array, otherwise blacklist array will be replaced by the the one sent with this call.**\n",
+                "example": [
+                  "spam@mail.de"
+                ],
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "blacklist"
+            ]
+          }
+        }
+      }
+    },
+    "responses": {
+      "200": {
+        "$ref": "../components/responses/no_content.json"
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/mailserver_spam_acl/post.sh"
+        }
+      }
+    ]
+  }
+}

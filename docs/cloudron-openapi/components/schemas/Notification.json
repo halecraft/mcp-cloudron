@@ -1,0 +1,36 @@
+{
+  "description": "Notification",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Notification Id",
+      "example": "50"
+    },
+    "eventId": {
+      "type": "string",
+      "description": "EventId from Eventlog",
+      "example": "051ceb23-5003-4b03-b46e-521611b02a1c"
+    },
+    "title": {
+      "type": "string",
+      "description": "Subject of the notification",
+      "example": "Reboot Required"
+    },
+    "message": {
+      "type": "string",
+      "description": "Notification message in markdown format",
+      "example": "To finish ubuntu security updates, a reboot is necessary."
+    },
+    "creationTime": {
+      "type": "string",
+      "description": "Time when notification was created",
+      "example": "2022-03-05T02:30:00.000Z"
+    },
+    "acknowledged": {
+      "type": "boolean",
+      "description": "Whether notification was acknowledged by user or not",
+      "example": false
+    }
+  }
+}

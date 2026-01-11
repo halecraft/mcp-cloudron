@@ -1,0 +1,70 @@
+{
+  "get": {
+    "operationId": "getTaskLogs",
+    "summary": "Get Task Logs",
+    "description": "Get task logs. Use this end point to download logs. If you want to follow logs `tail -f` style, use the [logstream](#operation/getTaskLogstream) endpoint instead.",
+    "tags": [
+      "Tasks"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "read"
+        ]
+      },
+      {
+        "query_auth": [
+          "read"
+        ]
+      }
+    ],
+    "parameters": [
+      {
+        "$ref": "../components/parameters/taskId.json"
+      },
+      {
+        "$ref": "../components/parameters/logsLines.json"
+      },
+      {
+        "$ref": "../components/parameters/logsFormat.json"
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Success",
+        "content": {
+          "application/x-logs": {
+            "schema": {
+              "type": "string",
+              "format": "binary",
+              "description": "Each line in the returned logs is of the desired format. When the format is `json`, each line is a [NDJSON](https://en.wikipedia.org/wiki/JSON_streaming#Newline-Delimited_JSON) containing the fields `realtimeTimestamp` and `message`. The `Content-Disposition` header is set to `attachment; filename=\"task-43.log\"`.\n"
+            }
+          }
+        }
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "404": {
+        "$ref": "../components/responses/not_found.json"
+      },
+      "424": {
+        "$ref": "../components/responses/failed_dependency.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/tasks_{taskId}_logs/get.sh"
+        }
+      }
+    ]
+  }
+}

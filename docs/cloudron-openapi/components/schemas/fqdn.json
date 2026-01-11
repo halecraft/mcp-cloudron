@@ -1,0 +1,5 @@
+{
+  "type": "string",
+  "description": "The fully qualified domain name (FQDN) of the application.",
+  "example": "test.cloudron.io"
+}

@@ -1,0 +1,83 @@
+{
+  "put": {
+    "operationId": "setRole",
+    "summary": "Set a user's role",
+    "description": "Set user role.\nUsers can't set roles for themselves.\nThe role 'user-manager' is required to make this api call.\n",
+    "tags": [
+      "Users"
+    ],
+    "parameters": [
+      {
+        "$ref": "../components/parameters/parameters-userId.json"
+      }
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "write"
+        ]
+      },
+      {
+        "query_auth": [
+          "write"
+        ]
+      }
+    ],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "properties": {
+              "role": {
+                "type": "string",
+                "enum": [
+                  "owner",
+                  "admin",
+                  "usermanager",
+                  "mailmanager",
+                  "user"
+                ],
+                "description": "See [user roles](https://docs.cloudron.io/user-management/#roles) for more information on each role."
+              }
+            },
+            "required": [
+              "user"
+            ]
+          }
+        }
+      }
+    },
+    "responses": {
+      "204": {
+        "$ref": "../components/responses/no_content.json"
+      },
+      "400": {
+        "$ref": "../components/responses/bad_field.json"
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "404": {
+        "$ref": "../components/responses/not_found.json"
+      },
+      "409": {
+        "$ref": "../components/responses/conflict.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/users_{userId}_role/put.sh"
+        }
+      }
+    ]
+  }
+}

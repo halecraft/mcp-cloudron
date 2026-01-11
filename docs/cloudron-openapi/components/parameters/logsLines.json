@@ -1,0 +1,10 @@
+{
+  "name": "lines",
+  "in": "query",
+  "description": "Number of lines in the log",
+  "required": false,
+  "schema": {
+    "type": "integer",
+    "default": 10
+  }
+}

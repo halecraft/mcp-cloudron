@@ -1,0 +1,44 @@
+{
+  "post": {
+    "operationId": "syncExternalLdap",
+    "summary": "Synchronize",
+    "description": "Trigger synchronization with external LDAP server",
+    "tags": [
+      "External LDAP"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "write"
+        ]
+      },
+      {
+        "query_auth": [
+          "write"
+        ]
+      }
+    ],
+    "responses": {
+      "202": {
+        "$ref": "../components/responses/task_started.json"
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/external_ldap_sync/post.sh"
+        }
+      }
+    ]
+  }
+}

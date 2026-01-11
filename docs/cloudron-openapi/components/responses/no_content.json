@@ -1,0 +1,10 @@
+{
+  "description": "No Content",
+  "content": {
+    "application/json": {
+      "schema": {
+        "$ref": "../schemas/no_content.json"
+      }
+    }
+  }
+}

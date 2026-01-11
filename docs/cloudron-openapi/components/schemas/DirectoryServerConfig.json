@@ -1,0 +1,21 @@
+{
+  "type": "object",
+  "properties": {
+    "enabled": {
+      "type": "boolean",
+      "description": "If Directory Server is enabled",
+      "example": true
+    },
+    "secret": {
+      "type": "string",
+      "description": "Password for authenticating with the Directory Server",
+      "example": true
+    },
+    "allowlist": {
+      "$ref": "./IpEntries.json"
+    }
+  },
+  "required": [
+    "enabled"
+  ]
+}

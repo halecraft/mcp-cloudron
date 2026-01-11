@@ -1,0 +1,5 @@
+{
+  "type": "boolean",
+  "description": "Indicates whether backups are enabled for the application.",
+  "example": true
+}

@@ -1,0 +1,5 @@
+{
+  "type": "string",
+  "description": "The timestamp of the last update to the application's information.",
+  "example": "2024-06-03T11:15:15.000Z"
+}

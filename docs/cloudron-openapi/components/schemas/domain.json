@@ -1,0 +1,5 @@
+{
+  "type": "string",
+  "description": "The main domain on which the application runs.",
+  "example": "cloudron.io"
+}

@@ -1,0 +1,39 @@
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "The unique identifier for the client.",
+      "example": "cid-6c4e2bc962b7e90b45b400224772cec7"
+    },
+    "secret": {
+      "type": "string",
+      "description": "The secret key associated with the client.",
+      "example": "9cefe41f9cbd8aabe44da60d3827d45779fd233bbfdc0f381228564dsaasd5"
+    },
+    "appId": {
+      "type": "string",
+      "description": "The application ID associated with the client.",
+      "example": ""
+    },
+    "name": {
+      "type": "string",
+      "description": "The name of the client.",
+      "example": "Test Client"
+    },
+    "loginRedirectUri": {
+      "type": "string",
+      "description": "The URI to redirect to after login.",
+      "example": "your.oidc.uri.org"
+    },
+    "tokenSignatureAlgorithm": {
+      "type": "string",
+      "description": "The algorithm used to sign tokens.",
+      "enum": [
+        "RS256",
+        "EdDSA"
+      ],
+      "example": "EdDSA"
+    }
+  }
+}

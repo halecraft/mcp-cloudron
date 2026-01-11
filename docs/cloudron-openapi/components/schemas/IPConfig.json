@@ -1,0 +1,23 @@
+{
+  "type": "object",
+  "discriminator": {
+    "propertyName": "provider",
+    "mapping": {
+      "noop": "./IPConfigProviderOnly.json",
+      "fixed": "./FixedProvider.json",
+      "network-interface": "./NetworkInterfaceProvider.json",
+      "generic": "./IPConfigProviderOnly.json"
+    }
+  },
+  "oneOf": [
+    {
+      "$ref": "./IPConfigProviderOnly.json"
+    },
+    {
+      "$ref": "./FixedProvider.json"
+    },
+    {
+      "$ref": "./NetworkInterfaceProvider.json"
+    }
+  ]
+}

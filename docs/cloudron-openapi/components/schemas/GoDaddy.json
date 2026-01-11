@@ -1,0 +1,35 @@
+{
+  "allOf": [
+    {
+      "$ref": "./domainBase.json"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "config": {
+          "type": "object",
+          "description": "Specifies config for GoDaddy DNS.",
+          "properties": {
+            "apiKey": {
+              "type": "string",
+              "description": "GoDaddy API Key used for authentication with GoDaddy DNS.",
+              "example": "gfh23j21ksd98g7n4h35d6fh2j9s8d6h3f4k21"
+            },
+            "apiSecret": {
+              "type": "string",
+              "description": "Secret key used alongside the API key for authentication with GoDaddy DNS.",
+              "example": "s5f6g7h8j9k0l1z2x3c4v5b6n7m8q9w0e1r2t3y4u"
+            }
+          },
+          "required": [
+            "apiKey",
+            "apiSecret"
+          ]
+        }
+      },
+      "required": [
+        "config"
+      ]
+    }
+  ]
+}

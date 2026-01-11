@@ -1,0 +1,101 @@
+{
+  "post": {
+    "operationId": "importApp",
+    "summary": "Import app",
+    "description": "Import an app.",
+    "tags": [
+      "Apps"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "write"
+        ]
+      },
+      {
+        "query_auth": [
+          "write"
+        ]
+      }
+    ],
+    "parameters": [
+      {
+        "$ref": "../components/parameters/appId.json"
+      }
+    ],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "properties": {
+              "remotePath": {
+                "type": "string",
+                "description": "The path or identifier of the backup used for restoring the app.",
+                "example": "app_v2.2.2_ff231fee"
+              },
+              "backupFormat": {
+                "type": "string",
+                "description": "The format of the backup file. This indicates the structure or encoding used for the backup.",
+                "example": "tar.gz"
+              },
+              "backupConfig": {
+                "type": "object",
+                "description": "Configuration settings for the backup provider used during import.",
+                "properties": {
+                  "provider": {
+                    "type": "string",
+                    "description": "The name of the backup provider (e.g., AWS S3, Google Cloud Storage).",
+                    "example": "aws-s3"
+                  },
+                  "password": {
+                    "type": "string",
+                    "description": "The password used to access the backup, if it is encrypted.",
+                    "example": "my_secure_password"
+                  },
+                  "encryptedFilenames": {
+                    "type": "boolean",
+                    "description": "Indicates whether the filenames in the backup are encrypted.",
+                    "example": true
+                  }
+                }
+              }
+            },
+            "required": [
+              "backupId"
+            ]
+          }
+        }
+      }
+    },
+    "responses": {
+      "202": {
+        "description": "Accepted",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "../components/schemas/task_info.json"
+            }
+          }
+        }
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/apps_{appId}_import/post.sh"
+        }
+      }
+    ]
+  }
+}

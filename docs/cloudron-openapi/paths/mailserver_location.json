@@ -1,0 +1,144 @@
+{
+  "get": {
+    "operationId": "getMailserverLocation",
+    "summary": "Get location",
+    "description": "Get mailserver location.",
+    "tags": [
+      "Mailserver"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "read"
+        ]
+      },
+      {
+        "query_auth": [
+          "read"
+        ]
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "domain": {
+                  "type": "string",
+                  "description": "Domain of your mailserver.",
+                  "example": "your.domain.de"
+                },
+                "subdomain": {
+                  "type": "string",
+                  "description": "Subdomain of your mailserver.",
+                  "example": "mailserver"
+                }
+              }
+            }
+          }
+        }
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/mailserver_location/get.sh"
+        }
+      }
+    ]
+  },
+  "post": {
+    "operationId": "setMailserverLocation",
+    "summary": "Set location",
+    "description": "Set the location of the mailserver.",
+    "tags": [
+      "Mailserver"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "read"
+        ]
+      },
+      {
+        "query_auth": [
+          "read"
+        ]
+      }
+    ],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "properties": {
+              "domain": {
+                "type": "string",
+                "description": "Domain of your mailserver.",
+                "example": "your.domain.de"
+              },
+              "subdomain": {
+                "type": "string",
+                "description": "Subdomain of your mailserver.",
+                "example": "mailserver"
+              }
+            },
+            "required": [
+              "domain",
+              "subdomain"
+            ]
+          }
+        }
+      }
+    },
+    "responses": {
+      "202": {
+        "description": "Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "taskId": {
+                  "type": "integer",
+                  "description": "Use the task id to track the status of the task using the Task API",
+                  "example": 295
+                }
+              }
+            }
+          }
+        }
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/mailserver_location/post.sh"
+        }
+      }
+    ]
+  }
+}

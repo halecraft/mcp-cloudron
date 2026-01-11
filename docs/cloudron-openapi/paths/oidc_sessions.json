@@ -1,0 +1,44 @@
+{
+  "delete": {
+    "operationId": "destroyUserSession",
+    "summary": "Destroy user session",
+    "description": "Destroy user session.\n",
+    "tags": [
+      "OIDC"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "write"
+        ]
+      },
+      {
+        "query_auth": [
+          "write"
+        ]
+      }
+    ],
+    "responses": {
+      "204": {
+        "$ref": "../components/responses/no_content.json"
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/oidc_sessions/delete.sh"
+        }
+      }
+    ]
+  }
+}

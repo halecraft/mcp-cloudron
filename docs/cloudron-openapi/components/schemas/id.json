@@ -1,0 +1,5 @@
+{
+  "type": "string",
+  "description": "A unique identifier for the application.",
+  "example": "cd98991f-1327-48de-a8e2-6t521e865ebc"
+}

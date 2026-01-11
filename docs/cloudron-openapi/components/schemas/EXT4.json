@@ -1,0 +1,29 @@
+{
+  "allOf": [
+    {
+      "$ref": "./volumeBase.json"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "mountOptions": {
+          "type": "object",
+          "description": "Specifies extra settings for mounting a filesystem. Needed properties vary based on the mountType.",
+          "properties": {
+            "diskPath": {
+              "type": "string",
+              "example": "YourDiskPath",
+              "description": "Specifies the path to the disk to be mounted."
+            }
+          },
+          "required": [
+            "diskPath"
+          ]
+        }
+      },
+      "required": [
+        "mountOptions"
+      ]
+    }
+  ]
+}

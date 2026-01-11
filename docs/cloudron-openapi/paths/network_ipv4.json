@@ -1,0 +1,57 @@
+{
+  "get": {
+    "operationId": "getIPv4",
+    "summary": "Get IPv4 Address",
+    "description": "Gets the configured IPv4 address of the server",
+    "tags": [
+      "Network"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "read"
+        ]
+      },
+      {
+        "query_auth": [
+          "read"
+        ]
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "properties": {
+                "ip": {
+                  "type": "string",
+                  "description": "An IPv4 address",
+                  "example": "5.75.134.144"
+                }
+              }
+            }
+          }
+        }
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/network_ipv4/get.sh"
+        }
+      }
+    ]
+  }
+}

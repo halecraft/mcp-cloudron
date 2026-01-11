@@ -1,0 +1,53 @@
+{
+  "get": {
+    "operationId": "getLanguages",
+    "summary": "Get Languages",
+    "description": "List the available languages (translations). This route does not require any authentication.",
+    "tags": [
+      "Cloudron"
+    ],
+    "security": [],
+    "responses": {
+      "200": {
+        "description": "Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "languages": {
+                  "type": "array",
+                  "description": "An array containing the Language IDs",
+                  "items": {
+                    "type": "string",
+                    "description": "Translation name"
+                  },
+                  "example": [
+                    "en",
+                    "de",
+                    "fr",
+                    "nl"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "404": {
+        "$ref": "../components/responses/not_found.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/cloudron_languages/get.sh"
+        }
+      }
+    ]
+  }
+}

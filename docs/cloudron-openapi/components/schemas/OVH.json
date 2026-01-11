@@ -1,0 +1,47 @@
+{
+  "allOf": [
+    {
+      "$ref": "./domainBase.json"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "config": {
+          "type": "object",
+          "description": "Specifies config for OVH DNS.",
+          "properties": {
+            "endpoint": {
+              "type": "string",
+              "description": "Endpoint URL for OVH DNS API.",
+              "example": "https://api.ovh.com/1.0"
+            },
+            "appKey": {
+              "type": "string",
+              "description": "Application Key used for authentication with OVH DNS.",
+              "example": "ovhAppKey1234567890"
+            },
+            "appSecret": {
+              "type": "string",
+              "description": "Application Secret used alongside the Application Key for authentication with OVH DNS.",
+              "example": "ovhAppSecret9876543210"
+            },
+            "consumerKey": {
+              "type": "string",
+              "description": "Consumer Key generated for accessing OVH services.",
+              "example": "ovhConsumerKeyABCDE12345"
+            }
+          },
+          "required": [
+            "endpoint",
+            "appKey",
+            "appSecret",
+            "consumerKey"
+          ]
+        }
+      },
+      "required": [
+        "config"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "type": [
+    "null",
+    "string"
+  ],
+  "description": "The SSL certificate of the application.",
+  "example": null
+}

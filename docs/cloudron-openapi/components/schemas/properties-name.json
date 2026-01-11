@@ -1,0 +1,5 @@
+{
+  "type": "string",
+  "description": "A label/ display name for a group.",
+  "example": "developer"
+}

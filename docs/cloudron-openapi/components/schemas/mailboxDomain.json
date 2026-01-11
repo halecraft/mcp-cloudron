@@ -1,0 +1,5 @@
+{
+  "type": "string",
+  "description": "Domain associated with the app's mailbox.",
+  "example": "your.domain.com"
+}

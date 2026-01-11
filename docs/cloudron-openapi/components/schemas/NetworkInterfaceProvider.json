@@ -1,0 +1,18 @@
+{
+  "allOf": [
+    {
+      "$ref": "./IPConfigProviderOnly.json"
+    },
+    {
+      "type": "object",
+      "description": "Disables setting of IPv4 or IPv6 DNS records",
+      "properties": {
+        "iface": {
+          "type": "string",
+          "description": "Interface name",
+          "example": "eth1"
+        }
+      }
+    }
+  ]
+}

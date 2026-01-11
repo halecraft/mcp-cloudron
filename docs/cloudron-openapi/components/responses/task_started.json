@@ -1,0 +1,10 @@
+{
+  "description": "Accepted",
+  "content": {
+    "application/json": {
+      "schema": {
+        "$ref": "../schemas/task_info.json"
+      }
+    }
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "type": "boolean",
+  "description": "Indicates whether the application supports Single Sign-On (SSO).",
+  "example": true
+}

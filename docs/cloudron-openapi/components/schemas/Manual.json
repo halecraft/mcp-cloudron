@@ -1,0 +1,17 @@
+{
+  "allOf": [
+    {
+      "$ref": "./domainBase.json"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "config": {
+          "type": "object",
+          "description": "The config object will be empty when `Manual` is used. Read more about Manual DNS here: [Manual DNS](https://docs.cloudron.io/domains/#manual-dns).\n",
+          "example": {}
+        }
+      }
+    }
+  ]
+}

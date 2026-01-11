@@ -1,0 +1,29 @@
+{
+  "allOf": [
+    {
+      "$ref": "./domainBase.json"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "config": {
+          "type": "object",
+          "description": "Specifies config for DNSimple DNS.",
+          "properties": {
+            "accessToken": {
+              "type": "string",
+              "description": "Access token used for authentication with DNSimple DNS.",
+              "example": "9Yzn7cBuVmX3RJxRkK7t1dU8pK9hG2bF1aZ5wN7mP2cR5lE4rG3fU7xL6bY8tM4p"
+            }
+          },
+          "required": [
+            "accessToken"
+          ]
+        }
+      },
+      "required": [
+        "config"
+      ]
+    }
+  ]
+}

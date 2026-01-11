@@ -1,0 +1,5 @@
+{
+  "type": "number",
+  "description": "The CPU quota for the app, expressed as a percentage.",
+  "example": 100
+}

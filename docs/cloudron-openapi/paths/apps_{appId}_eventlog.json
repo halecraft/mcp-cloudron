@@ -1,0 +1,426 @@
+{
+  "get": {
+    "operationId": "getAppEventlogs",
+    "summary": "Get app eventlogs",
+    "description": "List app eventlogs. There are different kind of eventlogs, each type has it's own properties.",
+    "tags": [
+      "Apps"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "read"
+        ]
+      },
+      {
+        "query_auth": [
+          "read"
+        ]
+      }
+    ],
+    "parameters": [
+      {
+        "$ref": "../components/parameters/PaginationPage.json"
+      },
+      {
+        "$ref": "../components/parameters/PaginationPerPage.json"
+      },
+      {
+        "$ref": "../components/parameters/appId.json"
+      },
+      {
+        "name": "search",
+        "in": "query",
+        "description": "Filter by users which match either username, email, displayName",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "since",
+        "in": "query",
+        "description": "Filter by active or not active users. If not provided any state matches.",
+        "required": false,
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 1
+        }
+      },
+      {
+        "name": "types",
+        "in": "query",
+        "description": "Types of eventlogs. Can be seperated by \",\".",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "eventlogs": {
+                  "type": "array",
+                  "description": "Array containing event log objects.",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "description": "Unique identifier for the event log entry.",
+                        "example": "1234567890"
+                      },
+                      "action": {
+                        "type": "string",
+                        "description": "Describes the action that triggered the event log entry.",
+                        "example": "App Deployment"
+                      },
+                      "creationTime": {
+                        "type": "string",
+                        "description": "Timestamp indicating when the event log entry was created.",
+                        "example": "2024-06-06T12:30:45Z"
+                      },
+                      "source": {
+                        "type": "object",
+                        "description": "Information about the source of the event.",
+                        "properties": {
+                          "username": {
+                            "type": "string",
+                            "description": "Username associated with the event.",
+                            "example": "john_doe"
+                          },
+                          "userId": {
+                            "type": "string",
+                            "description": "User ID associated with the event.",
+                            "example": "987654321"
+                          },
+                          "ip": {
+                            "type": "string",
+                            "description": "IP address from which the action originated.",
+                            "example": "192.168.1.100"
+                          }
+                        }
+                      },
+                      "data": {
+                        "type": "object",
+                        "properties": {
+                          "app": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "$ref": "../components/schemas/id.json"
+                              },
+                              "appStoreId": {
+                                "$ref": "../components/schemas/appStoreId.json"
+                              },
+                              "installationState": {
+                                "$ref": "../components/schemas/installationState.json"
+                              },
+                              "error": {
+                                "$ref": "../components/schemas/properties-error.json"
+                              },
+                              "runState": {
+                                "$ref": "../components/schemas/runState.json"
+                              },
+                              "health": {
+                                "$ref": "../components/schemas/health.json"
+                              },
+                              "taskId": {
+                                "$ref": "../components/schemas/properties-taskId.json"
+                              },
+                              "subdomain": {
+                                "$ref": "../components/schemas/subdomain.json"
+                              },
+                              "domain": {
+                                "$ref": "../components/schemas/domain.json"
+                              },
+                              "fqdn": {
+                                "$ref": "../components/schemas/fqdn.json"
+                              },
+                              "certificate": {
+                                "$ref": "../components/schemas/certificate.json"
+                              },
+                              "crontab": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ],
+                                "description": "The schedule in crontab format for running periodic tasks.",
+                                "example": "*/15 * * * *"
+                              },
+                              "upstreamUri": {
+                                "$ref": "../components/schemas/upstreamUri.json"
+                              },
+                              "accessRestriction": {
+                                "$ref": "../components/schemas/accessRestriction.json"
+                              },
+                              "manifest": {
+                                "$ref": "../components/schemas/manifest.json"
+                              },
+                              "ports": {
+                                "$ref": "../components/schemas/ports.json"
+                              },
+                              "iconUrl": {
+                                "$ref": "../components/schemas/iconUrl.json"
+                              },
+                              "memoryLimit": {
+                                "type": "number",
+                                "description": "The memory limit for the app in bytes.",
+                                "example": 123432345
+                              },
+                              "cpuQuota": {
+                                "type": "number",
+                                "description": "The CPU quota for the app, expressed as a percentage.",
+                                "example": 100
+                              },
+                              "operators": {
+                                "type": [
+                                  "object",
+                                  "null"
+                                ],
+                                "properties": {
+                                  "users": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string",
+                                      "description": "List of user IDs that have operator access to the app.",
+                                      "example": [
+                                        "uid-15634b8e-28d4-412a-a46f-e7d0c17sdfdsc",
+                                        "uid-15634b8e-28d4-412a-a46f-e7d0c17svcx32c"
+                                      ]
+                                    }
+                                  },
+                                  "groups": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string",
+                                      "description": "List of group IDs that have operator access to the app.",
+                                      "example": [
+                                        "gid-15634b8e-28d4-412a-a46f-e7d0c17sdfdsc",
+                                        "gid-15634b8e-28d4-412a-a46f-e7d0c17svcx32c"
+                                      ]
+                                    }
+                                  }
+                                },
+                                "description": "Users and groups that have operator privileges for the app.",
+                                "example": {
+                                  "users": [
+                                    "uid-15634b8e-28d4-412a-a46f-e7d0c17sdfdsc",
+                                    "uid-15634b8e-28d4-412a-a46f-e7d0c17svcx32c"
+                                  ],
+                                  "groups": [
+                                    "gid-15634b8e-28d4-412a-a46f-e7d0c17sdfdsc",
+                                    "gid-15634b8e-28d4-412a-a46f-e7d0c17svcx32c"
+                                  ]
+                                }
+                              },
+                              "sso": {
+                                "$ref": "../components/schemas/sso.json"
+                              },
+                              "debugMode": {
+                                "type": [
+                                  "object",
+                                  "null"
+                                ],
+                                "properties": {
+                                  "readonlyRootfs": {
+                                    "type": "boolean",
+                                    "description": "Indicates if the root filesystem is read-only.",
+                                    "example": false
+                                  },
+                                  "cmd": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string",
+                                      "description": "List of command-line arguments for the debug mode."
+                                    },
+                                    "example": [
+                                      "/bin/bash",
+                                      "-c",
+                                      "echo \"Repair mode. [...]"
+                                    ]
+                                  }
+                                },
+                                "description": "Configuration for the debug mode of the app."
+                              },
+                              "reverseProxyConfig": {
+                                "type": "object",
+                                "description": "Configuration settings for the reverse proxy.",
+                                "example": {}
+                              },
+                              "enableBackup": {
+                                "$ref": "../components/schemas/enableBackup.json"
+                              },
+                              "creationTime": {
+                                "$ref": "../components/schemas/creationTime.json"
+                              },
+                              "updateTime": {
+                                "type": "string",
+                                "description": "The last time the app was updated.",
+                                "example": "2024-05-05T11:21:12.000Z"
+                              },
+                              "ts": {
+                                "$ref": "../components/schemas/ts.json"
+                              },
+                              "tags": {
+                                "$ref": "../components/schemas/tags.json"
+                              },
+                              "label": {
+                                "$ref": "../components/schemas/label.json"
+                              },
+                              "notes": {
+                                "$ref": "../components/schemas/notes.json"
+                              },
+                              "secondaryDomains": {
+                                "$ref": "../components/schemas/secondaryDomains.json"
+                              },
+                              "redirectDomains": {
+                                "$ref": "../components/schemas/redirectDomains.json"
+                              },
+                              "aliasDomains": {
+                                "$ref": "../components/schemas/aliasDomains.json"
+                              },
+                              "env": {
+                                "type": "object",
+                                "description": "Environment variables for the app.",
+                                "example": {}
+                              },
+                              "enableAutomaticUpdate": {
+                                "type": "boolean",
+                                "description": "Indicates whether automatic updates are enabled.",
+                                "example": false
+                              },
+                              "storageVolumeId": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ],
+                                "description": "Identifier for the storage volume used by the app.",
+                                "example": null
+                              },
+                              "storageVolumePrefix": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ],
+                                "description": "Prefix used for the storage volume.",
+                                "example": null
+                              },
+                              "mounts": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                },
+                                "description": "List of mount points for the app.",
+                                "example": [
+                                  "ext4"
+                                ]
+                              },
+                              "enableTurn": {
+                                "type": "boolean",
+                                "description": "Indicates whether TURN (Traversal Using Relays around NAT) is enabled.",
+                                "example": true
+                              },
+                              "enableRedis": {
+                                "type": "boolean",
+                                "description": "Indicates whether Redis is enabled for the app.",
+                                "example": true
+                              },
+                              "checklist": {
+                                "type": "object",
+                                "description": "Checklist for app configuration or setup.",
+                                "example": {}
+                              },
+                              "enableMailbox": {
+                                "type": "boolean",
+                                "description": "Enable or disable the mailbox feature for the app.",
+                                "example": true
+                              },
+                              "mailboxDisplayName": {
+                                "type": "string",
+                                "description": "Display name for the mailbox associated with the app.",
+                                "example": ""
+                              },
+                              "mailboxName": {
+                                "type": "string",
+                                "description": "The name of the mailbox used by the app.",
+                                "example": "wiki.app"
+                              },
+                              "mailboxDomain": {
+                                "type": "string",
+                                "description": "Domain associated with the app's mailbox.",
+                                "example": "your.domain.com"
+                              },
+                              "enableInbox": {
+                                "type": "boolean",
+                                "description": "Enable or disable the inbox feature for the app.",
+                                "example": false
+                              },
+                              "inboxName": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ],
+                                "description": "Name of the inbox used by the app.",
+                                "example": null
+                              },
+                              "inboxDomain": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ],
+                                "description": "Domain associated with the app's inbox.",
+                                "example": null
+                              },
+                              "accessLevel": {
+                                "type": "string",
+                                "description": "The access level of the user for the specific app.",
+                                "example": "Admin"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "appId": {
+                        "type": "string",
+                        "example": "d342-ef54003-dsads332-4322ds34ddff0",
+                        "description": "App Identifier."
+                      },
+                      "taskId": {
+                        "$ref": "../components/schemas/taskId.json"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/apps_{appId}_eventlog/get.sh"
+        }
+      }
+    ]
+  }
+}

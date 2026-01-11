@@ -1,0 +1,5 @@
+{
+  "type": "object",
+  "description": "The port bindings of the application.",
+  "example": {}
+}

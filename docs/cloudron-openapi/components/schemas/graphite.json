@@ -1,0 +1,44 @@
+{
+  "description": "Service information for Graphite service.",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "example": "graphite"
+    },
+    "status": {
+      "type": "string",
+      "example": "active"
+    },
+    "memoryUsed": {
+      "type": "integer",
+      "example": 193470464
+    },
+    "memoryPercent": {
+      "type": "integer",
+      "example": 18
+    },
+    "error": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "example": null
+    },
+    "healthcheck": {
+      "type": "object",
+      "example": null
+    },
+    "config": {
+      "type": "object",
+      "example": {
+        "memoryLimit": 1073741824,
+        "recoveryMode": false
+      }
+    },
+    "defaultMemoryLimit": {
+      "type": "integer",
+      "example": 268435456
+    }
+  }
+}

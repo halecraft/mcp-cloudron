@@ -1,0 +1,90 @@
+{
+  "post": {
+    "operationId": "updateAvatar",
+    "summary": "Update Avatar (icon)",
+    "description": "Update user's avatar (icon)",
+    "tags": [
+      "Profile"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "write"
+        ]
+      },
+      {
+        "query_auth": [
+          "write"
+        ]
+      }
+    ],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "multipart/form-data": {
+          "schema": {
+            "type": "object",
+            "properties": {
+              "avatar": {
+                "type": "string",
+                "format": "binary"
+              }
+            },
+            "required": [
+              "avatar"
+            ]
+          }
+        },
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "properties": {
+              "avatar": {
+                "type": "string",
+                "enum": [
+                  "",
+                  "gravatar"
+                ],
+                "example": "gravatar"
+              }
+            },
+            "required": [
+              "avatar"
+            ]
+          }
+        }
+      }
+    },
+    "responses": {
+      "200": {
+        "$ref": "../components/responses/no_content.json"
+      },
+      "400": {
+        "$ref": "../components/responses/bad_field.json"
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL (gravatar)",
+        "source": {
+          "$ref": "../code_samples/cURL(gravatar)/profile_avatar/postundefined"
+        }
+      },
+      {
+        "lang": "cURL (custom)",
+        "source": {
+          "$ref": "../code_samples/cURL(custom)/profile_avatar/postundefined"
+        }
+      }
+    ]
+  }
+}

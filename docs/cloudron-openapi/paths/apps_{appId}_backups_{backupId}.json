@@ -1,0 +1,73 @@
+{
+  "post": {
+    "operationId": "updateAppBackup",
+    "summary": "Update app backup",
+    "description": "Update a backup for an app.",
+    "tags": [
+      "Apps"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "write"
+        ]
+      },
+      {
+        "query_auth": [
+          "write"
+        ]
+      }
+    ],
+    "parameters": [
+      {
+        "$ref": "../components/parameters/appId.json"
+      },
+      {
+        "$ref": "../components/parameters/backupId.json"
+      }
+    ],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "properties": {
+              "label": {
+                "type": "string",
+                "description": "A label or name for the backup.",
+                "example": "daily-backup"
+              },
+              "preserveSecs": {
+                "type": "number",
+                "description": "The number of seconds to preserve the backup.",
+                "example": 86400
+              }
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "200": {
+        "$ref": "../components/responses/no_content.json"
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/apps_{appId}_backups_{backupId}/post.sh"
+        }
+      }
+    ]
+  }
+}

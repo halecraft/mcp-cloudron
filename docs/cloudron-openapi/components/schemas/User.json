@@ -1,0 +1,59 @@
+{
+  "description": "User",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "User Id.",
+      "example": "uid-3f07b9e7-8cf2-494b-95cc-93dd05fc5bbc"
+    },
+    "username": {
+      "type": "string",
+      "description": "Unique username across the instance. The following usernames are reserved: `admin`, `no-reply`, `postmaster`, `mailer-daemon`, `root`, `admins`, `users`.\n",
+      "example": "helena"
+    },
+    "email": {
+      "type": "string",
+      "description": "Primary email of user.",
+      "example": "example@cloudron.io"
+    },
+    "fallbackEmail": {
+      "type": "string",
+      "description": "Email address for password reset, in case the primary is hosted on the Cloudron itself.",
+      "example": "fallback@example.com"
+    },
+    "displayName": {
+      "type": "string",
+      "description": "Full name of the user.",
+      "example": "Helena Mamchuk"
+    },
+    "groupIds": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "example": "gid-3f07b9e7-8cf2-494b-95cc-93dd05fc5bbc"
+      },
+      "description": "Array of group ids the user is a member of."
+    },
+    "active": {
+      "type": "boolean",
+      "description": "Indicates if the user is active and can log into apps."
+    },
+    "source": {
+      "type": "string",
+      "description": "Indicating if the user is local (empty string) or from an external source like \"ldap\"."
+    },
+    "role": {
+      "type": "string",
+      "description": "Role of the user. Can be `admin`, `user`, `usermanager`, `mailmanager` or `owner`."
+    },
+    "twoFactorAuthenticationEnabled": {
+      "type": "boolean",
+      "description": "Indicates if use has enabled two factor authentiation (2FA)"
+    },
+    "inviteAccepted": {
+      "type": "boolean",
+      "description": "Indicates if user has finished the invitation to the Cloudron"
+    }
+  }
+}

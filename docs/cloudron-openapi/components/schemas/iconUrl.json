@@ -1,0 +1,5 @@
+{
+  "type": "string",
+  "description": "The URL of the application icon.",
+  "example": "/api/v1/21g3jh-321321k3-3213jh-423hjk234/icon"
+}

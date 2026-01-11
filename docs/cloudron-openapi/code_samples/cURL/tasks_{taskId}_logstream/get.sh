@@ -1,0 +1,1 @@
+curl -H "Accept: text/event-stream" -H "Authorization: Bearer $CLOUDRON_TOKEN" "https://$CLOUDRON_DOMAIN/api/v1/tasks/$TASKS_ID/logstream?lines=100"

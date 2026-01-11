@@ -1,0 +1,5 @@
+{
+  "type": "string",
+  "description": "The application that this password will authenticate. This can be an app id or `mail`",
+  "example": "743e4cee-448e-4f82-b880-8a530265b1e5"
+}

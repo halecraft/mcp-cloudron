@@ -1,0 +1,8 @@
+{
+  "type": [
+    "string",
+    "null"
+  ],
+  "description": "The schedule in crontab format for running periodic tasks.",
+  "example": "*/15 * * * *"
+}

@@ -1,0 +1,178 @@
+{
+  "get": {
+    "operationId": "getDiskUsage",
+    "summary": "Get Disk Usage",
+    "description": "Get information about disk usage for apps and other system components, like mail storage and docker images.",
+    "tags": [
+      "System"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "read"
+        ]
+      },
+      {
+        "query_auth": [
+          "read"
+        ]
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "usage": {
+                  "type": "object",
+                  "properties": {
+                    "ts": {
+                      "type": "integer",
+                      "description": "Timestamp when info was last updated in milliseconds since the Unix Epoch",
+                      "example": 1699412641120
+                    },
+                    "filesystems": {
+                      "type": "object",
+                      "properties": {
+                        "/dev/nvme0n1p2": {
+                          "type": "object",
+                          "description": "This property is a unique disk identifier based on the linux device path.",
+                          "properties": {
+                            "available": {
+                              "type": "integer",
+                              "description": "Remaining free disk space in bytes",
+                              "example": 190863687680
+                            },
+                            "capacity": {
+                              "type": "number",
+                              "description": "Fractional number of percentage the disk is in use.",
+                              "example": 0.6
+                            },
+                            "contents": {
+                              "type": "array",
+                              "description": "An array containing all units this disk holds, apps, volumes, built-in units like email",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "id": {
+                                    "type": "string",
+                                    "example": "platformdata",
+                                    "description": "usage unit identifier could be appId or built-in types"
+                                  },
+                                  "path": {
+                                    "type": "string",
+                                    "example": "/home/yellowtent/platformdata"
+                                  },
+                                  "type": {
+                                    "type": "string",
+                                    "description": "unit type",
+                                    "example": "standard"
+                                  },
+                                  "usage": {
+                                    "type": "integer",
+                                    "description": "Disk space used by this unit in bytes",
+                                    "example": 2969190400
+                                  }
+                                }
+                              }
+                            },
+                            "filesystem": {
+                              "type": "string",
+                              "example": "/dev/nvme0n1p2"
+                            },
+                            "mountpoint": {
+                              "type": "string",
+                              "example": "/"
+                            },
+                            "size": {
+                              "type": "integer",
+                              "example": 502391562240
+                            },
+                            "speed": {
+                              "type": "number",
+                              "example": 523.6
+                            },
+                            "type": {
+                              "type": "string",
+                              "example": "ext4"
+                            },
+                            "used": {
+                              "type": "integer",
+                              "example": 285932556288
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/system_disk_usage/get.sh"
+        }
+      }
+    ]
+  },
+  "post": {
+    "operationId": "updateDiskUsage",
+    "summary": "Update Disk Usage",
+    "description": "Disk usage is only updated automatically once per day. This API allows to trigger an update of that information.",
+    "tags": [
+      "System"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "write"
+        ]
+      },
+      {
+        "query_auth": [
+          "write"
+        ]
+      }
+    ],
+    "responses": {
+      "202": {
+        "$ref": "../components/responses/task_started.json"
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/system_disk_usage/post.sh"
+        }
+      }
+    ]
+  }
+}

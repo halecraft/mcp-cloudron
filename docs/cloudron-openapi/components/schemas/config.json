@@ -1,0 +1,45 @@
+{
+  "type": "object",
+  "description": "Configuration settings for backups.",
+  "properties": {
+    "provider": {
+      "type": "string",
+      "description": "Backup provider.",
+      "example": "filesystem"
+    },
+    "format": {
+      "type": "string",
+      "description": "Backup file format.",
+      "example": "tgz"
+    },
+    "limits": {
+      "type": "object",
+      "description": "Limits for the backup process.",
+      "properties": {
+        "memoryLimit": {
+          "type": "number",
+          "description": "Memory limit for the backup process.",
+          "example": 231214321
+        }
+      }
+    },
+    "backupFolder": {
+      "type": "string",
+      "example": "/var/backups",
+      "description": "Folder where backups are stored."
+    },
+    "noHardLinks": {
+      "type": "boolean",
+      "example": false,
+      "description": "Indicator for using hard links."
+    },
+    "encryption": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "example": null,
+      "description": "Encryption method used for the backup."
+    }
+  }
+}

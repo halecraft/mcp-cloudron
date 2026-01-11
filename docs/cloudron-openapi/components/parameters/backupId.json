@@ -1,0 +1,9 @@
+{
+  "name": "backupId",
+  "in": "path",
+  "description": "Specific ID of a backup.",
+  "required": true,
+  "schema": {
+    "type": "string"
+  }
+}

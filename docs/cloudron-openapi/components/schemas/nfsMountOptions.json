@@ -1,0 +1,28 @@
+{
+  "type": "object",
+  "properties": {
+    "mountOptions": {
+      "type": "object",
+      "description": "Specifies extra settings for mounting a filesystem. Needed properties vary based on the mountType.",
+      "properties": {
+        "host": {
+          "type": "string",
+          "example": "your.volume.host.com",
+          "description": "Specifies the hostname of the NFS server."
+        },
+        "remoteDir": {
+          "type": "string",
+          "example": "/share",
+          "description": "Specifies the directory path on the server to be mounted."
+        }
+      },
+      "required": [
+        "host",
+        "remoteDir"
+      ]
+    }
+  },
+  "required": [
+    "mountOptions"
+  ]
+}

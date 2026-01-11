@@ -1,0 +1,54 @@
+{
+  "get": {
+    "operationId": "getCustomAvatar",
+    "summary": "Get Custom Avatar (icon)",
+    "description": "Get the User's custom avatar (icon). This route is public. As a simple security measure, this requires the user id.\nTo display the user's avatar , use the `avatarUrl` property of the [profile](#operation/getProfile) endpoint. The `avatarUrl` will link to this endpoint when the user has a custom icon.\n",
+    "tags": [
+      "Profile"
+    ],
+    "parameters": [
+      {
+        "$ref": "../components/parameters/userId.json"
+      }
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "read"
+        ]
+      },
+      {
+        "query_auth": [
+          "read"
+        ]
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Success",
+        "content": {
+          "application/octet-stream": {
+            "schema": {
+              "type": "string",
+              "format": "binary"
+            }
+          }
+        }
+      },
+      "404": {
+        "$ref": "../components/responses/not_found.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/profile_avatar_{userId}/get.sh"
+        }
+      }
+    ]
+  }
+}

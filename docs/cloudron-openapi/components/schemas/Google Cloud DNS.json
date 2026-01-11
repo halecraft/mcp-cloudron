@@ -1,0 +1,50 @@
+{
+  "allOf": [
+    {
+      "$ref": "./domainBase.json"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "jsonFile": {
+          "type": "object",
+          "description": "When Google Cloud DNS is used, a JSON file is expected. The JSON file must include the following properties. Read more about [Google Cloud DNS](https://docs.cloudron.io/domains/#google-cloud-dns). \n",
+          "properties": {
+            "projectId": {
+              "type": "string",
+              "description": "Project ID for authentication with Google Cloud DNS.",
+              "example": "my-project-123456"
+            },
+            "credentials": {
+              "type": "object",
+              "description": "Credentials for authentication with Google Cloud DNS.\n",
+              "properties": {
+                "client_email": {
+                  "type": "string",
+                  "description": "Client email for authentication.",
+                  "example": "example@example.com"
+                },
+                "private_key": {
+                  "type": "string",
+                  "description": "Private key for authentication.",
+                  "example": "-----BEGIN PRIVATE KEY-----\n..."
+                }
+              },
+              "required": [
+                "client_email",
+                "private_key"
+              ]
+            }
+          },
+          "required": [
+            "projectId",
+            "credentials"
+          ]
+        }
+      },
+      "required": [
+        "jsonFile"
+      ]
+    }
+  ]
+}

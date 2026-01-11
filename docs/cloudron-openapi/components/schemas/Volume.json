@@ -1,0 +1,72 @@
+{
+  "type": "object",
+  "description": "Volume",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique identifier for the volume.",
+      "example": "1af5f811fddb4337ac5f71b0989c1d30"
+    },
+    "name": {
+      "type": "string",
+      "description": "Name of the volume.",
+      "example": "Main Volume"
+    },
+    "hostPath": {
+      "type": "string",
+      "description": "Path on host machine where the volume is located.",
+      "example": "/mnt/volumes/"
+    },
+    "creationTime": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date and time when the volume was created.",
+      "example": "2024-03-20T18:00:48.000Z"
+    },
+    "mountType": {
+      "type": "string",
+      "description": "Indicates the method or protocol used to mount a volume, defining how the volume is accessed and interacted with within the system. See more about [mount types](https://docs.cloudron.io/volumes/#mount-type).\n  * `cifs`: Network file system protocol commonly used for sharing files and printers in a network.\n  * `filesystem`: Refers to the type of volume that is mounted directly from the local filesystem.\n  * `ext4`: A filesystem type recognized for its performance, scalability, and support for large file sizes and partitions.\n  * `mountpoint`: Represents a location in the filesystem hierarchy where a volume is mounted.\n  * `nfs`: Network File System, a distributed file system protocol allowing a user on a client computer to access files over a network as if the files were locally stored.\n  * `sshfs`: SSH Filesystem, a network file system protocol built on the Secure Shell protocol.\n  * `xfs`: Another type of filesystem known for its scalability and high-performance features.\n",
+      "enum": [
+        "cifs",
+        "filesystem",
+        "ext4",
+        "mountpoint",
+        "nfs",
+        "sshfs",
+        "xfs"
+      ],
+      "example": "cifs"
+    },
+    "mountOptions": {
+      "type": "object",
+      "description": "The mountOptions vary based on the chosen mountType. The given example is for the mountType `cifs`",
+      "properties": {
+        "host": {
+          "type": "string",
+          "description": "Host address (if applicable).",
+          "example": "example.com"
+        },
+        "remoteDir": {
+          "type": "string",
+          "description": "Remote directory for network-mounted volumes.",
+          "example": "/backup"
+        },
+        "username": {
+          "type": "string",
+          "description": "Username for accessing the volume (if applicable).",
+          "example": "u328893"
+        },
+        "password": {
+          "type": "string",
+          "description": "Password for accessing the volume (if applicable).",
+          "example": "your_password"
+        },
+        "seal": {
+          "type": "boolean",
+          "description": "Indicates whether the volume is sealed.",
+          "example": true
+        }
+      }
+    }
+  }
+}

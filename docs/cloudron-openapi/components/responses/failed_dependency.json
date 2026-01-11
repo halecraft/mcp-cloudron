@@ -1,0 +1,10 @@
+{
+  "description": "Failed Dependency",
+  "content": {
+    "application/json": {
+      "schema": {
+        "$ref": "../schemas/error.json"
+      }
+    }
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "name": "userId",
+  "in": "path",
+  "description": "User Id",
+  "required": true,
+  "schema": {
+    "type": "string"
+  }
+}

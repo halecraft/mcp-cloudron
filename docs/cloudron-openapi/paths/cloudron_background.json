@@ -1,0 +1,49 @@
+{
+  "get": {
+    "operationId": "getCloudronBackground",
+    "summary": "Get Cloudron background",
+    "description": "Get the Cloudron Background.\n",
+    "tags": [
+      "Cloudron"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "read"
+        ]
+      },
+      {
+        "query_auth": [
+          "read"
+        ]
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Success",
+        "content": {
+          "image/png": {
+            "schema": {
+              "type": "string",
+              "format": "binary"
+            }
+          }
+        }
+      },
+      "404": {
+        "$ref": "../components/responses/not_found.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/cloudron_background/get.sh"
+        }
+      }
+    ]
+  }
+}

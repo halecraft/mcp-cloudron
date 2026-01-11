@@ -1,0 +1,187 @@
+{
+  "get": {
+    "operationId": "getUsers",
+    "summary": "List users",
+    "description": "List users",
+    "tags": [
+      "Users"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "read"
+        ]
+      },
+      {
+        "query_auth": [
+          "read"
+        ]
+      }
+    ],
+    "parameters": [
+      {
+        "$ref": "../components/parameters/PaginationPage.json"
+      },
+      {
+        "$ref": "../components/parameters/PaginationPerPage.json"
+      },
+      {
+        "name": "search",
+        "in": "query",
+        "description": "Filter by users which match either username, email, displayName",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "active",
+        "in": "query",
+        "description": "Filter by active or not active users. If not provided any state matches.",
+        "required": false,
+        "schema": {
+          "type": "boolean"
+        }
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "users": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "../components/schemas/User.json"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/users/get.sh"
+        }
+      }
+    ]
+  },
+  "post": {
+    "operationId": "addUser",
+    "summary": "Add a user",
+    "description": "Add a user. The role 'user-manager' is required to make this api call.",
+    "tags": [
+      "Users"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "write"
+        ]
+      },
+      {
+        "query_auth": [
+          "write"
+        ]
+      }
+    ],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "properties": {
+              "email": {
+                "type": "string",
+                "description": "The [Primary email](https://docs.cloudron.io/profile/#primary-email)."
+              },
+              "username": {
+                "type": "string",
+                "description": "The [Username for the user](https://docs.cloudron.io/profile/#username)."
+              },
+              "password": {
+                "type": "string",
+                "description": "Password used for the user."
+              },
+              "displayName": {
+                "type": "string",
+                "description": "The [Display name for the user](https://docs.cloudron.io/profile/#display-name)."
+              },
+              "role": {
+                "type": "string",
+                "enum": [
+                  "owner",
+                  "admin",
+                  "usermanager",
+                  "mailmanager",
+                  "user"
+                ],
+                "description": "See [user roles](https://docs.cloudron.io/user-management/#roles) for more information on each role."
+              },
+              "fallbackEmail": {
+                "type": "string",
+                "description": "The [Password Recovery E-Mail](https://docs.cloudron.io/profile/#password-recovery-email)."
+              }
+            },
+            "required": [
+              "email"
+            ]
+          }
+        }
+      }
+    },
+    "responses": {
+      "201": {
+        "description": "Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "$ref": "../components/schemas/User-properties-id.json"
+                }
+              }
+            }
+          }
+        }
+      },
+      "400": {
+        "$ref": "../components/responses/bad_field.json"
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/users/post.sh"
+        }
+      }
+    ]
+  }
+}

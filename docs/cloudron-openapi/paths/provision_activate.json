@@ -1,0 +1,103 @@
+{
+  "post": {
+    "summary": "Create admin",
+    "operationId": "activateProvision",
+    "description": "Activate your provision.",
+    "tags": [
+      "Provision"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "write"
+        ]
+      },
+      {
+        "query_auth": [
+          "write"
+        ]
+      }
+    ],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "properties": {
+              "username": {
+                "type": "string",
+                "description": "The unique identifier for the user, typically used for login.",
+                "example": "john_doe"
+              },
+              "password": {
+                "type": "string",
+                "description": "The user's password, used for authentication. This should be stored securely.",
+                "example": "securePassword123!"
+              },
+              "email": {
+                "type": "string",
+                "description": "The user's email address, used for account recovery and notifications.",
+                "example": "john.doe@example.com"
+              },
+              "displayName": {
+                "type": "string",
+                "description": "The name displayed publicly for the user, such as in user profiles or posts.",
+                "example": "John Doe"
+              }
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "201": {
+        "description": "Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "userId": {
+                  "type": "string",
+                  "description": "The unique identifier associated with the user.",
+                  "example": "123456789"
+                },
+                "token": {
+                  "type": "string",
+                  "description": "The authentication token used for user authentication.",
+                  "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvbiBEb2UiLCJpYXQiOjE1MTYyMzkwMjJ9.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+                },
+                "expires": {
+                  "type": "string",
+                  "description": "The expiration date and time of the authentication token.",
+                  "example": "2024-12-31T23:59:59Z"
+                }
+              }
+            }
+          }
+        }
+      },
+      "400": {
+        "$ref": "../components/responses/bad_field.json"
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/provision_activate/post.sh"
+        }
+      }
+    ]
+  }
+}

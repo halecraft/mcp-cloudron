@@ -1,0 +1,119 @@
+{
+  "get": {
+    "operationId": "getAutoupdatePattern",
+    "summary": "Get Update Schedule",
+    "description": "Get the automatic update schedule",
+    "tags": [
+      "Updater"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "read"
+        ]
+      },
+      {
+        "query_auth": [
+          "read"
+        ]
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "pattern": {
+                  "$ref": "../components/schemas/CronPattern.json"
+                }
+              }
+            }
+          }
+        }
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/updater_autoupdate_pattern/get.sh"
+        }
+      }
+    ]
+  },
+  "post": {
+    "operationId": "setAutoupdatePattern",
+    "summary": "Set Update Schedule",
+    "description": "Sets the automatic update schedule",
+    "tags": [
+      "Updater"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "write"
+        ]
+      },
+      {
+        "query_auth": [
+          "write"
+        ]
+      }
+    ],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "properties": {
+              "pattern": {
+                "$ref": "../components/schemas/CronPattern.json"
+              }
+            },
+            "required": [
+              "pattern"
+            ]
+          }
+        }
+      }
+    },
+    "responses": {
+      "200": {
+        "$ref": "../components/responses/no_content.json"
+      },
+      "400": {
+        "$ref": "../components/responses/bad_field.json"
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/updater_autoupdate_pattern/post.sh"
+        }
+      }
+    ]
+  }
+}

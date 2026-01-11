@@ -1,0 +1,38 @@
+{
+  "get": {
+    "operationId": "getAvatar",
+    "summary": "Get Avatar (icon)",
+    "description": "Get the Cloudron Avatar. The Cloudron avatar (icon) is used in Email templates, Dashboard header and the Login pages.\nThis route does not require any authentication.\n",
+    "tags": [
+      "Cloudron"
+    ],
+    "security": [],
+    "responses": {
+      "200": {
+        "description": "Success",
+        "content": {
+          "image/png": {
+            "schema": {
+              "type": "string",
+              "format": "binary"
+            }
+          }
+        }
+      },
+      "404": {
+        "$ref": "../components/responses/not_found.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/cloudron_avatar/get.sh"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "type": "string",
+  "description": "Unique identifier for the volume.",
+  "example": "1af5f811fddb4337ac5f71b0989c1d30"
+}

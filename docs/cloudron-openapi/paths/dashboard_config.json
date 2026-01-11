@@ -1,0 +1,59 @@
+{
+  "get": {
+    "operationId": "getConfig",
+    "summary": "Get config",
+    "description": "Get config",
+    "tags": [
+      "Dashboard"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "read"
+        ]
+      },
+      {
+        "query_auth": [
+          "read"
+        ]
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "dashboard": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "../components/schemas/Dashboard.json"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/dashboard_config/get.sh"
+        }
+      }
+    ]
+  }
+}

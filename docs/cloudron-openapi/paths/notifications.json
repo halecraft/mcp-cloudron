@@ -1,0 +1,76 @@
+{
+  "get": {
+    "operationId": "getNotifications",
+    "summary": "List Notifications",
+    "description": "List notifications",
+    "tags": [
+      "Notifications"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "read"
+        ]
+      },
+      {
+        "query_auth": [
+          "read"
+        ]
+      }
+    ],
+    "parameters": [
+      {
+        "$ref": "../components/parameters/PaginationPage.json"
+      },
+      {
+        "$ref": "../components/parameters/PaginationPerPage.json"
+      },
+      {
+        "name": "acknowledged",
+        "in": "query",
+        "description": "Filter by acknowledged status",
+        "required": false,
+        "schema": {
+          "type": "boolean"
+        }
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Success",
+        "content": {
+          "application/x-logs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "notifications": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "../components/schemas/Notification.json"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/notifications/get.sh"
+        }
+      }
+    ]
+  }
+}

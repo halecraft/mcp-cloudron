@@ -1,0 +1,9 @@
+{
+  "name": "tokenId",
+  "in": "path",
+  "description": "Token Id",
+  "required": true,
+  "schema": {
+    "type": "string"
+  }
+}

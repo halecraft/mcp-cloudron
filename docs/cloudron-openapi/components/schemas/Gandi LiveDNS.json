@@ -1,0 +1,29 @@
+{
+  "allOf": [
+    {
+      "$ref": "./domainBase.json"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "config": {
+          "type": "object",
+          "description": "Specifies config for Gandi LiveDNS.",
+          "properties": {
+            "token": {
+              "type": "string",
+              "description": "Gandi API Key used for authentication with Gandi LiveDNS.",
+              "example": "gfh23j21ksd98g7n4h35d6fh2j9s8d6h3f4k21"
+            }
+          },
+          "required": [
+            "token"
+          ]
+        }
+      },
+      "required": [
+        "config"
+      ]
+    }
+  ]
+}

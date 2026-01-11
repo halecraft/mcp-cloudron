@@ -1,0 +1,66 @@
+{
+  "get": {
+    "operationId": "checkDnsRecords",
+    "summary": "Check dns records",
+    "description": "Check if a subdomain already exists. \n",
+    "tags": [
+      "Domains"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "read"
+        ]
+      },
+      {
+        "query_auth": [
+          "read"
+        ]
+      }
+    ],
+    "parameters": [
+      {
+        "$ref": "../components/parameters/domain.json"
+      },
+      {
+        "$ref": "../components/parameters/subdomain.json"
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "needsOverwrite": {
+                  "type": "boolean",
+                  "description": "If the output will be `true` it means that the dns record exists already.",
+                  "example": true
+                }
+              }
+            }
+          }
+        }
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/domains_{domain}_dns_check/get.sh"
+        }
+      }
+    ]
+  }
+}

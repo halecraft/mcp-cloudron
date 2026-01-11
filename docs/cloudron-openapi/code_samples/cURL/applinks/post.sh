@@ -1,0 +1,1 @@
+curl -X POST -H "Content-Type: application/json" -H "Authorization: Bearer $CLOUDRON_TOKEN" "https://$CLOUDRON_DOMAIN/api/v1/applinks" --data '{"upstreamUri":"docs.cloudron.io","label":"Docs","tags": ["external", "dev"],"accessRestriction":{"users":["uid-c431f056-704f-46df-a316-0e59fe654754"], "groups":["gid-c431f056-704f-46df-a316-0e59fe654754"]}}'

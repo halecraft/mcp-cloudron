@@ -1,0 +1,219 @@
+{
+  "get": {
+    "operationId": "getApplinkById",
+    "summary": "Get applink",
+    "description": "Get applink",
+    "tags": [
+      "Applinks"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "read"
+        ]
+      },
+      {
+        "query_auth": [
+          "read"
+        ]
+      }
+    ],
+    "parameters": [
+      {
+        "$ref": "../components/parameters/id.json"
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "../components/schemas/Applink.json"
+            }
+          }
+        }
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "404": {
+        "$ref": "../components/responses/not_found.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/applinks_{id}/get.sh"
+        }
+      }
+    ]
+  },
+  "post": {
+    "operationId": "updateApplink",
+    "summary": "Update applink",
+    "description": "Update applink",
+    "tags": [
+      "Applinks"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "write"
+        ]
+      },
+      {
+        "query_auth": [
+          "write"
+        ]
+      }
+    ],
+    "parameters": [
+      {
+        "$ref": "../components/parameters/id.json"
+      }
+    ],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "properties": {
+              "upstreamUri": {
+                "type": "string",
+                "description": "The URI of the external app."
+              },
+              "label": {
+                "type": "string",
+                "description": "The display name of the external app."
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "description": "A tag associated with the external app."
+                },
+                "description": "Array of tags that the external app will have after creation."
+              },
+              "accessRestriction": {
+                "type": "object",
+                "properties": {
+                  "users": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "uniqueItems": true
+                    }
+                  },
+                  "groups": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "uniqueItems": true
+                    }
+                  }
+                },
+                "description": "Sets access restriction for users or groups. Can be null."
+              },
+              "icon": {
+                "type": "string",
+                "description": "Applink icon. When not set, this the favicon of the website.  This can be an icon, png, jpeg depending on the upstream site. When a custom icon is set, this is the icon which was previously uploaded.\n"
+              }
+            },
+            "required": [
+              "upstreamUri"
+            ]
+          }
+        }
+      }
+    },
+    "responses": {
+      "202": {
+        "$ref": "../components/responses/accepted.json"
+      },
+      "400": {
+        "$ref": "../components/responses/bad_field.json"
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/applinks_{id}/post.sh"
+        }
+      }
+    ]
+  },
+  "delete": {
+    "operationId": "deleteApplinkById",
+    "summary": "Delete applink",
+    "description": "Delete applink\nThe role 'user-manager' is required to make this api call.\n",
+    "tags": [
+      "Applinks"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "write"
+        ]
+      },
+      {
+        "query_auth": [
+          "write"
+        ]
+      }
+    ],
+    "parameters": [
+      {
+        "$ref": "../components/parameters/id.json"
+      }
+    ],
+    "responses": {
+      "202": {
+        "$ref": "../components/responses/accepted.json"
+      },
+      "400": {
+        "$ref": "../components/responses/bad_field.json"
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "404": {
+        "$ref": "../components/responses/not_found.json"
+      },
+      "409": {
+        "$ref": "../components/responses/conflict.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/applinks_{id}/delete.sh"
+        }
+      }
+    ]
+  }
+}

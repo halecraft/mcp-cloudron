@@ -1,0 +1,11 @@
+{
+  "type": "object",
+  "description": "Retention policy for backups.",
+  "properties": {
+    "keepWWithinSecs": {
+      "type": "number",
+      "description": "Number of seconds to keep weekly backups.",
+      "example": 172300
+    }
+  }
+}

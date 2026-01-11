@@ -1,0 +1,131 @@
+{
+  "get": {
+    "operationId": "getAppTask",
+    "summary": "Get app task",
+    "description": "Get tasks of an app.",
+    "tags": [
+      "Apps"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "write"
+        ]
+      },
+      {
+        "query_auth": [
+          "write"
+        ]
+      }
+    ],
+    "parameters": [
+      {
+        "$ref": "../components/parameters/appId.json"
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Accepted",
+        "content": {
+          "application/json": {
+            "schema": {
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "Identifier of the task.",
+                  "example": "707"
+                },
+                "type": {
+                  "type": "string",
+                  "description": "Type of the task.",
+                  "example": "app"
+                },
+                "percent": {
+                  "type": "number",
+                  "description": "Percentage completion of the task.",
+                  "example": 20
+                },
+                "message": {
+                  "type": "string",
+                  "description": "Message describing the task.",
+                  "example": "Stopping container"
+                },
+                "creationTime": {
+                  "type": "string",
+                  "description": "Timestamp indicating when the task was created.",
+                  "example": "2024-06-06T10:07:17.000Z"
+                },
+                "ts": {
+                  "type": "string",
+                  "description": "Timestamp indicating when the task status was updated.",
+                  "example": "2024-06-06T10:07:18.000Z"
+                },
+                "args": {
+                  "type": "array",
+                  "description": "Arguments associated with the task.",
+                  "items": {
+                    "type": "string",
+                    "example": [
+                      "dd7630af-2038-48de-af69-1ce020ffd294"
+                    ]
+                  }
+                },
+                "result": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "description": "Result of the task execution.",
+                  "example": "success"
+                },
+                "error": {
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "description": "Error message if the task encountered an error.",
+                  "example": "Failed to stop container"
+                },
+                "active": {
+                  "type": "boolean",
+                  "description": "Indicates if the task is currently active.",
+                  "example": true
+                },
+                "success": {
+                  "type": "boolean",
+                  "description": "Indicates if the task was successful.",
+                  "example": false
+                },
+                "pending": {
+                  "type": "boolean",
+                  "description": "Indicates if the task is pending.",
+                  "example": false
+                }
+              }
+            }
+          }
+        }
+      },
+      "400": {
+        "description": "No active task."
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/apps_{appId}_task/get.sh"
+        }
+      }
+    ]
+  }
+}

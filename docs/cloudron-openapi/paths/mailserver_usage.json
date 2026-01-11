@@ -1,0 +1,82 @@
+{
+  "get": {
+    "operationId": "getUsage",
+    "summary": "Get usage",
+    "description": "Get usage.",
+    "tags": [
+      "Mailserver"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "read"
+        ]
+      },
+      {
+        "query_auth": [
+          "read"
+        ]
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name@maildomain.de": {
+                  "type": "object",
+                  "description": "Name of the domain.\n",
+                  "properties": {
+                    "diskSize": {
+                      "type": "number",
+                      "example": 7423688,
+                      "description": "The total disk space used by the mailbox, measured in bytes.\n"
+                    },
+                    "quotaValue": {
+                      "type": "number",
+                      "example": 346434,
+                      "description": "The current usage of the mailbox, measured in bytes.\n"
+                    },
+                    "quotaLimit": {
+                      "type": "number",
+                      "example": 0,
+                      "description": "The maximum allowed usage of the mailbox, measured in bytes. A value of 0 indicates that there is no quota limit.\n"
+                    },
+                    "quotaPercent": {
+                      "type": "number",
+                      "example": 0,
+                      "description": "The percentage of mailbox usage relative to the quota limit. If the quota limit is 0, this value will always be 0.\n"
+                    }
+                  },
+                  "required": [
+                    "diskSize"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/mailserver_usage/get.sh"
+        }
+      }
+    ]
+  }
+}

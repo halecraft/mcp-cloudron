@@ -1,0 +1,29 @@
+{
+  "allOf": [
+    {
+      "$ref": "./domainBase.json"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "config": {
+          "type": "object",
+          "description": "Specifies config for Bunny DNS.",
+          "properties": {
+            "accessKey": {
+              "type": "string",
+              "description": "Bunny access key.",
+              "example": "abc123def456ghi789jkl012mno345pqr678stu901vwx234yz"
+            }
+          },
+          "required": [
+            "accessKey"
+          ]
+        }
+      },
+      "required": [
+        "config"
+      ]
+    }
+  ]
+}

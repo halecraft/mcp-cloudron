@@ -1,0 +1,105 @@
+{
+  "post": {
+    "operationId": "updateApp",
+    "summary": "Update app",
+    "description": "Update app.",
+    "tags": [
+      "Apps"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "write"
+        ]
+      },
+      {
+        "query_auth": [
+          "write"
+        ]
+      }
+    ],
+    "parameters": [
+      {
+        "$ref": "../components/parameters/appId.json"
+      }
+    ],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "properties": {
+              "manifest": {
+                "$ref": "../components/schemas/manifest.json"
+              },
+              "appStoreId": {
+                "$ref": "../components/schemas/appStoreId.json"
+              },
+              "skipBackup": {
+                "type": "boolean",
+                "description": "Enable or disable a backup before the app will be updated.",
+                "example": true
+              },
+              "force": {
+                "type": "boolean",
+                "description": "Enable or disable if the update should be forced.",
+                "example": true
+              }
+            },
+            "oneOf": [
+              {
+                "required": [
+                  "appStoreId"
+                ],
+                "not": {
+                  "required": [
+                    "manifest"
+                  ]
+                }
+              },
+              {
+                "required": [
+                  "manifest"
+                ],
+                "not": {
+                  "required": [
+                    "appStoreId"
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "responses": {
+      "202": {
+        "description": "Accepted",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "../components/schemas/task_info.json"
+            }
+          }
+        }
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/apps_{appId}_update/post.sh"
+        }
+      }
+    ]
+  }
+}

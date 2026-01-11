@@ -1,0 +1,9 @@
+{
+  "name": "service",
+  "in": "path",
+  "description": "Service name",
+  "required": true,
+  "schema": {
+    "type": "string"
+  }
+}

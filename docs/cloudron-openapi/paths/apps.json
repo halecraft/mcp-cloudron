@@ -1,0 +1,254 @@
+{
+  "post": {
+    "operationId": "installApp",
+    "summary": "Install app",
+    "description": "Up to Cloudron v8.1 this route is `POST /apps/install`\n\nInstall an app by either providing an app store id or a CloudronManifest. The latter is useful for custom apps.\n\nOne of `manifest` or `appStoreId` is required!\n",
+    "tags": [
+      "Apps"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "write"
+        ]
+      },
+      {
+        "query_auth": [
+          "write"
+        ]
+      }
+    ],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "properties": {
+              "appStoreId": {
+                "type": "string",
+                "example": "io.cloudron.surfer",
+                "description": "Cloudron app store ID. Same as the id in the CloudronManifest.json"
+              },
+              "manifest": {
+                "$ref": "../components/schemas/manifest.json"
+              },
+              "ports": {
+                "$ref": "../components/schemas/ports.json"
+              },
+              "icon": {
+                "type": "string",
+                "description": "This can be an icon, png, jpeg depending on the upstream site. When a custom icon is set, this is the icon which was previously uploaded.",
+                "example": "< base64 encoded image >"
+              },
+              "label": {
+                "$ref": "../components/schemas/label.json"
+              },
+              "memoryLimit": {
+                "$ref": "../components/schemas/memoryLimit.json"
+              },
+              "sso": {
+                "type": "boolean",
+                "description": "Indicates whether the application supports Single Sign-On (SSO).",
+                "example": true
+              },
+              "enableBackup": {
+                "type": "boolean",
+                "description": "Indicates whether backups are enabled for the application.",
+                "example": true
+              },
+              "enableAutomaticUpdate": {
+                "type": "boolean",
+                "description": "Indicates whether automatic updates are enabled.",
+                "example": false
+              },
+              "accessRestriction": {
+                "type": "object",
+                "properties": {
+                  "users": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "example": "uid-321dsa...",
+                      "description": "Array of userId's that are allowed to access the app."
+                    }
+                  },
+                  "groups": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "example": "gid-321dsa...",
+                      "description": "Array of groupId's that are allowed to access the app."
+                    }
+                  }
+                }
+              },
+              "debugMode": {
+                "type": "object",
+                "properties": {
+                  "cmd": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "description": "List of command-line arguments for the debug mode."
+                    },
+                    "example": [
+                      "/bin/bash",
+                      "-c",
+                      "echo \"Repair mode. [...]"
+                    ]
+                  },
+                  "readonlyRootfs": {
+                    "type": "boolean",
+                    "example": true,
+                    "description": "Indicates if the root filesystem should be mounted as read-only for added security."
+                  }
+                }
+              },
+              "secondaryDomains": {
+                "$ref": "../components/schemas/secondaryDomains.json"
+              },
+              "redirectDomains": {
+                "$ref": "../components/schemas/redirectDomains.json"
+              },
+              "aliasDomains": {
+                "$ref": "../components/schemas/aliasDomains.json"
+              },
+              "overwriteDns": {
+                "type": "boolean",
+                "example": false,
+                "description": "Determines whether existing DNS settings should be overwritten during configuration."
+              },
+              "skipDnsSetup": {
+                "type": "boolean",
+                "example": false,
+                "description": "Skips the DNS setup process if set to true, assuming DNS is already configured."
+              },
+              "env": {
+                "type": "object",
+                "description": "Used to set up the app environment. It is an object where the values are strings."
+              },
+              "enableMailbox": {
+                "type": "boolean",
+                "description": "Enable or disable the mailbox feature for the app.",
+                "example": true
+              },
+              "enableTurn": {
+                "type": "boolean",
+                "description": "Indicates whether TURN (Traversal Using Relays around NAT) is enabled.",
+                "example": false
+              },
+              "upstreamUri": {
+                "type": "string",
+                "description": "The upstream URI of the application.",
+                "example": "upstream.uri.de"
+              }
+            },
+            "required": [
+              "appStoreId",
+              "manifest",
+              "domain",
+              "subdomain",
+              "accessRestriction"
+            ]
+          }
+        }
+      }
+    },
+    "responses": {
+      "202": {
+        "description": "Accepted",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "example": "d342-ef54003-dsads332-4322ds34ddff0",
+                  "description": "App Identifier."
+                },
+                "taskId": {
+                  "$ref": "../components/schemas/taskId.json"
+                }
+              }
+            }
+          }
+        }
+      },
+      "400": {
+        "$ref": "../components/responses/bad_field.json"
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/apps/post.sh"
+        }
+      }
+    ]
+  },
+  "get": {
+    "operationId": "listAppsByUser",
+    "summary": "List apps",
+    "description": "List apps.",
+    "tags": [
+      "Apps"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "read"
+        ]
+      },
+      {
+        "query_auth": [
+          "read"
+        ]
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "apps": {
+                  "$ref": "../components/schemas/apps.json"
+                }
+              }
+            }
+          }
+        }
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/apps/get.sh"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,100 @@
+{
+  "get": {
+    "operationId": "getEvents",
+    "summary": "Get eventlogs",
+    "description": "Get eventlogs.",
+    "tags": [
+      "Mailserver"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "read"
+        ]
+      },
+      {
+        "query_auth": [
+          "read"
+        ]
+      }
+    ],
+    "parameters": [
+      {
+        "$ref": "../components/parameters/PaginationPage.json"
+      },
+      {
+        "$ref": "../components/parameters/PaginationPerPage.json"
+      },
+      {
+        "name": "search",
+        "in": "query",
+        "description": "Filter by users which match either username, email, displayName",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "since",
+        "in": "query",
+        "description": "Filter by active or not active users. If not provided any state matches.",
+        "required": false,
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 1
+        }
+      },
+      {
+        "name": "types",
+        "in": "query",
+        "description": "Types of eventlogs. Can be seperated by \",\".",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "eventlogs": {
+                  "oneOf": [
+                    {
+                      "$ref": "../components/schemas/eventlogsServer.json"
+                    },
+                    {
+                      "$ref": "../components/schemas/eventlogsRemote.json"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/mailserver_eventlog/get.sh"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "type": "string",
+  "description": "A label/display name for the the password",
+  "example": "Password For Nextcloud mobile app"
+}

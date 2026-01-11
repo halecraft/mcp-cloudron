@@ -1,0 +1,5 @@
+{
+  "type": "string",
+  "description": "The upstream URI of the application.",
+  "example": "upstream.uri.de"
+}

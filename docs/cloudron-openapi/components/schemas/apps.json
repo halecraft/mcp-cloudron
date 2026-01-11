@@ -1,0 +1,192 @@
+{
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "description": "A unique identifier for the application.",
+        "example": "cd98991f-1327-48de-a8e2-6t521e865ebc"
+      },
+      "appStoreId": {
+        "type": "string",
+        "description": "The identifier of the application in the app store.",
+        "example": ""
+      },
+      "installationState": {
+        "type": "string",
+        "description": "The installation status of the application (e.g., installed, not installed).",
+        "example": "installed"
+      },
+      "error": {
+        "type": [
+          "null",
+          "string"
+        ],
+        "description": "Error message if there is an issue with the application's operation.",
+        "example": null
+      },
+      "runState": {
+        "type": "string",
+        "description": "The current operational state of the application (e.g., running, stopped).",
+        "example": "running"
+      },
+      "health": {
+        "type": "string",
+        "description": "The health status of the application (e.g., healthy, unhealthy).",
+        "example": "healthy"
+      },
+      "taskId": {
+        "type": "string",
+        "description": "The ID of the last task or process run on the application.",
+        "example": "177"
+      },
+      "accessRestriction": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "description": "Restrictions on access to the application (e.g., admin only).",
+        "example": null
+      },
+      "checklist": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "description": "Checklist entries for the application.",
+          "example": {}
+        }
+      },
+      "secondaryDomains": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "description": "Secondary domains associated with the application.",
+        "example": [
+          "your.secondary.domains.com"
+        ]
+      },
+      "redirectDomains": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "description": "Domains that redirect to the application.",
+        "example": [
+          "your.redirect.domains.com"
+        ]
+      },
+      "aliasDomains": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "description": "Alias domains for the application.",
+        "example": [
+          "your.alias.domains.com"
+        ]
+      },
+      "sso": {
+        "type": "boolean",
+        "description": "Indicates whether the application supports Single Sign-On (SSO).",
+        "example": true
+      },
+      "subdomain": {
+        "type": "string",
+        "description": "The subdomain on which the application runs.",
+        "example": "test"
+      },
+      "domain": {
+        "type": "string",
+        "description": "The main domain on which the application runs.",
+        "example": "cloudron.io"
+      },
+      "fqdn": {
+        "type": "string",
+        "description": "The fully qualified domain name (FQDN) of the application.",
+        "example": "test.cloudron.io"
+      },
+      "certificate": {
+        "type": [
+          "null",
+          "string"
+        ],
+        "description": "The SSL certificate of the application.",
+        "example": null
+      },
+      "manifest": {
+        "type": "object",
+        "description": "Find more about the manifest specification in our knowledgebase.",
+        "example": {}
+      },
+      "ports": {
+        "type": "object",
+        "description": "The port bindings of the application.",
+        "example": {}
+      },
+      "iconUrl": {
+        "type": "string",
+        "description": "The URL of the application icon.",
+        "example": "/api/v1/21g3jh-321321k3-3213jh-423hjk234/icon"
+      },
+      "creationTime": {
+        "type": "string",
+        "description": "The creation date and time of the application.",
+        "example": "2024-05-05T11:21:12.000Z"
+      },
+      "ts": {
+        "type": "string",
+        "description": "The timestamp of the last update to the application's information.",
+        "example": "2024-06-03T11:15:15.000Z"
+      },
+      "tags": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "description": "Tags for categorizing and filtering the application.",
+        "example": [
+          "dev",
+          "dev",
+          "dev"
+        ]
+      },
+      "label": {
+        "type": [
+          "null",
+          "string"
+        ],
+        "description": "A custom label for the application.",
+        "example": "Office"
+      },
+      "notes": {
+        "type": [
+          "null",
+          "string"
+        ],
+        "description": "Notes about the application.",
+        "example": {}
+      },
+      "enableBackup": {
+        "type": "boolean",
+        "description": "Indicates whether backups are enabled for the application.",
+        "example": true
+      },
+      "upstreamUri": {
+        "type": "string",
+        "description": "The upstream URI of the application.",
+        "example": "upstream.uri.de"
+      },
+      "accessLevel": {
+        "type": "string",
+        "description": "The access level for the application (e.g., admin, user).",
+        "example": "admin"
+      },
+      "devices": {
+        "type": "object",
+        "description": "Path to devices that the app has access to"
+      }
+    }
+  }
+}

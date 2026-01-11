@@ -1,0 +1,38 @@
+{
+  "type": "object",
+  "discriminator": {
+    "propertyName": "mountType",
+    "mapping": {
+      "cifs": "./CIFS.json",
+      "filesystem": "./FILESYSTEM.json",
+      "ext4": "./EXT4.json",
+      "mountpoint": "./MOUNTPOINT.json",
+      "nfs": "./NFS.json",
+      "sshfs": "./SSHFS.json",
+      "xfs": "./XFS.json"
+    }
+  },
+  "oneOf": [
+    {
+      "$ref": "./CIFS.json"
+    },
+    {
+      "$ref": "./FILESYSTEM.json"
+    },
+    {
+      "$ref": "./EXT4.json"
+    },
+    {
+      "$ref": "./MOUNTPOINT.json"
+    },
+    {
+      "$ref": "./NFS.json"
+    },
+    {
+      "$ref": "./SSHFS.json"
+    },
+    {
+      "$ref": "./XFS.json"
+    }
+  ]
+}

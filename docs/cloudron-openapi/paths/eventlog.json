@@ -1,0 +1,90 @@
+{
+  "get": {
+    "operationId": "getEventlog",
+    "summary": "List Events",
+    "description": "List events",
+    "tags": [
+      "Eventlog"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "read"
+        ]
+      },
+      {
+        "query_auth": [
+          "read"
+        ]
+      }
+    ],
+    "parameters": [
+      {
+        "$ref": "../components/parameters/PaginationPage.json"
+      },
+      {
+        "$ref": "../components/parameters/PaginationPerPage.json"
+      },
+      {
+        "name": "search",
+        "in": "query",
+        "description": "Search string",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "actions",
+        "in": "query",
+        "description": "Comma separated list of actions",
+        "explode": false,
+        "required": false,
+        "schema": {
+          "type": "array",
+          "items": {
+            "$ref": "../components/schemas/action.json"
+          },
+          "example": "volume.add,volume.remove"
+        }
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "eventlogs": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "../components/schemas/Event.json"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/eventlog/get.sh"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "type": "string",
+  "example": "00 00 23 * * *",
+  "description": "Backup schedule in cron format or similar."
+}

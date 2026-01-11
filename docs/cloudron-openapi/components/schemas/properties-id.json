@@ -1,0 +1,5 @@
+{
+  "type": "string",
+  "description": "App Password Id",
+  "example": "uid-1bf6f7a0-c909-41f5-96a1-68183a6edd8b"
+}

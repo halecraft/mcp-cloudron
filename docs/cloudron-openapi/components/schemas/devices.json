@@ -1,0 +1,33 @@
+{
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "path": {
+        "type": "string",
+        "description": "The device file path.",
+        "example": "/dev/sda1"
+      },
+      "size": {
+        "type": "string",
+        "description": "The size of the device.",
+        "example": "40G"
+      },
+      "type": {
+        "type": "string",
+        "description": "The filesystem type of the device.",
+        "example": "ext4"
+      },
+      "uuid": {
+        "type": "string",
+        "description": "The UUID of the device.",
+        "example": "55347856adabef0-1957-463e-534543534asdc"
+      },
+      "mountpoint": {
+        "type": "string",
+        "description": "The mount point of the device.",
+        "example": "/"
+      }
+    }
+  }
+}

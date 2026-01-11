@@ -1,0 +1,89 @@
+{
+  "post": {
+    "operationId": "setAppLocation",
+    "summary": "Set location",
+    "description": "Set app location.",
+    "tags": [
+      "Apps"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "write"
+        ]
+      },
+      {
+        "query_auth": [
+          "write"
+        ]
+      }
+    ],
+    "parameters": [
+      {
+        "$ref": "../components/parameters/appId.json"
+      }
+    ],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "properties": {
+              "ports": {
+                "$ref": "../components/schemas/ports.json"
+              },
+              "secondaryDomains": {
+                "$ref": "../components/schemas/secondaryDomains.json"
+              },
+              "redirectDomains": {
+                "$ref": "../components/schemas/redirectDomains.json"
+              },
+              "aliasDomains": {
+                "$ref": "../components/schemas/aliasDomains.json"
+              },
+              "overwriteDns": {
+                "type": "boolean",
+                "example": false,
+                "description": "Determines whether existing DNS settings should be overwritten during configuration."
+              },
+              "skipDnsSetup": {
+                "type": "boolean",
+                "example": false,
+                "description": "Skips the DNS setup process if set to true, assuming DNS is already configured."
+              }
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "202": {
+        "description": "Accepted",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "../components/schemas/task_info.json"
+            }
+          }
+        }
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/apps_{appId}_configure_location/post.sh"
+        }
+      }
+    ]
+  }
+}

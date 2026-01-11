@@ -1,0 +1,5 @@
+{
+  "type": "integer",
+  "description": "Time (epoch) when the token expires",
+  "example": 1725615073184
+}

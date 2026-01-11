@@ -1,0 +1,70 @@
+{
+  "type": "object",
+  "description": "The user's profile",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique user id",
+      "readOnly": true
+    },
+    "username": {
+      "type": "string",
+      "description": "Unique username",
+      "readOnly": true,
+      "example": "messi"
+    },
+    "email": {
+      "type": "string",
+      "description": "Unique email address",
+      "example": "goat@football.com"
+    },
+    "fallbackEmail": {
+      "type": "string",
+      "description": "Unique fallback email address. This is the address password reset is sent to. This requires the `password` field to be set to the user's current password.\n",
+      "example": "goat@soccer.com"
+    },
+    "password": {
+      "type": "string",
+      "description": "When trying to change the `fallbackEmail`, set this field to the user's current password",
+      "writeOnly": true
+    },
+    "displayName": {
+      "type": "string",
+      "description": "Full name of the user",
+      "example": "Lionel Messi"
+    },
+    "twoFactorAuthenticationEnabled": {
+      "type": "boolean",
+      "description": "Whether user has enabled 2FA",
+      "readOnly": true
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "owner",
+        "admin",
+        "usermanager",
+        "mailmanager",
+        "user"
+      ],
+      "description": "User's role determines the resources they have access to",
+      "readOnly": true
+    },
+    "hasBackgroundImage": {
+      "type": "boolean",
+      "description": "Whether user has a custom dashboard background image",
+      "readOnly": true
+    },
+    "avatarUrl": {
+      "type": "string",
+      "description": "URL to user's avatar (icon) . This can be:\n  * Empty string - if user has no icon set\n  * Gravatar URL - external URL if user chose Gravatar\n  * Custom Avatar URL - a link to the [custom avatar](#operation/getCustomAvatar) endpoint\n",
+      "readOnly": true
+    },
+    "source": {
+      "type": "string",
+      "description": "Authentication source",
+      "example": "ldap",
+      "readOnly": true
+    }
+  }
+}

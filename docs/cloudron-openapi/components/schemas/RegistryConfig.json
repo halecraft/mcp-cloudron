@@ -1,0 +1,41 @@
+{
+  "type": "object",
+  "properties": {
+    "provider": {
+      "type": "string",
+      "description": "Docker Registry Provider",
+      "enum": [
+        "aws",
+        "digitalocean",
+        "dockerhub",
+        "google-cloud",
+        "linode",
+        "quay",
+        "treescale",
+        "other",
+        "noop"
+      ],
+      "example": "digitalocean"
+    },
+    "serverAddress": {
+      "type": "string",
+      "description": "Address of the Docker Registry",
+      "example": "docker.io"
+    },
+    "username": {
+      "type": "string",
+      "description": "Username for authenticating with the Docker Registry"
+    },
+    "email": {
+      "type": "string",
+      "description": "Email for authenticating with the Docker Registry"
+    },
+    "password": {
+      "type": "string",
+      "description": "Password for authenticating with the Docker Registry"
+    }
+  },
+  "required": [
+    "provider"
+  ]
+}

@@ -1,0 +1,69 @@
+{
+  "post": {
+    "operationId": "changeLocation",
+    "summary": "Change dashboard location",
+    "description": "Change the location of your Cloudron dashboard.",
+    "tags": [
+      "Dashboard"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "write"
+        ]
+      },
+      {
+        "query_auth": [
+          "write"
+        ]
+      }
+    ],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "properties": {
+              "domain": {
+                "type": "string",
+                "example": "anotherExample.org",
+                "description": "The domain where the dashboard will be located at. The `my.` can't be changed. With the given example it would look like this: `my.anotherExample.org`.\n"
+              }
+            },
+            "required": [
+              "domain"
+            ]
+          }
+        }
+      }
+    },
+    "responses": {
+      "204": {
+        "$ref": "../components/responses/no_content.json"
+      },
+      "400": {
+        "$ref": "../components/responses/bad_field.json"
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "409": {
+        "$ref": "../components/responses/conflict.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/dashboard_location/post.sh"
+        }
+      }
+    ]
+  }
+}

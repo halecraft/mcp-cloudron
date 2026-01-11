@@ -1,0 +1,71 @@
+{
+  "get": {
+    "operationId": "getIcon",
+    "summary": "Get icon",
+    "description": "Get icon",
+    "tags": [
+      "Applinks"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "read"
+        ]
+      },
+      {
+        "query_auth": [
+          "read"
+        ]
+      }
+    ],
+    "parameters": [
+      {
+        "$ref": "../components/parameters/id.json"
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "icon": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "../components/schemas/icon.json"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "400": {
+        "$ref": "../components/responses/bad_field.json"
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "404": {
+        "$ref": "../components/responses/not_found.json"
+      },
+      "409": {
+        "$ref": "../components/responses/conflict.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      },
+      "x-codeSamples": [
+        {
+          "lang": "cURL",
+          "source": "curl -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/applinks/$ID/icon\""
+        }
+      ]
+    }
+  }
+}

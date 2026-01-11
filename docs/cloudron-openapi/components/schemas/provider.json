@@ -1,0 +1,5 @@
+{
+  "type": "string",
+  "description": "Backup provider.",
+  "example": "filesystem"
+}

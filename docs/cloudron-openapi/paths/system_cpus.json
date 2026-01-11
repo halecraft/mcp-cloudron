@@ -1,0 +1,56 @@
+{
+  "get": {
+    "operationId": "getCpus",
+    "summary": "Get cpus",
+    "description": "Get information of your sytem cpus.\n",
+    "tags": [
+      "System"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "read"
+        ]
+      },
+      {
+        "query_auth": [
+          "read"
+        ]
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "cpus": {
+                  "$ref": "../components/schemas/cpus.json"
+                }
+              }
+            }
+          }
+        }
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/system_cpus/get.sh"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "get": {
+    "operationId": "getFileFromVolume",
+    "summary": "Get a file from volume",
+    "description": "Get a file located on a volume.",
+    "tags": [
+      "Volumes"
+    ],
+    "security": [
+      {
+        "bearer_auth": [
+          "read"
+        ]
+      },
+      {
+        "query_auth": [
+          "read"
+        ]
+      }
+    ],
+    "parameters": [
+      {
+        "$ref": "../components/parameters/parameters-id.json"
+      },
+      {
+        "$ref": "../components/parameters/filename.json"
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "Success",
+        "content": {
+          "text/plain": {
+            "schema": {
+              "type": "string"
+            },
+            "example": "This is the content of the file.\nIt may contain multiple lines.\nLine 3...\nLine 4...\n"
+          }
+        }
+      },
+      "401": {
+        "$ref": "../components/responses/unauthorized.json"
+      },
+      "403": {
+        "$ref": "../components/responses/forbidden.json"
+      },
+      "500": {
+        "$ref": "../components/responses/server_error.json"
+      }
+    },
+    "x-codeSamples": [
+      {
+        "lang": "cURL",
+        "source": {
+          "$ref": "../code_samples/cURL/volumes_{id}_files_{filename}/get.sh"
+        }
+      }
+    ]
+  }
+}

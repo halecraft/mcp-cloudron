@@ -1,0 +1,275 @@
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "$ref": "./id.json"
+    },
+    "appStoreId": {
+      "$ref": "./appStoreId.json"
+    },
+    "installationState": {
+      "$ref": "./installationState.json"
+    },
+    "error": {
+      "$ref": "./properties-error.json"
+    },
+    "runState": {
+      "$ref": "./runState.json"
+    },
+    "health": {
+      "$ref": "./health.json"
+    },
+    "taskId": {
+      "$ref": "./properties-taskId.json"
+    },
+    "subdomain": {
+      "$ref": "./subdomain.json"
+    },
+    "domain": {
+      "$ref": "./domain.json"
+    },
+    "fqdn": {
+      "$ref": "./fqdn.json"
+    },
+    "certificate": {
+      "$ref": "./certificate.json"
+    },
+    "crontab": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "The schedule in crontab format for running periodic tasks.",
+      "example": "*/15 * * * *"
+    },
+    "upstreamUri": {
+      "$ref": "./upstreamUri.json"
+    },
+    "accessRestriction": {
+      "$ref": "./accessRestriction.json"
+    },
+    "manifest": {
+      "$ref": "./manifest.json"
+    },
+    "ports": {
+      "$ref": "./ports.json"
+    },
+    "iconUrl": {
+      "$ref": "./iconUrl.json"
+    },
+    "memoryLimit": {
+      "type": "number",
+      "description": "The memory limit for the app in bytes.",
+      "example": 123432345
+    },
+    "cpuQuota": {
+      "type": "number",
+      "description": "The CPU quota for the app, expressed as a percentage.",
+      "example": 100
+    },
+    "operators": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "users": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "description": "List of user IDs that have operator access to the app.",
+            "example": [
+              "uid-15634b8e-28d4-412a-a46f-e7d0c17sdfdsc",
+              "uid-15634b8e-28d4-412a-a46f-e7d0c17svcx32c"
+            ]
+          }
+        },
+        "groups": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "description": "List of group IDs that have operator access to the app.",
+            "example": [
+              "gid-15634b8e-28d4-412a-a46f-e7d0c17sdfdsc",
+              "gid-15634b8e-28d4-412a-a46f-e7d0c17svcx32c"
+            ]
+          }
+        }
+      },
+      "description": "Users and groups that have operator privileges for the app.",
+      "example": {
+        "users": [
+          "uid-15634b8e-28d4-412a-a46f-e7d0c17sdfdsc",
+          "uid-15634b8e-28d4-412a-a46f-e7d0c17svcx32c"
+        ],
+        "groups": [
+          "gid-15634b8e-28d4-412a-a46f-e7d0c17sdfdsc",
+          "gid-15634b8e-28d4-412a-a46f-e7d0c17svcx32c"
+        ]
+      }
+    },
+    "sso": {
+      "$ref": "./sso.json"
+    },
+    "debugMode": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "readonlyRootfs": {
+          "type": "boolean",
+          "description": "Indicates if the root filesystem is read-only.",
+          "example": false
+        },
+        "cmd": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "description": "List of command-line arguments for the debug mode."
+          },
+          "example": [
+            "/bin/bash",
+            "-c",
+            "echo \"Repair mode. [...]"
+          ]
+        }
+      },
+      "description": "Configuration for the debug mode of the app."
+    },
+    "reverseProxyConfig": {
+      "type": "object",
+      "description": "Configuration settings for the reverse proxy.",
+      "example": {}
+    },
+    "enableBackup": {
+      "$ref": "./enableBackup.json"
+    },
+    "creationTime": {
+      "$ref": "./creationTime.json"
+    },
+    "updateTime": {
+      "type": "string",
+      "description": "The last time the app was updated.",
+      "example": "2024-05-05T11:21:12.000Z"
+    },
+    "ts": {
+      "$ref": "./ts.json"
+    },
+    "tags": {
+      "$ref": "./tags.json"
+    },
+    "label": {
+      "$ref": "./label.json"
+    },
+    "notes": {
+      "$ref": "./notes.json"
+    },
+    "secondaryDomains": {
+      "$ref": "./secondaryDomains.json"
+    },
+    "redirectDomains": {
+      "$ref": "./redirectDomains.json"
+    },
+    "aliasDomains": {
+      "$ref": "./aliasDomains.json"
+    },
+    "env": {
+      "type": "object",
+      "description": "Environment variables for the app.",
+      "example": {}
+    },
+    "enableAutomaticUpdate": {
+      "type": "boolean",
+      "description": "Indicates whether automatic updates are enabled.",
+      "example": false
+    },
+    "storageVolumeId": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Identifier for the storage volume used by the app.",
+      "example": null
+    },
+    "storageVolumePrefix": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Prefix used for the storage volume.",
+      "example": null
+    },
+    "mounts": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of mount points for the app.",
+      "example": [
+        "ext4"
+      ]
+    },
+    "enableTurn": {
+      "type": "boolean",
+      "description": "Indicates whether TURN (Traversal Using Relays around NAT) is enabled.",
+      "example": true
+    },
+    "enableRedis": {
+      "type": "boolean",
+      "description": "Indicates whether Redis is enabled for the app.",
+      "example": true
+    },
+    "checklist": {
+      "type": "object",
+      "description": "Checklist for app configuration or setup.",
+      "example": {}
+    },
+    "enableMailbox": {
+      "type": "boolean",
+      "description": "Enable or disable the mailbox feature for the app.",
+      "example": true
+    },
+    "mailboxDisplayName": {
+      "type": "string",
+      "description": "Display name for the mailbox associated with the app.",
+      "example": ""
+    },
+    "mailboxName": {
+      "type": "string",
+      "description": "The name of the mailbox used by the app.",
+      "example": "wiki.app"
+    },
+    "mailboxDomain": {
+      "type": "string",
+      "description": "Domain associated with the app's mailbox.",
+      "example": "your.domain.com"
+    },
+    "enableInbox": {
+      "type": "boolean",
+      "description": "Enable or disable the inbox feature for the app.",
+      "example": false
+    },
+    "inboxName": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Name of the inbox used by the app.",
+      "example": null
+    },
+    "inboxDomain": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Domain associated with the app's inbox.",
+      "example": null
+    },
+    "accessLevel": {
+      "type": "string",
+      "description": "The access level of the user for the specific app.",
+      "example": "Admin"
+    }
+  }
+}

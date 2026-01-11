@@ -1,0 +1,9 @@
+{
+  "name": "subdomain",
+  "in": "query",
+  "description": "Subdomain for the dns check.",
+  "required": true,
+  "schema": {
+    "type": "string"
+  }
+}

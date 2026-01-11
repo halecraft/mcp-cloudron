@@ -1,0 +1,8 @@
+{
+  "type": [
+    "null",
+    "string"
+  ],
+  "description": "Notes about the application.",
+  "example": {}
+}

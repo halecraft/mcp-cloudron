@@ -1,0 +1,29 @@
+{
+  "allOf": [
+    {
+      "$ref": "./domainBase.json"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "config": {
+          "type": "object",
+          "description": "Specifies config for Vultr DNS.",
+          "properties": {
+            "token": {
+              "type": "string",
+              "description": "Token used for authentication with Vultr DNS.",
+              "example": "vultr123Dn5T0k3n1234567890"
+            }
+          },
+          "required": [
+            "token"
+          ]
+        }
+      },
+      "required": [
+        "config"
+      ]
+    }
+  ]
+}

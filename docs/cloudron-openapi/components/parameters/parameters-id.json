@@ -1,0 +1,9 @@
+{
+  "name": "id",
+  "in": "path",
+  "description": "Volume ID",
+  "required": true,
+  "schema": {
+    "type": "string"
+  }
+}

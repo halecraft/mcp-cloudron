@@ -1,0 +1,9 @@
+{
+  "name": "filename",
+  "in": "path",
+  "description": "Name of a file located on the volume",
+  "required": true,
+  "schema": {
+    "type": "string"
+  }
+}
