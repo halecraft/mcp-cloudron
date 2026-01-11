@@ -17,7 +17,7 @@ import { CloudronError } from "../src/errors"
 import {
   cleanupTestEnv,
   createMockFetch,
-  mockCloudronStatus,
+  mockDiskUsage,
   setupTestEnv,
 } from "./helpers/cloudron-mock"
 
@@ -42,7 +42,7 @@ describe("cloudron_install_app", () => {
     it("should call validateManifest before installation", async () => {
       // Mock API responses:
       // 1. GET /api/v1/appstore/apps (manifest check)
-      // 2. GET /api/v1/cloudron/status (storage check)
+      // 2. GET /api/v1/system/disk_usage (storage check)
       // 3. POST /api/v1/apps (actual installation)
       global.fetch = createMockFetch({
         "GET https://my.example.com/api/v1/appstore/apps?search=io.example.app":
@@ -63,10 +63,10 @@ describe("cloudron_install_app", () => {
               ],
             },
           },
-        "GET https://my.example.com/api/v1/cloudron/status": {
+        "GET https://my.example.com/api/v1/system/disk_usage": {
           ok: true,
           status: 200,
-          data: mockCloudronStatus, // Has sufficient storage
+          data: mockDiskUsage,
         },
         "POST https://my.example.com/api/v1/apps": {
           ok: true,
@@ -127,13 +127,16 @@ describe("cloudron_install_app", () => {
     })
 
     it("should reject installation when storage check fails", async () => {
-      const lowStorageStatus = {
-        ...mockCloudronStatus,
-        disk: {
-          total: 10737418240, // 10GB
-          used: 10468982784, // ~9.75GB
-          free: 268435456, // 256MB (insufficient - less than 500MB default requirement)
-          percent: 97.5,
+      const lowDiskUsage = {
+        usage: {
+          filesystems: {
+            "/dev/root": {
+              available: 268435456, // 256MB (insufficient - less than 500MB default requirement)
+              size: 10737418240, // 10GB
+              used: 10468982784, // ~9.75GB
+              mountpoint: "/",
+            },
+          },
         },
       }
 
@@ -156,10 +159,10 @@ describe("cloudron_install_app", () => {
               ],
             },
           },
-        "GET https://my.example.com/api/v1/cloudron/status": {
+        "GET https://my.example.com/api/v1/system/disk_usage": {
           ok: true,
           status: 200,
-          data: lowStorageStatus,
+          data: lowDiskUsage,
         },
       })
 
@@ -241,10 +244,10 @@ describe("cloudron_install_app", () => {
               ],
             },
           },
-        "GET https://my.example.com/api/v1/cloudron/status": {
+        "GET https://my.example.com/api/v1/system/disk_usage": {
           ok: true,
           status: 200,
-          data: mockCloudronStatus,
+          data: mockDiskUsage,
         },
         "POST https://my.example.com/api/v1/apps": {
           ok: true,
@@ -287,7 +290,7 @@ describe("cloudron_install_app", () => {
         .mockResolvedValueOnce({
           ok: true,
           status: 200,
-          json: async () => mockCloudronStatus,
+          json: async () => mockDiskUsage,
         })
         .mockResolvedValueOnce({
           ok: true,
@@ -390,10 +393,10 @@ describe("cloudron_install_app", () => {
               ],
             },
           },
-        "GET https://my.example.com/api/v1/cloudron/status": {
+        "GET https://my.example.com/api/v1/system/disk_usage": {
           ok: true,
           status: 200,
-          data: mockCloudronStatus,
+          data: mockDiskUsage,
         },
         "POST https://my.example.com/api/v1/apps": {
           ok: true,
@@ -435,10 +438,10 @@ describe("cloudron_install_app", () => {
               ],
             },
           },
-        "GET https://my.example.com/api/v1/cloudron/status": {
+        "GET https://my.example.com/api/v1/system/disk_usage": {
           ok: true,
           status: 200,
-          data: mockCloudronStatus,
+          data: mockDiskUsage,
         },
         "POST https://my.example.com/api/v1/apps": {
           ok: true,
@@ -489,10 +492,10 @@ describe("cloudron_install_app", () => {
               ],
             },
           },
-        "GET https://my.example.com/api/v1/cloudron/status": {
+        "GET https://my.example.com/api/v1/system/disk_usage": {
           ok: true,
           status: 200,
-          data: mockCloudronStatus,
+          data: mockDiskUsage,
         },
         "POST https://my.example.com/api/v1/apps": {
           ok: false,
@@ -533,10 +536,10 @@ describe("cloudron_install_app", () => {
               ],
             },
           },
-        "GET https://my.example.com/api/v1/cloudron/status": {
+        "GET https://my.example.com/api/v1/system/disk_usage": {
           ok: true,
           status: 200,
-          data: mockCloudronStatus,
+          data: mockDiskUsage,
         },
         "POST https://my.example.com/api/v1/apps": {
           ok: false,
@@ -580,7 +583,7 @@ describe("cloudron_install_app", () => {
         .mockResolvedValueOnce({
           ok: true,
           status: 200,
-          json: async () => mockCloudronStatus,
+          json: async () => mockDiskUsage,
         })
         .mockResolvedValueOnce({
           ok: true,
@@ -636,10 +639,10 @@ describe("cloudron_install_app", () => {
               ],
             },
           },
-        "GET https://my.example.com/api/v1/cloudron/status": {
+        "GET https://my.example.com/api/v1/system/disk_usage": {
           ok: true,
           status: 200,
-          data: mockCloudronStatus,
+          data: mockDiskUsage,
         },
         "POST https://my.example.com/api/v1/apps": {
           ok: true,

@@ -7,7 +7,7 @@ import {
   cleanupTestEnv,
   createMockFetch,
   createTestContext,
-  mockServices,
+  mockServiceNames,
   setupTestEnv,
 } from "./helpers/cloudron-mock"
 import { assertHasTextContent, assertSuccess } from "./helpers/mcp-assert"
@@ -27,7 +27,7 @@ describe("cloudron_list_services tool", () => {
         "GET https://my.example.com/api/v1/services": {
           ok: true,
           status: 200,
-          data: { services: mockServices },
+          data: { services: mockServiceNames },
         },
       })
 
@@ -45,12 +45,12 @@ describe("cloudron_list_services tool", () => {
       expect(text).toContain("read-only diagnostics")
     })
 
-    it("should show service status indicators", async () => {
+    it("should show service status indicators (unknown for list)", async () => {
       global.fetch = createMockFetch({
         "GET https://my.example.com/api/v1/services": {
           ok: true,
           status: 200,
-          data: { services: mockServices },
+          data: { services: mockServiceNames },
         },
       })
 
@@ -59,27 +59,8 @@ describe("cloudron_list_services tool", () => {
 
       assertSuccess(response)
       const text = assertHasTextContent(response)
-      expect(text).toContain("running")
-      expect(text).toContain("stopped")
-      expect(text).toContain("error")
-    })
-
-    it("should show service versions", async () => {
-      global.fetch = createMockFetch({
-        "GET https://my.example.com/api/v1/services": {
-          ok: true,
-          status: 200,
-          data: { services: mockServices },
-        },
-      })
-
-      const ctx = createTestContext()
-      const response = await serviceHandlers.cloudron_list_services({}, ctx)
-
-      assertSuccess(response)
-      const text = assertHasTextContent(response)
-      expect(text).toContain("8.0.35") // mysql version
-      expect(text).toContain("15.4") // postgresql version
+      // Status is unknown in list view now
+      expect(text).toContain("unknown")
     })
 
     it("should handle empty service list", async () => {

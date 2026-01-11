@@ -96,17 +96,7 @@ export interface AppResponse {
  */
 export interface SystemStatus {
   version: string
-  apiServerOrigin: string
-  adminFqdn: string
-  provider: string
-  cloudronName: string
-  isDemo: boolean
-  disk?: {
-    total: number
-    used: number
-    free: number
-    percent: number
-  }
+  cloudronName?: string // Optional in spec/implementation
 }
 
 /**
@@ -131,6 +121,20 @@ export interface CloudronStatus extends SystemStatus {
   backup?: {
     lastBackupTime: string
     lastBackupId: string
+  }
+}
+
+/**
+ * Disk usage response from /api/v1/system/disk_usage
+ */
+export interface DiskUsageResponse {
+  usage: {
+    filesystems: Record<string, {
+      available: number
+      size: number
+      used: number
+      mountpoint: string
+    }>
   }
 }
 
@@ -258,6 +262,13 @@ export interface UsersResponse {
 }
 
 /**
+ * API response for creating a user
+ */
+export interface CreateUserResponse {
+  id: string
+}
+
+/**
  * Log type enum for cloudron_get_logs
  */
 export type LogType = "app" | "service"
@@ -341,7 +352,7 @@ export interface Service {
  * API response wrapper for listing services
  */
 export interface ServicesResponse {
-  services: Service[]
+  services: string[]
 }
 
 // ==================== User Management Types ====================

@@ -19,8 +19,9 @@ import {
   mockAppInstalled,
   mockAppPendingUninstall,
   mockCloudronStatus,
-  mockCloudronStatusCriticalDisk,
-  mockCloudronStatusInsufficientDisk,
+  mockDiskUsage,
+  mockDiskUsageCritical,
+  mockDiskUsageInsufficient,
   setupTestEnv,
 } from "./helpers/cloudron-mock"
 
@@ -216,10 +217,10 @@ describe("cloudron_validate_operation tool", () => {
   describe("restore_backup operation", () => {
     it("should validate successful restore with sufficient disk space", async () => {
       global.fetch = createMockFetch({
-        "GET https://my.example.com/api/v1/cloudron/status": {
+        "GET https://my.example.com/api/v1/system/disk_usage": {
           ok: true,
           status: 200,
-          data: mockCloudronStatus,
+          data: mockDiskUsage,
         },
       })
 
@@ -239,10 +240,10 @@ describe("cloudron_validate_operation tool", () => {
 
     it("should error when disk space is at critical threshold", async () => {
       global.fetch = createMockFetch({
-        "GET https://my.example.com/api/v1/cloudron/status": {
+        "GET https://my.example.com/api/v1/system/disk_usage": {
           ok: true,
           status: 200,
-          data: mockCloudronStatusCriticalDisk,
+          data: mockDiskUsageCritical,
         },
       })
 
@@ -259,10 +260,10 @@ describe("cloudron_validate_operation tool", () => {
 
     it("should error when disk space is insufficient for restore", async () => {
       global.fetch = createMockFetch({
-        "GET https://my.example.com/api/v1/cloudron/status": {
+        "GET https://my.example.com/api/v1/system/disk_usage": {
           ok: true,
           status: 200,
-          data: mockCloudronStatusInsufficientDisk,
+          data: mockDiskUsageInsufficient,
         },
       })
 
@@ -304,10 +305,10 @@ describe("cloudron_validate_operation tool", () => {
           status: 200,
           data: mockAppInstalled,
         },
-        "GET https://my.example.com/api/v1/cloudron/status": {
+        "GET https://my.example.com/api/v1/system/disk_usage": {
           ok: true,
           status: 200,
-          data: mockCloudronStatus,
+          data: mockDiskUsage,
         },
         "GET https://my.example.com/api/v1/users/user-123": {
           ok: true,

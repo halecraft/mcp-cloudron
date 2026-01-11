@@ -35,13 +35,10 @@ describe("cloudron_get_logs", () => {
 
   describe('App logs (type: "app")', () => {
     it("should retrieve app logs with default lines (100)", async () => {
-      const mockLogs = {
-        logs: [
-          "2025-12-24T12:00:00Z [INFO] Application started",
-          "2025-12-24T12:01:00Z [WARN] Memory usage high",
-          "2025-12-24T12:02:00Z [ERROR] Connection failed",
-        ],
-      }
+      const mockLogs =
+        "2025-12-24T12:00:00Z [INFO] Application started\n" +
+        "2025-12-24T12:01:00Z [WARN] Memory usage high\n" +
+        "2025-12-24T12:02:00Z [ERROR] Connection failed"
 
       ;(global.fetch as vi.Mock).mockResolvedValueOnce(
         mockSuccessResponse(mockLogs),
@@ -78,12 +75,9 @@ describe("cloudron_get_logs", () => {
     })
 
     it("should retrieve app logs with custom lines parameter", async () => {
-      const mockLogs = {
-        logs: [
-          "2025-12-24T12:00:00Z [INFO] Log entry 1",
-          "2025-12-24T12:01:00Z [INFO] Log entry 2",
-        ],
-      }
+      const mockLogs =
+        "2025-12-24T12:00:00Z [INFO] Log entry 1\n" +
+        "2025-12-24T12:01:00Z [INFO] Log entry 2"
 
       ;(global.fetch as vi.Mock).mockResolvedValueOnce(
         mockSuccessResponse(mockLogs),
@@ -98,7 +92,7 @@ describe("cloudron_get_logs", () => {
     })
 
     it("should clamp lines parameter to max 1000", async () => {
-      const mockLogs = { logs: [] }
+      const mockLogs = ""
       ;(global.fetch as vi.Mock).mockResolvedValueOnce(
         mockSuccessResponse(mockLogs),
       )
@@ -112,7 +106,7 @@ describe("cloudron_get_logs", () => {
     })
 
     it("should clamp lines parameter to min 1", async () => {
-      const mockLogs = { logs: [] }
+      const mockLogs = ""
       ;(global.fetch as vi.Mock).mockResolvedValueOnce(
         mockSuccessResponse(mockLogs),
       )
@@ -128,12 +122,9 @@ describe("cloudron_get_logs", () => {
 
   describe('Service logs (type: "service")', () => {
     it("should retrieve service logs", async () => {
-      const mockLogs = {
-        logs: [
-          "Dec 24 12:00:00 cloudron nginx[1234]: [INFO] Service started",
-          "Dec 24 12:01:00 cloudron nginx[1234]: [ERROR] Port binding failed",
-        ],
-      }
+      const mockLogs =
+        "Dec 24 12:00:00 cloudron nginx[1234]: [INFO] Service started\n" +
+        "Dec 24 12:01:00 cloudron nginx[1234]: [ERROR] Port binding failed"
 
       ;(global.fetch as vi.Mock).mockResolvedValueOnce(
         mockSuccessResponse(mockLogs),
@@ -158,9 +149,7 @@ describe("cloudron_get_logs", () => {
 
   describe("Log parsing formats", () => {
     it("should parse ISO timestamp format", async () => {
-      const mockLogs = {
-        logs: ["2025-12-24T12:00:00.123Z [DEBUG] Debug message"],
-      }
+      const mockLogs = "2025-12-24T12:00:00.123Z [DEBUG] Debug message"
 
       ;(global.fetch as vi.Mock).mockResolvedValueOnce(
         mockSuccessResponse(mockLogs),
@@ -176,9 +165,8 @@ describe("cloudron_get_logs", () => {
     })
 
     it("should parse syslog format", async () => {
-      const mockLogs = {
-        logs: ["Dec 24 12:00:00 host service[1234]: [INFO] Syslog message"],
-      }
+      const mockLogs =
+        "Dec 24 12:00:00 host service[1234]: [INFO] Syslog message"
 
       ;(global.fetch as vi.Mock).mockResolvedValueOnce(
         mockSuccessResponse(mockLogs),
@@ -192,9 +180,7 @@ describe("cloudron_get_logs", () => {
     })
 
     it("should parse simple bracket format", async () => {
-      const mockLogs = {
-        logs: ["[WARN] Simple warning message"],
-      }
+      const mockLogs = "[WARN] Simple warning message"
 
       ;(global.fetch as vi.Mock).mockResolvedValueOnce(
         mockSuccessResponse(mockLogs),
@@ -209,9 +195,7 @@ describe("cloudron_get_logs", () => {
     })
 
     it("should handle plain text logs without severity", async () => {
-      const mockLogs = {
-        logs: ["Plain text log entry without formatting"],
-      }
+      const mockLogs = "Plain text log entry without formatting"
 
       ;(global.fetch as vi.Mock).mockResolvedValueOnce(
         mockSuccessResponse(mockLogs),
@@ -224,19 +208,11 @@ describe("cloudron_get_logs", () => {
       expect(result[0].timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T/)
     })
 
-    it("should handle empty logs array", async () => {
-      const mockLogs = { logs: [] }
+    it("should handle empty logs string", async () => {
+      const mockLogs = ""
       ;(global.fetch as vi.Mock).mockResolvedValueOnce(
         mockSuccessResponse(mockLogs),
       )
-
-      const result = await client.getLogs("app-123", "app")
-
-      expect(result).toEqual([])
-    })
-
-    it("should handle missing logs field", async () => {
-      ;(global.fetch as vi.Mock).mockResolvedValueOnce(mockSuccessResponse({}))
 
       const result = await client.getLogs("app-123", "app")
 
@@ -300,7 +276,7 @@ describe("cloudron_get_logs", () => {
 
   describe("URL encoding", () => {
     it("should properly encode app IDs with special characters", async () => {
-      const mockLogs = { logs: ["Log entry"] }
+      const mockLogs = "Log entry"
       ;(global.fetch as vi.Mock).mockResolvedValueOnce(
         mockSuccessResponse(mockLogs),
       )
@@ -314,7 +290,7 @@ describe("cloudron_get_logs", () => {
     })
 
     it("should properly encode service names with special characters", async () => {
-      const mockLogs = { logs: ["Log entry"] }
+      const mockLogs = "Log entry"
       ;(global.fetch as vi.Mock).mockResolvedValueOnce(
         mockSuccessResponse(mockLogs),
       )

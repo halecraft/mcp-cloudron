@@ -9,7 +9,7 @@ import {
   createMockFetch,
   createTestContext,
   mockApps,
-  mockCloudronStatus,
+  mockDiskUsage,
   setupTestEnv,
 } from "../helpers/cloudron-mock"
 import { assertHasTextContent, assertSuccess } from "../helpers/mcp-assert"
@@ -232,10 +232,10 @@ describe("App Handlers", () => {
               ],
             },
           },
-        "GET https://my.example.com/api/v1/cloudron/status": {
+        "GET https://my.example.com/api/v1/system/disk_usage": {
           ok: true,
           status: 200,
-          data: mockCloudronStatus,
+          data: mockDiskUsage,
         },
         "POST https://my.example.com/api/v1/apps": {
           ok: true,

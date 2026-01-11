@@ -20,6 +20,7 @@ import type {
   App,
   Backup,
   CloudronStatus,
+  DiskUsageResponse,
   Group,
   Service,
   TaskStatus,
@@ -103,13 +104,9 @@ export const mockApps: App[] = [
 export const mockCloudronStatus: CloudronStatus = {
   version: "8.0.2",
   boxVersionsUrl: "https://cloudron.io/api/v1/boxes/versions",
-  apiServerOrigin: "https://api.example.com",
   webServerOrigin: "https://example.com",
   fqdn: "my.example.com",
-  adminFqdn: "my.example.com",
-  provider: "generic",
   cloudronName: "My Cloudron",
-  isDemo: false,
   isCustomDomain: true,
   memory: {
     total: 16777216,
@@ -117,16 +114,23 @@ export const mockCloudronStatus: CloudronStatus = {
     free: 8388608,
     percent: 50,
   },
-  disk: {
-    total: 107374182400,
-    used: 53687091200,
-    free: 53687091200,
-    percent: 50,
-  },
   update: null,
   backup: {
     lastBackupTime: "2024-12-22T02:00:00Z",
     lastBackupId: "backup-20241222-020000",
+  },
+}
+
+export const mockDiskUsage: DiskUsageResponse = {
+  usage: {
+    filesystems: {
+      "/dev/root": {
+        available: 53687091200, // 50GB
+        size: 107374182400, // 100GB
+        used: 53687091200, // 50GB
+        mountpoint: "/",
+      },
+    },
   },
 }
 
@@ -206,34 +210,36 @@ export const mockBackups: Backup[] = [
 export const mockServices: Service[] = [
   {
     name: "mysql",
-    status: "running",
+    status: "unknown",
     version: "8.0.35",
     memory: 536870912, // 512MB
   },
   {
     name: "postgresql",
-    status: "running",
+    status: "unknown",
     version: "15.4",
     memory: 268435456, // 256MB
   },
   {
     name: "mongodb",
-    status: "stopped",
+    status: "unknown",
     version: "6.0.12",
   },
   {
     name: "mail",
-    status: "running",
+    status: "unknown",
     version: "1.0.0",
     memory: 134217728, // 128MB
   },
   {
     name: "redis",
-    status: "error",
+    status: "unknown",
     version: "7.2.3",
     error: "Connection refused",
   },
 ]
+
+export const mockServiceNames = ["mysql", "postgresql", "mongodb", "mail", "redis"]
 
 /**
  * Mock response configuration
@@ -277,7 +283,7 @@ export function createMockFetch(
         status: response.status || 200,
         statusText: response.statusText || "OK",
         json: async () => response.data,
-        text: async () => JSON.stringify(response.data),
+        text: async () => typeof response.data === 'string' ? response.data : JSON.stringify(response.data),
       } as Response)
     }
 
@@ -357,11 +363,19 @@ export const mockAppPendingUninstall: App = {
  */
 export const mockCloudronStatusCriticalDisk: CloudronStatus = {
   ...mockCloudronStatus,
-  disk: {
-    total: 107374182400,
-    used: 102542024704, // 95.5% used
-    free: 4832157696, // 4.5% free (under critical threshold)
-    percent: 95.5,
+  // disk property removed as it's not in status anymore
+}
+
+export const mockDiskUsageCritical: DiskUsageResponse = {
+  usage: {
+    filesystems: {
+      "/dev/root": {
+        available: 4832157696, // 4.5GB (approx 4.5% of 100GB)
+        size: 107374182400, // 100GB
+        used: 102542024704,
+        mountpoint: "/",
+      },
+    },
   },
 }
 
@@ -370,11 +384,18 @@ export const mockCloudronStatusCriticalDisk: CloudronStatus = {
  */
 export const mockCloudronStatusInsufficientDisk: CloudronStatus = {
   ...mockCloudronStatus,
-  disk: {
-    total: 107374182400,
-    used: 106837319680, // 99.5% used
-    free: 536862720, // 512 MB free (less than 1024 MB required)
-    percent: 99.5,
+}
+
+export const mockDiskUsageInsufficient: DiskUsageResponse = {
+  usage: {
+    filesystems: {
+      "/dev/root": {
+        available: 536862720, // 512MB
+        size: 107374182400, // 100GB
+        used: 106837319680,
+        mountpoint: "/",
+      },
+    },
   },
 }
 
@@ -388,8 +409,8 @@ export function mockSuccessResponse(data: unknown, status = 200): Response {
     statusText: "OK",
     headers: new Headers(),
     json: async () => data,
-    text: async () => JSON.stringify(data),
-    blob: async () => new Blob([JSON.stringify(data)]),
+    text: async () => typeof data === 'string' ? data : JSON.stringify(data),
+    blob: async () => new Blob([typeof data === 'string' ? data : JSON.stringify(data)]),
     arrayBuffer: async () => new ArrayBuffer(0),
     formData: async () => new FormData(),
     body: null,
@@ -601,6 +622,7 @@ export function createTestContext(): CloudronContext {
     getUser: (userId: string) => usersBasic.getUser(userId),
     listUsers: () => usersBasic.listUsers(),
     getStatus: () => system.getStatus(),
+    getDiskUsage: () => system.getDiskUsage(),
     listBackups: () => backups.listBackups(),
     checkUpdates: () => updatesBasic.checkUpdates(),
     searchApps: (query?: string) => appstore.searchApps(query),

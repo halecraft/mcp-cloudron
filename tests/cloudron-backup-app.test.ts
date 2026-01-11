@@ -7,7 +7,8 @@ import {
   cleanupTestEnv,
   createMockFetch,
   createTestContext,
-  mockCloudronStatus,
+  mockDiskUsage,
+  mockDiskUsageInsufficient,
   setupTestEnv,
 } from "./helpers/cloudron-mock"
 import { assertHasTextContent, assertSuccess } from "./helpers/mcp-assert"
@@ -25,10 +26,10 @@ describe("cloudron_backup_app tool", () => {
     it("should create app backup and return task ID", async () => {
       global.fetch = createMockFetch({
         // Storage check
-        "GET https://my.example.com/api/v1/cloudron/status": {
+        "GET https://my.example.com/api/v1/system/disk_usage": {
           ok: true,
           status: 200,
-          data: mockCloudronStatus,
+          data: mockDiskUsage,
         },
         // Backup operation
         "POST https://my.example.com/api/v1/apps/app-1/backup": {
@@ -55,18 +56,10 @@ describe("cloudron_backup_app tool", () => {
   describe("Error handling", () => {
     it("should fail when storage is insufficient", async () => {
       global.fetch = createMockFetch({
-        "GET https://my.example.com/api/v1/cloudron/status": {
+        "GET https://my.example.com/api/v1/system/disk_usage": {
           ok: true,
           status: 200,
-          data: {
-            ...mockCloudronStatus,
-            disk: {
-              total: 107374182400,
-              used: 106837319680, // 99.5% used
-              free: 536862720, // 512 MB free
-              percent: 99.5,
-            },
-          },
+          data: mockDiskUsageInsufficient,
         },
       })
 
@@ -78,10 +71,10 @@ describe("cloudron_backup_app tool", () => {
 
     it("should handle API error", async () => {
       global.fetch = createMockFetch({
-        "GET https://my.example.com/api/v1/cloudron/status": {
+        "GET https://my.example.com/api/v1/system/disk_usage": {
           ok: true,
           status: 200,
-          data: mockCloudronStatus,
+          data: mockDiskUsage,
         },
         "POST https://my.example.com/api/v1/apps/app-1/backup": {
           ok: false,

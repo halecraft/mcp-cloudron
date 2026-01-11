@@ -9,7 +9,7 @@ import {
   createTestContext,
   mockApps,
   mockBackups,
-  mockCloudronStatus,
+  mockDiskUsage,
   setupTestEnv,
 } from "./helpers/cloudron-mock"
 import { assertHasTextContent, assertSuccess } from "./helpers/mcp-assert"
@@ -33,10 +33,10 @@ describe("cloudron_restore_app tool", () => {
           data: mockApps[0],
         },
         // Validation: check storage
-        "GET https://my.example.com/api/v1/cloudron/status": {
+        "GET https://my.example.com/api/v1/system/disk_usage": {
           ok: true,
           status: 200,
-          data: mockCloudronStatus,
+          data: mockDiskUsage,
         },
         // Validation: list backups
         "GET https://my.example.com/api/v1/backups": {
@@ -74,10 +74,10 @@ describe("cloudron_restore_app tool", () => {
           status: 200,
           data: mockApps[0],
         },
-        "GET https://my.example.com/api/v1/cloudron/status": {
+        "GET https://my.example.com/api/v1/system/disk_usage": {
           ok: true,
           status: 200,
-          data: mockCloudronStatus,
+          data: mockDiskUsage,
         },
         "GET https://my.example.com/api/v1/backups": {
           ok: true,

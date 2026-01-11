@@ -51,6 +51,11 @@ describe("cloudron_create_user tool", () => {
       "POST https://my.example.com/api/v1/users": {
         ok: true,
         status: 201,
+        data: { id: "user-123" },
+      },
+      "GET https://my.example.com/api/v1/users/user-123": {
+        ok: true,
+        status: 200,
         data: mockUser,
       },
     })
@@ -81,6 +86,11 @@ describe("cloudron_create_user tool", () => {
       "POST https://my.example.com/api/v1/users": {
         ok: true,
         status: 201,
+        data: { id: "user-456" },
+      },
+      "GET https://my.example.com/api/v1/users/user-456": {
+        ok: true,
+        status: 200,
         data: mockUser,
       },
     })
@@ -109,6 +119,11 @@ describe("cloudron_create_user tool", () => {
       "POST https://my.example.com/api/v1/users": {
         ok: true,
         status: 201,
+        data: { id: "user-789" },
+      },
+      "GET https://my.example.com/api/v1/users/user-789": {
+        ok: true,
+        status: 200,
         data: mockUser,
       },
     })
@@ -179,6 +194,11 @@ describe("cloudron_create_user tool", () => {
       "POST https://my.example.com/api/v1/users": {
         ok: true,
         status: 201,
+        data: { id: "user-valid" },
+      },
+      "GET https://my.example.com/api/v1/users/user-valid": {
+        ok: true,
+        status: 200,
         data: mockUser,
       },
     })
@@ -231,6 +251,11 @@ describe("cloudron_create_user tool", () => {
       "POST https://my.example.com/api/v1/users": {
         ok: true,
         status: 201,
+        data: { id: "user-email" },
+      },
+      "GET https://my.example.com/api/v1/users/user-email": {
+        ok: true,
+        status: 200,
         data: mockUser,
       },
     })
@@ -269,22 +294,37 @@ describe("cloudron_create_user tool", () => {
   it("should verify role is set atomically in POST body", async () => {
     let capturedRequestBody: any = null
 
-    global.fetch = vi.fn(async (_url, options) => {
-      if (options?.body) {
+    global.fetch = vi.fn(async (url, options) => {
+      const urlString = typeof url === "string" ? url : url.toString()
+
+      if (
+        urlString.includes("/api/v1/users") &&
+        options?.method === "POST" &&
+        options?.body
+      ) {
         capturedRequestBody = JSON.parse(options.body as string)
+        return {
+          ok: true,
+          status: 201,
+          json: async () => ({ id: "user-atomic" }),
+        } as Response
       }
 
-      return {
-        ok: true,
-        status: 201,
-        json: async () => ({
-          id: "user-atomic",
-          email: "atomic@example.com",
-          username: "atomic",
-          role: "admin",
-          createdAt: "2024-01-06T00:00:00Z",
-        }),
-      } as Response
+      if (urlString.includes("/api/v1/users/user-atomic")) {
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({
+            id: "user-atomic",
+            email: "atomic@example.com",
+            username: "atomic",
+            role: "admin",
+            createdAt: "2024-01-06T00:00:00Z",
+          }),
+        } as Response
+      }
+
+      return { ok: false, status: 404 } as Response
     })
 
     const client = new CloudronClient()
@@ -311,6 +351,11 @@ describe("cloudron_create_user tool", () => {
       "POST https://my.example.com/api/v1/users": {
         ok: true,
         status: 201,
+        data: { id: "user-201" },
+      },
+      "GET https://my.example.com/api/v1/users/user-201": {
+        ok: true,
+        status: 200,
         data: mockUser,
       },
     })

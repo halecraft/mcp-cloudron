@@ -17,7 +17,7 @@ import { CloudronError } from "../src/errors"
 import {
   cleanupTestEnv,
   createMockFetch,
-  mockCloudronStatus,
+  mockDiskUsage,
   setupTestEnv,
 } from "./helpers/cloudron-mock"
 
@@ -40,13 +40,13 @@ describe("cloudron_create_backup tool", () => {
 
   it("should create backup and return task ID when sufficient storage", async () => {
     // Mock API responses:
-    // 1. GET /api/v1/cloudron/status (storage check)
+    // 1. GET /api/v1/system/disk_usage (storage check)
     // 2. POST /api/v1/backups (create backup)
     global.fetch = createMockFetch({
-      "GET https://my.example.com/api/v1/cloudron/status": {
+      "GET https://my.example.com/api/v1/system/disk_usage": {
         ok: true,
         status: 200,
-        data: mockCloudronStatus, // Has 51200 MB available (> 5GB requirement)
+        data: mockDiskUsage,
       },
       "POST https://my.example.com/api/v1/backups": {
         ok: true,
@@ -66,20 +66,24 @@ describe("cloudron_create_backup tool", () => {
 
   it("should throw error when insufficient storage (check fails)", async () => {
     // Mock status with insufficient storage (only 1GB available)
-    const lowStorageStatus = {
-      ...mockCloudronStatus,
-      disk: {
-        total: 10737418240, // 10GB
-        used: 9663676416, // 9GB
-        free: 1073741824, // 1GB (< 5GB requirement)
+    const lowDiskUsage = {
+      usage: {
+        filesystems: {
+          "/dev/root": {
+            available: 1073741824, // 1GB (< 5GB requirement)
+            size: 10737418240, // 10GB
+            used: 9663676416, // 9GB
+            mountpoint: "/",
+          },
+        },
       },
     }
 
     global.fetch = createMockFetch({
-      "GET https://my.example.com/api/v1/cloudron/status": {
+      "GET https://my.example.com/api/v1/system/disk_usage": {
         ok: true,
         status: 200,
-        data: lowStorageStatus,
+        data: lowDiskUsage,
       },
     })
 
@@ -94,19 +98,23 @@ describe("cloudron_create_backup tool", () => {
   })
 
   it("should NOT call backup API when storage check fails", async () => {
-    const lowStorageStatus = {
-      ...mockCloudronStatus,
-      disk: {
-        total: 10737418240,
-        used: 9663676416,
-        free: 1073741824, // 1GB
+    const lowDiskUsage = {
+      usage: {
+        filesystems: {
+          "/dev/root": {
+            available: 1073741824, // 1GB
+            size: 10737418240,
+            used: 9663676416,
+            mountpoint: "/",
+          },
+        },
       },
     }
 
     const mockFetch = vi.fn().mockResolvedValueOnce({
       ok: true,
       status: 200,
-      json: async () => lowStorageStatus,
+      json: async () => lowDiskUsage,
     })
 
     global.fetch = mockFetch as any
@@ -115,20 +123,20 @@ describe("cloudron_create_backup tool", () => {
 
     await expect(client.createBackup()).rejects.toThrow()
 
-    // Verify only ONE API call made (GET status), NOT two (POST backup not called)
+    // Verify only ONE API call made (GET disk_usage), NOT two (POST backup not called)
     expect(mockFetch).toHaveBeenCalledTimes(1)
     expect(mockFetch).toHaveBeenCalledWith(
-      expect.stringContaining("/api/v1/cloudron/status"),
+      expect.stringContaining("/api/v1/system/disk_usage"),
       expect.any(Object),
     )
   })
 
   it("should return task ID for tracking", async () => {
     global.fetch = createMockFetch({
-      "GET https://my.example.com/api/v1/cloudron/status": {
+      "GET https://my.example.com/api/v1/system/disk_usage": {
         ok: true,
         status: 200,
-        data: mockCloudronStatus,
+        data: mockDiskUsage,
       },
       "POST https://my.example.com/api/v1/backups": {
         ok: true,
@@ -147,10 +155,10 @@ describe("cloudron_create_backup tool", () => {
 
   it("should throw error when backup API returns 202 but missing taskId", async () => {
     global.fetch = createMockFetch({
-      "GET https://my.example.com/api/v1/cloudron/status": {
+      "GET https://my.example.com/api/v1/system/disk_usage": {
         ok: true,
         status: 200,
-        data: mockCloudronStatus,
+        data: mockDiskUsage,
       },
       "POST https://my.example.com/api/v1/backups": {
         ok: true,
@@ -167,10 +175,10 @@ describe("cloudron_create_backup tool", () => {
 
   it("should handle backup API authentication error (401)", async () => {
     global.fetch = createMockFetch({
-      "GET https://my.example.com/api/v1/cloudron/status": {
+      "GET https://my.example.com/api/v1/system/disk_usage": {
         ok: true,
         status: 200,
-        data: mockCloudronStatus,
+        data: mockDiskUsage,
       },
       "POST https://my.example.com/api/v1/backups": {
         ok: false,
@@ -186,10 +194,10 @@ describe("cloudron_create_backup tool", () => {
 
   it("should handle backup API server error (500)", async () => {
     global.fetch = createMockFetch({
-      "GET https://my.example.com/api/v1/cloudron/status": {
+      "GET https://my.example.com/api/v1/system/disk_usage": {
         ok: true,
         status: 200,
-        data: mockCloudronStatus,
+        data: mockDiskUsage,
       },
       "POST https://my.example.com/api/v1/backups": {
         ok: false,
@@ -209,7 +217,7 @@ describe("cloudron_create_backup tool", () => {
       .mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: async () => mockCloudronStatus,
+        json: async () => mockDiskUsage,
       })
       .mockResolvedValueOnce({
         ok: true,
@@ -236,20 +244,24 @@ describe("cloudron_create_backup tool", () => {
 
   it("should log warning when storage < 10% but sufficient for backup", async () => {
     // Mock status with 8GB available (> 5GB requirement, but < 10% of 100GB total)
-    const warningStorageStatus = {
-      ...mockCloudronStatus,
-      disk: {
-        total: 107374182400, // 100GB
-        used: 98869536768, // 92GB
-        free: 8589934592, // 8GB (> 5GB requirement, but < 10GB threshold)
+    const warningDiskUsage = {
+      usage: {
+        filesystems: {
+          "/dev/root": {
+            available: 8589934592, // 8GB
+            size: 107374182400, // 100GB
+            used: 98869536768, // 92GB
+            mountpoint: "/",
+          },
+        },
       },
     }
 
     global.fetch = createMockFetch({
-      "GET https://my.example.com/api/v1/cloudron/status": {
+      "GET https://my.example.com/api/v1/system/disk_usage": {
         ok: true,
         status: 200,
-        data: warningStorageStatus,
+        data: warningDiskUsage,
       },
       "POST https://my.example.com/api/v1/backups": {
         ok: true,

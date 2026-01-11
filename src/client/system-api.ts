@@ -9,6 +9,7 @@ import {
 } from "../config.js"
 import { CloudronError } from "../errors.js"
 import type {
+  DiskUsageResponse,
   Domain,
   Service,
   ServicesResponse,
@@ -32,22 +33,42 @@ export class SystemApi {
   }
 
   /**
+   * Get disk usage
+   * GET /api/v1/system/disk_usage
+   */
+  async getDiskUsage(): Promise<DiskUsageResponse> {
+    return await this.http.get<DiskUsageResponse>("/api/v1/system/disk_usage")
+  }
+
+  /**
    * Check available disk space for pre-flight validation
-   * GET /api/v1/cloudron/status (reuses existing endpoint)
+   * GET /api/v1/system/disk_usage
    * @param requiredMB - Optional required disk space in MB
    * @returns Storage info with availability and threshold checks
    */
   async checkStorage(requiredMB?: number): Promise<StorageInfo> {
-    const status = await this.getStatus()
+    const diskUsage = await this.getDiskUsage()
 
-    if (!status.disk) {
-      throw new CloudronError("Disk information not available in system status")
+    // Find the root filesystem or the one with largest space?
+    // Spec example shows "/dev/nvme0n1p2" with mountpoint "/"
+    // We'll look for mountpoint "/"
+    let rootFs = Object.values(diskUsage.usage.filesystems).find(
+      fs => fs.mountpoint === "/",
+    )
+
+    if (!rootFs) {
+      // Fallback to first one if root not found
+      rootFs = Object.values(diskUsage.usage.filesystems)[0]
+    }
+
+    if (!rootFs) {
+      throw new CloudronError("Disk information not available")
     }
 
     // Convert bytes to MB
-    const available_mb = Math.floor(status.disk.free / 1024 / 1024)
-    const total_mb = Math.floor(status.disk.total / 1024 / 1024)
-    const used_mb = Math.floor(status.disk.used / 1024 / 1024)
+    const available_mb = Math.floor(rootFs.available / 1024 / 1024)
+    const total_mb = Math.floor(rootFs.size / 1024 / 1024)
+    const used_mb = Math.floor(rootFs.used / 1024 / 1024)
 
     // Check if sufficient space available (if requiredMB provided)
     const sufficient =
@@ -88,6 +109,9 @@ export class SystemApi {
    */
   async listServices(): Promise<Service[]> {
     const response = await this.http.get<ServicesResponse>("/api/v1/services")
-    return response.services || []
+    return response.services.map(name => ({
+      name,
+      status: "unknown",
+    }))
   }
 }

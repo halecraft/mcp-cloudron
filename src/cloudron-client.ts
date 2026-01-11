@@ -29,6 +29,8 @@ import type {
   CloudronClientConfig,
   ConfigureAppResponse,
   CreateGroupParams,
+  CreateUserResponse,
+  DiskUsageResponse,
   Domain,
   Group,
   GroupsResponse,
@@ -87,7 +89,7 @@ export class CloudronClient {
     method: "GET" | "POST" | "PUT" | "DELETE",
     endpoint: string,
     body?: unknown,
-    options?: { timeout?: number },
+    options?: { timeout?: number; responseType?: "json" | "text" },
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`
     const timeout = options?.timeout ?? DEFAULT_TIMEOUT_MS
@@ -125,6 +127,10 @@ export class CloudronClient {
         }
 
         throw createErrorFromStatus(response.status, message)
+      }
+
+      if (options?.responseType === "text") {
+        return (await response.text()) as unknown as T
       }
 
       return (await response.json()) as T
@@ -323,11 +329,14 @@ export class CloudronClient {
       )
     }
 
-    return await this.makeRequest<User>("POST", "/api/v1/users", {
+    const response = await this.makeRequest<CreateUserResponse>("POST", "/api/v1/users", {
       email,
       password,
       role,
     })
+
+    // Fetch the full user object since POST only returns ID
+    return await this.getUser(response.id)
   }
 
   /**
@@ -546,10 +555,17 @@ export class CloudronClient {
         ? `/api/v1/apps/${encodeURIComponent(resourceId)}/logs?lines=${clampedLines}`
         : `/api/v1/services/${encodeURIComponent(resourceId)}/logs?lines=${clampedLines}`
 
-    const response = await this.makeRequest<LogsResponse>("GET", endpoint)
+    // Use responseType: 'text' because logs are returned as raw text/binary
+    const response = await this.makeRequest<string>(
+      "GET", 
+      endpoint, 
+      undefined, 
+      { responseType: "text" }
+    )
 
-    // Parse and format log entries
-    return this.parseLogEntries(response.logs || [])
+    // Parse raw text logs (split by newline)
+    const logLines = response.split("\n").filter(line => line.trim().length > 0)
+    return this.parseLogEntries(logLines)
   }
 
   /**
@@ -618,21 +634,35 @@ export class CloudronClient {
 
   /**
    * Check available disk space for pre-flight validation
-   * GET /api/v1/cloudron/status (reuses existing endpoint)
+   * GET /api/v1/system/disk_usage
    * @param requiredMB - Optional required disk space in MB
    * @returns Storage info with availability and threshold checks
    */
   async checkStorage(requiredMB?: number): Promise<StorageInfo> {
-    const status = await this.getStatus()
+    // Use correct endpoint for disk usage
+    const diskUsage = await this.makeRequest<DiskUsageResponse>(
+      "GET",
+      "/api/v1/system/disk_usage"
+    )
 
-    if (!status.disk) {
-      throw new CloudronError("Disk information not available in system status")
+    // Find the root filesystem or the one with largest space?
+    // Spec example shows "/dev/nvme0n1p2" with mountpoint "/"
+    // We'll look for mountpoint "/"
+    let rootFs = Object.values(diskUsage.usage.filesystems).find(fs => fs.mountpoint === "/")
+    
+    if (!rootFs) {
+       // Fallback to first one if root not found
+       rootFs = Object.values(diskUsage.usage.filesystems)[0]
+    }
+
+    if (!rootFs) {
+      throw new CloudronError("Disk information not available")
     }
 
     // Convert bytes to MB
-    const available_mb = Math.floor(status.disk.free / 1024 / 1024)
-    const total_mb = Math.floor(status.disk.total / 1024 / 1024)
-    const used_mb = Math.floor(status.disk.used / 1024 / 1024)
+    const available_mb = Math.floor(rootFs.available / 1024 / 1024)
+    const total_mb = Math.floor(rootFs.size / 1024 / 1024)
+    const used_mb = Math.floor(rootFs.used / 1024 / 1024)
 
     // Check if sufficient space available (if requiredMB provided)
     const sufficient =
@@ -1144,11 +1174,15 @@ export class CloudronClient {
    * @returns Array of service status objects
    */
   async listServices(): Promise<Service[]> {
-    const response = await this.makeRequest<ServicesResponse>(
-      "GET",
-      "/api/v1/services",
-    )
-    return response.services || []
+    const response = await this.makeRequest<ServicesResponse>("GET", "/api/v1/services")
+    
+    // API returns { services: ["turn", "mail", ...] }
+    // We map this to Service objects with unknown status, or we could fetch details for each.
+    // For listing, we'll just return basic info.
+    return response.services.map(name => ({
+      name,
+      status: "unknown" // We don't know status from list
+    }))
   }
 
   // ==================== User Management Methods ====================

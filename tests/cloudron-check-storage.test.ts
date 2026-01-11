@@ -16,7 +16,7 @@ import { CloudronClient } from "../src/cloudron-client"
 import {
   cleanupTestEnv,
   createMockFetch,
-  mockCloudronStatus,
+  mockDiskUsage,
   setupTestEnv,
 } from "./helpers/cloudron-mock"
 
@@ -40,10 +40,10 @@ describe("cloudron_check_storage tool", () => {
   it("should return storage info without requiredMB parameter", async () => {
     // Mock API response with disk info
     global.fetch = createMockFetch({
-      "GET https://my.example.com/api/v1/cloudron/status": {
+      "GET https://my.example.com/api/v1/system/disk_usage": {
         ok: true,
         status: 200,
-        data: mockCloudronStatus,
+        data: mockDiskUsage,
       },
     })
 
@@ -58,7 +58,7 @@ describe("cloudron_check_storage tool", () => {
     expect(storageInfo).toHaveProperty("warning")
     expect(storageInfo).toHaveProperty("critical")
 
-    // Verify calculations (mockCloudronStatus has 50% usage)
+    // Verify calculations (mockDiskUsage has 50% usage)
     // total: 107374182400 bytes = 102400 MB
     // used: 53687091200 bytes = 51200 MB
     // free: 53687091200 bytes = 51200 MB
@@ -72,10 +72,10 @@ describe("cloudron_check_storage tool", () => {
 
   it("should check if sufficient storage available when requiredMB provided", async () => {
     global.fetch = createMockFetch({
-      "GET https://my.example.com/api/v1/cloudron/status": {
+      "GET https://my.example.com/api/v1/system/disk_usage": {
         ok: true,
         status: 200,
-        data: mockCloudronStatus,
+        data: mockDiskUsage,
       },
     })
 
@@ -94,21 +94,24 @@ describe("cloudron_check_storage tool", () => {
 
   it("should detect warning threshold (< 10% available)", async () => {
     // Create mock with low disk space (8% available)
-    const lowDiskStatus = {
-      ...mockCloudronStatus,
-      disk: {
-        total: 107374182400, // 102400 MB
-        used: 98933309440, // 94310 MB (92% used)
-        free: 8440872960, // 8050 MB (8% free)
-        percent: 92,
+    const lowDiskUsage = {
+      usage: {
+        filesystems: {
+          "/dev/root": {
+            available: 8440872960, // 8050 MB (8% free)
+            size: 107374182400, // 102400 MB
+            used: 98933309440, // 94310 MB (92% used)
+            mountpoint: "/",
+          },
+        },
       },
     }
 
     global.fetch = createMockFetch({
-      "GET https://my.example.com/api/v1/cloudron/status": {
+      "GET https://my.example.com/api/v1/system/disk_usage": {
         ok: true,
         status: 200,
-        data: lowDiskStatus,
+        data: lowDiskUsage,
       },
     })
 
@@ -123,21 +126,24 @@ describe("cloudron_check_storage tool", () => {
 
   it("should detect critical threshold (< 5% available)", async () => {
     // Create mock with critically low disk space (3% available)
-    const criticalDiskStatus = {
-      ...mockCloudronStatus,
-      disk: {
-        total: 107374182400, // 102400 MB
-        used: 104189837312, // 99328 MB (97% used)
-        free: 3184345088, // 3037 MB (3% free)
-        percent: 97,
+    const criticalDiskUsage = {
+      usage: {
+        filesystems: {
+          "/dev/root": {
+            available: 3184345088, // 3037 MB (3% free)
+            size: 107374182400, // 102400 MB
+            used: 104189837312, // 99328 MB (97% used)
+            mountpoint: "/",
+          },
+        },
       },
     }
 
     global.fetch = createMockFetch({
-      "GET https://my.example.com/api/v1/cloudron/status": {
+      "GET https://my.example.com/api/v1/system/disk_usage": {
         ok: true,
         status: 200,
-        data: criticalDiskStatus,
+        data: criticalDiskUsage,
       },
     })
 
@@ -152,20 +158,17 @@ describe("cloudron_check_storage tool", () => {
 
   it("should handle API response without disk info", async () => {
     // Mock status without disk field
-    const noDiskStatus = {
-      version: "8.0.2",
-      apiServerOrigin: "https://api.example.com",
-      adminFqdn: "my.example.com",
-      provider: "digitalocean",
-      cloudronName: "My Cloudron",
-      isDemo: false,
+    const noDiskUsage = {
+      usage: {
+        filesystems: {},
+      },
     }
 
     global.fetch = createMockFetch({
-      "GET https://my.example.com/api/v1/cloudron/status": {
+      "GET https://my.example.com/api/v1/system/disk_usage": {
         ok: true,
         status: 200,
-        data: noDiskStatus,
+        data: noDiskUsage,
       },
     })
 
@@ -178,7 +181,7 @@ describe("cloudron_check_storage tool", () => {
 
   it("should handle API authentication error", async () => {
     global.fetch = createMockFetch({
-      "GET https://my.example.com/api/v1/cloudron/status": {
+      "GET https://my.example.com/api/v1/system/disk_usage": {
         ok: false,
         status: 401,
         data: { message: "Invalid API token" },
@@ -192,7 +195,7 @@ describe("cloudron_check_storage tool", () => {
 
   it("should handle API server error", async () => {
     global.fetch = createMockFetch({
-      "GET https://my.example.com/api/v1/cloudron/status": {
+      "GET https://my.example.com/api/v1/system/disk_usage": {
         ok: false,
         status: 500,
         data: { message: "Internal server error" },

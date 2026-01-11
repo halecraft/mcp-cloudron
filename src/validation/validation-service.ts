@@ -15,6 +15,7 @@ import type {
   App,
   Backup,
   CloneAppParams,
+  DiskUsageResponse,
   ManifestValidationResult,
   StorageInfo,
   SystemStatus,
@@ -34,6 +35,7 @@ export interface ValidationDataProvider {
   getUser(userId: string): Promise<User>
   listUsers(): Promise<User[]>
   getStatus(): Promise<SystemStatus>
+  getDiskUsage(): Promise<DiskUsageResponse>
   listBackups(): Promise<Backup[]>
   checkUpdates(): Promise<UpdateInfo>
   searchApps(query?: string): Promise<{ id: string; description?: string }[]>
@@ -51,16 +53,28 @@ export class ValidationService {
    * @returns Storage info with availability and threshold checks
    */
   async checkStorage(requiredMB?: number): Promise<StorageInfo> {
-    const status = await this.dataProvider.getStatus()
+    const diskUsage = await this.dataProvider.getDiskUsage()
 
-    if (!status.disk) {
-      throw new CloudronError("Disk information not available in system status")
+    // Find the root filesystem or the one with largest space?
+    // Spec example shows "/dev/nvme0n1p2" with mountpoint "/"
+    // We'll look for mountpoint "/"
+    let rootFs = Object.values(diskUsage.usage.filesystems).find(
+      fs => fs.mountpoint === "/",
+    )
+
+    if (!rootFs) {
+      // Fallback to first one if root not found
+      rootFs = Object.values(diskUsage.usage.filesystems)[0]
+    }
+
+    if (!rootFs) {
+      throw new CloudronError("Disk information not available")
     }
 
     // Convert bytes to MB
-    const available_mb = Math.floor(status.disk.free / 1024 / 1024)
-    const total_mb = Math.floor(status.disk.total / 1024 / 1024)
-    const used_mb = Math.floor(status.disk.used / 1024 / 1024)
+    const available_mb = Math.floor(rootFs.available / 1024 / 1024)
+    const total_mb = Math.floor(rootFs.size / 1024 / 1024)
+    const used_mb = Math.floor(rootFs.used / 1024 / 1024)
 
     // Check if sufficient space available (if requiredMB provided)
     const sufficient =
