@@ -8,7 +8,8 @@
 		"tests",
 		"coverage",
 		"scripts",
-		"vitest.config.ts"
+		"vitest.config.ts",
+		"tsup.config.ts"
 	],
 	"compilerOptions": {
 		// File Layout

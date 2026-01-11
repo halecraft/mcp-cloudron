@@ -12,7 +12,7 @@
 		"dist"
 	],
 	"scripts": {
-		"build": "tsc",
+		"build": "tsup",
 		"start": "node dist/server.js",
 		"dev": "tsx watch src/index.ts",
 		"test": "vitest run --project unit",
@@ -57,6 +57,7 @@
 	"devDependencies": {
 		"@biomejs/biome": "^2.3.11",
 		"@types/node": "^24.10.2",
+		"tsup": "^8.5.1",
 		"tsx": "^4.21.0",
 		"typescript": "^5.9.3",
 		"vitest": "^4.0.16"
