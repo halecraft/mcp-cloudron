@@ -18,7 +18,7 @@
 		"test": "vitest run --project unit",
 		"test:watch": "vitest --project unit",
 		"test:coverage": "vitest run --coverage",
-		"test:integration": "vitest run --project integration",
+		"test:integration": "dotenv -- vitest run --project integration",
 		"verify": "node scripts/verify.mjs",
 		"verify:format": "biome check --write --error-on-warnings .",
 		"verify:logic": "NO_COLOR=1 vitest run --project unit",
@@ -57,6 +57,7 @@
 	"devDependencies": {
 		"@biomejs/biome": "^2.3.11",
 		"@types/node": "^24.10.2",
+		"dotenv-cli": "^11.0.0",
 		"tsup": "^8.5.1",
 		"tsx": "^4.21.0",
 		"typescript": "^5.9.3",
