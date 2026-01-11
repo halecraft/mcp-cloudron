@@ -9,6 +9,7 @@ import { backupHandlers } from "./backups.js"
 import { domainHandlers } from "./domains.js"
 import { groupHandlers } from "./groups.js"
 import { logHandlers } from "./logs.js"
+import { packagingHandlers } from "./packaging.js"
 import { serviceHandlers } from "./services.js"
 import { systemHandlers } from "./system.js"
 import { updateHandlers } from "./updates.js"
@@ -22,6 +23,7 @@ export {
   domainHandlers,
   groupHandlers,
   logHandlers,
+  packagingHandlers,
   serviceHandlers,
   systemHandlers,
   updateHandlers,
@@ -36,6 +38,7 @@ export const allHandlers: ToolRegistry = createRegistry(
   domainHandlers,
   groupHandlers,
   logHandlers,
+  packagingHandlers,
   serviceHandlers,
   systemHandlers,
   updateHandlers,

@@ -15,6 +15,7 @@ MCP server for [Cloudron](https://cloudron.io) instance management. Manage apps,
 - **System Monitoring** - Check instance status, storage, services, and platform updates
 - **Pre-flight Safety** - Validation checks before destructive operations
 - **Async Task Tracking** - Monitor and cancel long-running operations
+- **Packaging Guide** - Interactive documentation for creating Cloudron packages
 
 ## Installation
 
@@ -139,6 +140,29 @@ Add to your Claude Desktop configuration (`claude_desktop_config.json`):
 | `cloudron_check_updates` | Check for Cloudron platform updates |
 | `cloudron_apply_update` | Apply a platform update |
 
+### Packaging Guide
+
+| Tool | Description |
+|------|-------------|
+| `cloudron_packaging_guide` | Get interactive guidance for creating Cloudron packages |
+
+**Topics available:**
+- `overview` - Quick start checklist and workflow
+- `manifest` - CloudronManifest.json field reference with examples
+- `dockerfile` - Dockerfile best practices and base image usage
+- `addons` - Available platform services (databases, auth, email, caching)
+- `testing` - Integration test structure and patterns
+- `publishing` - App Store submission process
+
+**App types for language-specific guidance (with `dockerfile` topic):**
+- `nodejs`, `php`, `python`, `java`, `go`, `static`
+
+## Available Resources
+
+| Resource URI | Description |
+|--------------|-------------|
+| `cloudron://packaging-guide` | Complete Cloudron packaging documentation with reference implementation |
+
 ## Example Usage
 
 Once configured, you can ask Claude to manage your Cloudron instance:
@@ -149,6 +173,9 @@ Once configured, you can ask Claude to manage your Cloudron instance:
 - "Create a backup of my instance"
 - "Show me the logs for my WordPress app"
 - "Create a new admin user with email admin@example.com"
+- "Help me create a Cloudron package for my Node.js app"
+- "Show me how to configure addons in CloudronManifest.json"
+- "What's the best practice for Dockerfile in Cloudron packages?"
 
 ## Development
 

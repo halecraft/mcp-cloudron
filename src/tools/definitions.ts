@@ -565,4 +565,35 @@ export const TOOLS = [
       required: [],
     },
   },
+  // ==================== Packaging Guide Tool ====================
+  {
+    name: "cloudron_packaging_guide",
+    description:
+      "Get interactive, topic-specific guidance for creating Cloudron packages. Provides documentation, best practices, and reference implementation examples for packaging web applications for Cloudron.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        topic: {
+          type: "string",
+          enum: [
+            "overview",
+            "manifest",
+            "dockerfile",
+            "addons",
+            "testing",
+            "publishing",
+          ],
+          description:
+            "The packaging topic to get guidance on. 'overview' provides quick start and workflow, 'manifest' covers CloudronManifest.json fields, 'dockerfile' covers Dockerfile best practices, 'addons' covers available platform services, 'testing' covers integration test patterns, 'publishing' covers App Store submission.",
+        },
+        appType: {
+          type: "string",
+          enum: ["nodejs", "php", "python", "java", "go", "static"],
+          description:
+            "Optional: The type of application being packaged. Provides language/framework-specific guidance when topic is 'dockerfile'.",
+        },
+      },
+      required: ["topic"],
+    },
+  },
 ]
