@@ -613,7 +613,9 @@ describe("cloudron_install_app", () => {
 
   describe("Integration: Full installation workflow", () => {
     it("should complete full installation workflow with all checks", async () => {
-      const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation()
+      const consoleWarnSpy = vi
+        .spyOn(console, "warn")
+        .mockImplementation(() => {})
 
       global.fetch = createMockFetch({
         "GET https://my.example.com/api/v1/appstore/apps?search=io.example.app":

@@ -258,7 +258,9 @@ describe("cloudron_create_backup tool", () => {
       },
     })
 
-    const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation()
+    const consoleWarnSpy = vi
+      .spyOn(console, "warn")
+      .mockImplementation(() => {})
 
     const client = new CloudronClient()
     const taskId = await client.createBackup()

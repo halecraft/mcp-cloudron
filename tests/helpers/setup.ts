@@ -11,6 +11,11 @@ import { cleanupTestEnv, setupTestEnv } from "./cloudron-mock"
 // Store original fetch for restoration
 let originalFetch: typeof global.fetch
 
+// Add fail() helper for tests (similar to Jest's fail)
+;(globalThis as Record<string, unknown>).fail = (message?: string): never => {
+  throw new Error(message ?? "Test failed")
+}
+
 beforeAll(() => {
   setupTestEnv()
   originalFetch = global.fetch

@@ -39,7 +39,7 @@ describe("cloudron_uninstall_app (F04)", () => {
   })
 
   beforeEach(() => {
-    client = new CloudronClient(baseUrl, "test-token-123")
+    client = new CloudronClient({ baseUrl, token: "test-token-123" })
     vi.clearAllMocks()
   })
 
@@ -273,20 +273,23 @@ describe("cloudron_uninstall_app (F04)", () => {
       const appId = "app-anchor-test"
       const testApp = mockApp({ id: appId, installationState: "installed" })
 
-      const fetchSpy = vi.fn((url: string, options?: any) => {
-        const method = options?.method || "GET"
-        if (method === "GET" && url.includes(appId)) {
-          return Promise.resolve(mockSuccessResponse(testApp))
-        }
-        if (method === "POST" && url.includes(`${appId}/uninstall`)) {
-          return Promise.resolve(
-            mockSuccessResponse({ taskId: "task-123" }, 202),
-          )
-        }
-        return Promise.resolve(mockErrorResponse(404, "Not found"))
-      })
+      const fetchSpy = vi.fn(
+        (url: string | URL | Request, options?: RequestInit) => {
+          const urlStr = url.toString()
+          const method = options?.method || "GET"
+          if (method === "GET" && urlStr.includes(appId)) {
+            return Promise.resolve(mockSuccessResponse(testApp))
+          }
+          if (method === "POST" && urlStr.includes(`${appId}/uninstall`)) {
+            return Promise.resolve(
+              mockSuccessResponse({ taskId: "task-123" }, 202),
+            )
+          }
+          return Promise.resolve(mockErrorResponse(404, "Not found"))
+        },
+      )
 
-      global.fetch = fetchSpy
+      global.fetch = fetchSpy as typeof fetch
 
       await client.uninstallApp(appId)
 

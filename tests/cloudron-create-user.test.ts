@@ -284,7 +284,7 @@ describe("cloudron_create_user tool", () => {
           role: "admin",
           createdAt: "2024-01-06T00:00:00Z",
         }),
-      }
+      } as Response
     })
 
     const client = new CloudronClient()

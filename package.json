@@ -22,7 +22,7 @@
 		"verify": "node scripts/verify.mjs",
 		"verify:format": "biome check --write --error-on-warnings .",
 		"verify:logic": "NO_COLOR=1 vitest run --project unit",
-		"verify:types": "tsc --noEmit",
+		"verify:types": "tsc --noEmit && tsc --noEmit -p tests/tsconfig.json",
 		"lint": "tsc --noEmit",
 		"clean": "rm -rf dist",
 		"prepublishOnly": "pnpm run build"
