@@ -140,13 +140,16 @@ Add to your Claude Desktop configuration (`claude_desktop_config.json`):
 | `cloudron_check_updates` | Check for Cloudron platform updates |
 | `cloudron_apply_update` | Apply a platform update |
 
-### Packaging Guide
+### Package Development
 
 | Tool | Description |
 |------|-------------|
 | `cloudron_packaging_guide` | Get interactive guidance for creating Cloudron packages |
+| `cloudron_scaffold_package` | Generate a complete package scaffold with all required files |
+| `cloudron_validate_package` | Validate package files for errors and best practices |
 
-**Topics available:**
+#### Packaging Guide Topics
+
 - `overview` - Quick start checklist and workflow
 - `manifest` - CloudronManifest.json field reference with examples
 - `dockerfile` - Dockerfile best practices and base image usage
@@ -154,8 +157,33 @@ Add to your Claude Desktop configuration (`claude_desktop_config.json`):
 - `testing` - Integration test structure and patterns
 - `publishing` - App Store submission process
 
-**App types for language-specific guidance (with `dockerfile` topic):**
-- `nodejs`, `php`, `python`, `java`, `go`, `static`
+#### Scaffold Package Options
+
+Generate ready-to-use package files customized for your application:
+
+| Parameter | Required | Description |
+|-----------|----------|-------------|
+| `appType` | Yes | Application type: `nodejs`, `php`, `python`, `java`, `go`, `static` |
+| `appName` | Yes | Name of your application |
+| `appId` | No | Reverse domain ID (e.g., `com.example.myapp`) |
+| `version` | No | Initial version (default: `1.0.0`) |
+| `httpPort` | No | HTTP port (default: `8000`) |
+| `healthCheckPath` | No | Health check path (default: `/`) |
+| `addons` | No | Required addons: `localstorage`, `mysql`, `postgresql`, `mongodb`, `redis`, `ldap`, `oidc`, `sendmail`, `recvmail`, `scheduler` |
+| `authMethod` | No | Authentication: `ldap`, `oidc`, `proxyAuth`, `none` |
+| `memoryLimit` | No | Memory limit in bytes |
+
+#### Validate Package
+
+Check your package files for errors and best practices:
+
+| Parameter | Required | Description |
+|-----------|----------|-------------|
+| `manifest` | No | CloudronManifest.json content |
+| `dockerfile` | No | Dockerfile content |
+| `startScript` | No | start.sh content |
+
+At least one file must be provided. Returns detailed validation report with errors, warnings, and suggestions.
 
 ## Available Resources
 
@@ -167,13 +195,20 @@ Add to your Claude Desktop configuration (`claude_desktop_config.json`):
 
 Once configured, you can ask Claude to manage your Cloudron instance:
 
+**Instance Management:**
 - "List all my Cloudron apps"
 - "What's the status of my Cloudron instance?"
 - "Install Nextcloud on cloud.mydomain.com"
 - "Create a backup of my instance"
 - "Show me the logs for my WordPress app"
 - "Create a new admin user with email admin@example.com"
+
+**Package Development:**
 - "Help me create a Cloudron package for my Node.js app"
+- "Generate a scaffold for a Python app with PostgreSQL and Redis"
+- "Scaffold a PHP app with OIDC authentication"
+- "Validate my CloudronManifest.json file"
+- "Check my Dockerfile for Cloudron best practices"
 - "Show me how to configure addons in CloudronManifest.json"
 - "What's the best practice for Dockerfile in Cloudron packages?"
 

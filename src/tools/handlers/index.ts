@@ -9,7 +9,9 @@ import { backupHandlers } from "./backups.js"
 import { domainHandlers } from "./domains.js"
 import { groupHandlers } from "./groups.js"
 import { logHandlers } from "./logs.js"
+import { packageValidationHandlers } from "./package-validation.js"
 import { packagingHandlers } from "./packaging.js"
+import { scaffoldingHandlers } from "./scaffolding.js"
 import { serviceHandlers } from "./services.js"
 import { systemHandlers } from "./system.js"
 import { updateHandlers } from "./updates.js"
@@ -23,7 +25,9 @@ export {
   domainHandlers,
   groupHandlers,
   logHandlers,
+  packageValidationHandlers,
   packagingHandlers,
+  scaffoldingHandlers,
   serviceHandlers,
   systemHandlers,
   updateHandlers,
@@ -38,7 +42,9 @@ export const allHandlers: ToolRegistry = createRegistry(
   domainHandlers,
   groupHandlers,
   logHandlers,
+  packageValidationHandlers,
   packagingHandlers,
+  scaffoldingHandlers,
   serviceHandlers,
   systemHandlers,
   updateHandlers,

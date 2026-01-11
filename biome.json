@@ -37,6 +37,16 @@
 					}
 				}
 			}
+		},
+		{
+			"includes": ["src/scaffolding/templates/**/*.ts"],
+			"linter": {
+				"rules": {
+					"suspicious": {
+						"noTemplateCurlyInString": "off"
+					}
+				}
+			}
 		}
 	],
 

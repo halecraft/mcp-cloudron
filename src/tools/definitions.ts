@@ -596,4 +596,110 @@ export const TOOLS = [
       required: ["topic"],
     },
   },
+  // ==================== Package Scaffolding Tool ====================
+  {
+    name: "cloudron_scaffold_package",
+    description:
+      "Generate a complete Cloudron package scaffold with all required files (CloudronManifest.json, Dockerfile, start.sh, test/test.js). Provides ready-to-use templates customized for your application type, addons, and authentication method.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        appType: {
+          type: "string",
+          enum: ["nodejs", "php", "python", "java", "go", "static"],
+          description:
+            "The type of application being packaged. Determines the Dockerfile template and startup script.",
+        },
+        appName: {
+          type: "string",
+          description:
+            "Name of the application (used in manifest title and generated files).",
+        },
+        appId: {
+          type: "string",
+          description:
+            "Optional: Reverse domain identifier (e.g., 'com.example.myapp'). Auto-generated from appName if not provided.",
+        },
+        version: {
+          type: "string",
+          description:
+            "Optional: Initial version in semver format (default: '1.0.0').",
+        },
+        httpPort: {
+          type: "number",
+          description:
+            "Optional: HTTP port the application listens on (default: 8000).",
+        },
+        healthCheckPath: {
+          type: "string",
+          description: "Optional: Path for health checks (default: '/').",
+        },
+        addons: {
+          type: "array",
+          items: {
+            type: "string",
+            enum: [
+              "localstorage",
+              "mysql",
+              "postgresql",
+              "mongodb",
+              "redis",
+              "ldap",
+              "oidc",
+              "sendmail",
+              "recvmail",
+              "scheduler",
+            ],
+          },
+          description:
+            "Optional: Required Cloudron addons (default: ['localstorage']).",
+        },
+        authMethod: {
+          type: "string",
+          enum: ["ldap", "oidc", "proxyAuth", "none"],
+          description:
+            "Optional: Authentication method to configure (default: 'none').",
+        },
+        description: {
+          type: "string",
+          description: "Optional: Application description for the manifest.",
+        },
+        website: {
+          type: "string",
+          description: "Optional: Application website URL.",
+        },
+        memoryLimit: {
+          type: "number",
+          description:
+            "Optional: Memory limit in bytes (default: 256MB = 268435456).",
+        },
+      },
+      required: ["appType", "appName"],
+    },
+  },
+  // ==================== Package Validation Tool ====================
+  {
+    name: "cloudron_validate_package",
+    description:
+      "Validate Cloudron package files (CloudronManifest.json, Dockerfile, start.sh) for errors and best practices. Returns detailed validation report with errors, warnings, and suggestions.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        manifest: {
+          type: "string",
+          description:
+            "Optional: Content of CloudronManifest.json file to validate.",
+        },
+        dockerfile: {
+          type: "string",
+          description: "Optional: Content of Dockerfile to validate.",
+        },
+        startScript: {
+          type: "string",
+          description: "Optional: Content of start.sh script to validate.",
+        },
+      },
+      required: [],
+    },
+  },
 ]
