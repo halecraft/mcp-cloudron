@@ -20,6 +20,9 @@ export default defineConfig({
           name: "integration",
           include: ["tests/integration/**/*.test.ts"],
           testTimeout: 30000,
+          // Run integration tests sequentially to avoid race conditions
+          // when multiple tests operate on the same Cloudron instance
+          fileParallelism: false,
         },
       },
     ],

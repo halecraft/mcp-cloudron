@@ -1,6 +1,12 @@
 /**
  * Tests for cloudron_update_user MCP tool
- * Update user properties (email, displayName, role, password)
+ * Update user properties (email, displayName, role)
+ *
+ * Per OpenAPI spec:
+ * - Profile updates (email, displayName): POST /api/v1/users/:userId/profile
+ * - Role updates: PUT /api/v1/users/:userId/role
+ * - Both return 204 No Content
+ * - updateUser() fetches updated user via GET /api/v1/users/:userId
  */
 
 import {
@@ -17,7 +23,6 @@ import { CloudronClient } from "../src/cloudron-client.js"
 import type { User } from "../src/types.js"
 import {
   cleanupTestEnv,
-  createMockFetch,
   mockUser,
   setupTestEnv,
 } from "./helpers/cloudron-mock.js"
@@ -48,13 +53,36 @@ describe("cloudron_update_user tool", () => {
       role: "user",
     })
 
-    global.fetch = createMockFetch({
-      "PUT https://my.example.com/api/v1/users/user-123": {
-        ok: true,
-        status: 200,
-        data: updatedUser,
+    // Mock: POST /profile returns 204, then GET /users/:id returns updated user
+    global.fetch = vi.fn(
+      async (url: string | URL | Request, options?: RequestInit) => {
+        const urlString = typeof url === "string" ? url : url.toString()
+        const method = options?.method || "GET"
+
+        if (method === "POST" && urlString.includes("/profile")) {
+          return {
+            ok: true,
+            status: 204,
+            json: async () => undefined,
+            text: async () => "",
+          } as Response
+        }
+        if (method === "GET" && urlString.includes("/users/user-123")) {
+          return {
+            ok: true,
+            status: 200,
+            json: async () => updatedUser,
+            text: async () => JSON.stringify(updatedUser),
+          } as Response
+        }
+        return {
+          ok: false,
+          status: 404,
+          json: async () => ({ message: "Not found" }),
+          text: async () => '{"message":"Not found"}',
+        } as Response
       },
-    })
+    )
 
     const client = new CloudronClient()
     const user = await client.updateUser("user-123", {
@@ -72,13 +100,36 @@ describe("cloudron_update_user tool", () => {
       role: "admin",
     })
 
-    global.fetch = createMockFetch({
-      "PUT https://my.example.com/api/v1/users/user-123": {
-        ok: true,
-        status: 200,
-        data: updatedUser,
+    // Mock: PUT /role returns 204, then GET /users/:id returns updated user
+    global.fetch = vi.fn(
+      async (url: string | URL | Request, options?: RequestInit) => {
+        const urlString = typeof url === "string" ? url : url.toString()
+        const method = options?.method || "GET"
+
+        if (method === "PUT" && urlString.includes("/role")) {
+          return {
+            ok: true,
+            status: 204,
+            json: async () => undefined,
+            text: async () => "",
+          } as Response
+        }
+        if (method === "GET" && urlString.includes("/users/user-123")) {
+          return {
+            ok: true,
+            status: 200,
+            json: async () => updatedUser,
+            text: async () => JSON.stringify(updatedUser),
+          } as Response
+        }
+        return {
+          ok: false,
+          status: 404,
+          json: async () => ({ message: "Not found" }),
+          text: async () => '{"message":"Not found"}',
+        } as Response
       },
-    })
+    )
 
     const client = new CloudronClient()
     const user = await client.updateUser("user-123", { role: "admin" })
@@ -90,22 +141,55 @@ describe("cloudron_update_user tool", () => {
     const updatedUser: User = mockUser({
       id: "user-123",
       email: "updated@example.com",
+      displayName: "Updated User",
       username: "testuser",
       role: "admin",
     })
 
-    let capturedBody: unknown = null
-    global.fetch = vi.fn(async (_url, options) => {
-      if (options?.body) {
-        capturedBody = JSON.parse(options.body as string)
-      }
-      return {
-        ok: true,
-        status: 200,
-        json: async () => updatedUser,
-        text: async () => JSON.stringify(updatedUser),
-      } as Response
-    })
+    const capturedCalls: { url: string; method: string; body?: unknown }[] = []
+
+    global.fetch = vi.fn(
+      async (url: string | URL | Request, options?: RequestInit) => {
+        const urlString = typeof url === "string" ? url : url.toString()
+        const method = options?.method || "GET"
+        const body = options?.body
+          ? JSON.parse(options.body as string)
+          : undefined
+
+        capturedCalls.push({ url: urlString, method, body })
+
+        if (method === "POST" && urlString.includes("/profile")) {
+          return {
+            ok: true,
+            status: 204,
+            json: async () => undefined,
+            text: async () => "",
+          } as Response
+        }
+        if (method === "PUT" && urlString.includes("/role")) {
+          return {
+            ok: true,
+            status: 204,
+            json: async () => undefined,
+            text: async () => "",
+          } as Response
+        }
+        if (method === "GET" && urlString.includes("/users/user-123")) {
+          return {
+            ok: true,
+            status: 200,
+            json: async () => updatedUser,
+            text: async () => JSON.stringify(updatedUser),
+          } as Response
+        }
+        return {
+          ok: false,
+          status: 404,
+          json: async () => ({ message: "Not found" }),
+          text: async () => '{"message":"Not found"}',
+        } as Response
+      },
+    )
 
     const client = new CloudronClient()
     await client.updateUser("user-123", {
@@ -114,21 +198,29 @@ describe("cloudron_update_user tool", () => {
       displayName: "Updated User",
     })
 
-    expect(capturedBody).toEqual({
+    // Should have called profile endpoint with email and displayName
+    const profileCall = capturedCalls.find(c => c.url.includes("/profile"))
+    expect(profileCall).toBeDefined()
+    expect(profileCall?.body).toEqual({
       email: "updated@example.com",
-      role: "admin",
       displayName: "Updated User",
     })
+
+    // Should have called role endpoint with role
+    const roleCall = capturedCalls.find(c => c.url.includes("/role"))
+    expect(roleCall).toBeDefined()
+    expect(roleCall?.body).toEqual({ role: "admin" })
   })
 
   // Test: Error handling - user not found
   it("should handle user not found with 404", async () => {
-    global.fetch = createMockFetch({
-      "PUT https://my.example.com/api/v1/users/nonexistent": {
+    global.fetch = vi.fn(async () => {
+      return {
         ok: false,
         status: 404,
-        data: { message: "User not found" },
-      },
+        json: async () => ({ message: "User not found" }),
+        text: async () => '{"message":"User not found"}',
+      } as Response
     })
 
     const client = new CloudronClient()
@@ -139,12 +231,13 @@ describe("cloudron_update_user tool", () => {
   })
 
   it("should handle duplicate email with 409", async () => {
-    global.fetch = createMockFetch({
-      "PUT https://my.example.com/api/v1/users/user-123": {
+    global.fetch = vi.fn(async () => {
+      return {
         ok: false,
         status: 409,
-        data: { message: "Email already in use" },
-      },
+        json: async () => ({ message: "Email already in use" }),
+        text: async () => '{"message":"Email already in use"}',
+      } as Response
     })
 
     const client = new CloudronClient()
@@ -183,38 +276,12 @@ describe("cloudron_update_user tool", () => {
     const client = new CloudronClient()
 
     await expect(
-      client.updateUser("user-123", { role: "superadmin" as "admin" }),
+      client.updateUser("user-123", { role: "superadmin" as any }),
     ).rejects.toThrow(
-      "Invalid role: superadmin. Valid options: admin, user, guest",
+      "Invalid role: superadmin. Valid options: owner, admin, usermanager, mailmanager, user",
     )
   })
 
-  it("should reject weak password", async () => {
-    const client = new CloudronClient()
-
-    await expect(
-      client.updateUser("user-123", { password: "weak" }),
-    ).rejects.toThrow(
-      "Password must be at least 8 characters long and contain at least 1 uppercase letter and 1 number",
-    )
-  })
-
-  it("should accept valid password", async () => {
-    const updatedUser: User = mockUser({ id: "user-123" })
-
-    global.fetch = createMockFetch({
-      "PUT https://my.example.com/api/v1/users/user-123": {
-        ok: true,
-        status: 200,
-        data: updatedUser,
-      },
-    })
-
-    const client = new CloudronClient()
-    const user = await client.updateUser("user-123", {
-      password: "StrongPass1",
-    })
-
-    expect(user.id).toBe("user-123")
-  })
+  // Note: password is no longer part of UpdateUserParams per OpenAPI spec
+  // Password changes are handled via separate endpoint (password reset)
 })

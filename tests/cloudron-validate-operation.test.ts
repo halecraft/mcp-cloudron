@@ -18,7 +18,6 @@ import {
   createMockFetch,
   mockAppInstalled,
   mockAppPendingUninstall,
-  mockCloudronStatus,
   mockDiskUsage,
   mockDiskUsageCritical,
   mockDiskUsageInsufficient,

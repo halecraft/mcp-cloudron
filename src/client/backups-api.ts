@@ -43,7 +43,7 @@ export class BackupsApi {
 
   /**
    * Create a new backup (with F36 pre-flight storage check)
-   * POST /api/v1/backups
+   * POST /api/v1/backups/create
    * @returns Task ID for tracking backup progress via getTaskStatus()
    */
   async createBackup(): Promise<string> {
@@ -65,8 +65,10 @@ export class BackupsApi {
       )
     }
 
-    // Create backup (async operation)
-    const response = await this.http.post<{ taskId: string }>("/api/v1/backups")
+    // Create backup (async operation) - per OpenAPI spec: POST /backups/create
+    const response = await this.http.post<{ taskId: string }>(
+      "/api/v1/backups/create",
+    )
 
     if (!response.taskId) {
       throw new CloudronError("Backup creation response missing taskId")

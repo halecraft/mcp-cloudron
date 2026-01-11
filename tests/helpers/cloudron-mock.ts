@@ -18,18 +18,20 @@ import {
 } from "../../src/client/index"
 import type {
   App,
+  AppRaw,
   Backup,
   CloudronStatus,
   DiskUsageResponse,
   Group,
   Service,
-  TaskStatus,
+  TaskStatusRaw,
   UpdateInfo,
   User,
 } from "../../src/types"
 import { ValidationService } from "../../src/validation/index"
 
-export const mockApps: App[] = [
+// Mock apps using raw API format (with subdomain instead of location)
+export const mockAppsRaw: AppRaw[] = [
   {
     id: "app-1",
     appStoreId: "io.wordpress.cloudronapp",
@@ -37,7 +39,7 @@ export const mockApps: App[] = [
     installationProgress: "",
     runState: "running",
     health: "healthy",
-    location: "blog",
+    subdomain: "blog",
     domain: "example.com",
     fqdn: "blog.example.com",
     manifest: {
@@ -48,7 +50,7 @@ export const mockApps: App[] = [
       version: "6.4.2",
     },
     accessRestriction: null,
-    portBindings: null,
+    ports: null,
     iconUrl: null,
     memoryLimit: 256 * 1024 * 1024,
     creationTime: "2024-01-15T10:00:00Z",
@@ -60,7 +62,7 @@ export const mockApps: App[] = [
     installationProgress: "",
     runState: "stopped",
     health: "healthy",
-    location: "files",
+    subdomain: "files",
     domain: "example.com",
     fqdn: "files.example.com",
     manifest: {
@@ -71,7 +73,7 @@ export const mockApps: App[] = [
       version: "28.0.1",
     },
     accessRestriction: null,
-    portBindings: null,
+    ports: null,
     iconUrl: null,
     memoryLimit: 512 * 1024 * 1024,
     creationTime: "2024-02-20T12:00:00Z",
@@ -83,7 +85,7 @@ export const mockApps: App[] = [
     installationProgress: "",
     runState: "running",
     health: "unhealthy",
-    location: "git",
+    subdomain: "git",
     domain: "example.com",
     fqdn: "git.example.com",
     manifest: {
@@ -94,12 +96,31 @@ export const mockApps: App[] = [
       version: "16.7.0",
     },
     accessRestriction: null,
-    portBindings: null,
+    ports: null,
     iconUrl: null,
     memoryLimit: 1024 * 1024 * 1024,
     creationTime: "2024-03-10T08:00:00Z",
   },
 ]
+
+// Normalized mock apps (for tests that expect the normalized format)
+export const mockApps: App[] = mockAppsRaw.map(raw => ({
+  id: raw.id,
+  appStoreId: raw.appStoreId,
+  installationState: raw.installationState as App["installationState"],
+  installationProgress: raw.installationProgress ?? "",
+  runState: raw.runState as App["runState"],
+  health: raw.health as App["health"],
+  location: raw.subdomain,
+  domain: raw.domain,
+  fqdn: raw.fqdn,
+  accessRestriction: raw.accessRestriction,
+  manifest: raw.manifest,
+  portBindings: raw.ports ?? null,
+  iconUrl: raw.iconUrl,
+  memoryLimit: raw.memoryLimit,
+  creationTime: raw.creationTime ?? "",
+}))
 
 export const mockCloudronStatus: CloudronStatus = {
   version: "8.0.2",
@@ -134,24 +155,33 @@ export const mockDiskUsage: DiskUsageResponse = {
   },
 }
 
-export const mockTaskStatusPending: TaskStatus = {
+// Mock task status data using raw API format (with active, pending, success, percent)
+// The client normalizes these to our TaskStatus interface
+
+export const mockTaskStatusPending: TaskStatusRaw = {
   id: "task-123",
-  state: "pending",
-  progress: 0,
+  pending: true,
+  active: false,
+  success: false,
+  percent: 0,
   message: "Task queued",
 }
 
-export const mockTaskStatusRunning: TaskStatus = {
+export const mockTaskStatusRunning: TaskStatusRaw = {
   id: "task-123",
-  state: "running",
-  progress: 45,
+  pending: false,
+  active: true,
+  success: false,
+  percent: 45,
   message: "Processing backup...",
 }
 
-export const mockTaskStatusSuccess: TaskStatus = {
+export const mockTaskStatusSuccess: TaskStatusRaw = {
   id: "task-123",
-  state: "success",
-  progress: 100,
+  pending: false,
+  active: false,
+  success: true,
+  percent: 100,
   message: "Backup completed successfully",
   result: {
     backupId: "backup-20241223-140000",
@@ -159,10 +189,12 @@ export const mockTaskStatusSuccess: TaskStatus = {
   },
 }
 
-export const mockTaskStatusError: TaskStatus = {
+export const mockTaskStatusError: TaskStatusRaw = {
   id: "task-123",
-  state: "error",
-  progress: 60,
+  pending: false,
+  active: false,
+  success: false,
+  percent: 60,
   message: "Backup failed",
   error: {
     message: "Insufficient disk space",
@@ -170,11 +202,19 @@ export const mockTaskStatusError: TaskStatus = {
   },
 }
 
-export const mockTaskStatusCancelled: TaskStatus = {
+// Note: Cloudron API doesn't have a "cancelled" state - tasks are either active, pending, success, or error
+// When a task is cancelled, it typically shows as error with a cancellation message
+export const mockTaskStatusCancelled: TaskStatusRaw = {
   id: "task-123",
-  state: "cancelled",
-  progress: 45,
+  pending: false,
+  active: false,
+  success: false,
+  percent: 45,
   message: "Task cancelled by user request",
+  error: {
+    message: "Task cancelled by user request",
+    code: "cancelled",
+  },
 }
 
 export const mockBackups: Backup[] = [
@@ -239,7 +279,13 @@ export const mockServices: Service[] = [
   },
 ]
 
-export const mockServiceNames = ["mysql", "postgresql", "mongodb", "mail", "redis"]
+export const mockServiceNames = [
+  "mysql",
+  "postgresql",
+  "mongodb",
+  "mail",
+  "redis",
+]
 
 /**
  * Mock response configuration
@@ -283,7 +329,10 @@ export function createMockFetch(
         status: response.status || 200,
         statusText: response.statusText || "OK",
         json: async () => response.data,
-        text: async () => typeof response.data === 'string' ? response.data : JSON.stringify(response.data),
+        text: async () =>
+          typeof response.data === "string"
+            ? response.data
+            : JSON.stringify(response.data),
       } as Response)
     }
 
@@ -323,16 +372,16 @@ export function cleanupTestEnv() {
 }
 
 /**
- * Mock app for validation tests - installed state
+ * Mock app for validation tests - installed state (raw API format)
  */
-export const mockAppInstalled: App = {
+export const mockAppInstalledRaw: AppRaw = {
   id: "app-valid",
   appStoreId: "io.wordpress.cloudronapp",
   installationState: "installed",
   installationProgress: "",
   runState: "running",
   health: "healthy",
-  location: "blog",
+  subdomain: "blog",
   domain: "example.com",
   fqdn: "blog.example.com",
   manifest: {
@@ -343,14 +392,45 @@ export const mockAppInstalled: App = {
     version: "6.4.2",
   },
   accessRestriction: null,
-  portBindings: null,
+  ports: null,
   iconUrl: null,
   memoryLimit: 268435456,
   creationTime: "2024-01-15T10:00:00Z",
 }
 
 /**
- * Mock app for validation tests - pending uninstall state
+ * Mock app for validation tests - installed state (normalized)
+ */
+export const mockAppInstalled: App = {
+  id: mockAppInstalledRaw.id,
+  appStoreId: mockAppInstalledRaw.appStoreId,
+  installationState:
+    mockAppInstalledRaw.installationState as App["installationState"],
+  installationProgress: mockAppInstalledRaw.installationProgress ?? "",
+  runState: mockAppInstalledRaw.runState as App["runState"],
+  health: mockAppInstalledRaw.health as App["health"],
+  location: mockAppInstalledRaw.subdomain,
+  domain: mockAppInstalledRaw.domain,
+  fqdn: mockAppInstalledRaw.fqdn,
+  accessRestriction: mockAppInstalledRaw.accessRestriction,
+  manifest: mockAppInstalledRaw.manifest,
+  portBindings: mockAppInstalledRaw.ports ?? null,
+  iconUrl: mockAppInstalledRaw.iconUrl,
+  memoryLimit: mockAppInstalledRaw.memoryLimit,
+  creationTime: mockAppInstalledRaw.creationTime ?? "",
+}
+
+/**
+ * Mock app for validation tests - pending uninstall state (raw API format)
+ */
+export const mockAppPendingUninstallRaw: AppRaw = {
+  ...mockAppInstalledRaw,
+  id: "app-pending",
+  installationState: "pending_uninstall",
+}
+
+/**
+ * Mock app for validation tests - pending uninstall state (normalized)
  */
 export const mockAppPendingUninstall: App = {
   ...mockAppInstalled,
@@ -409,8 +489,9 @@ export function mockSuccessResponse(data: unknown, status = 200): Response {
     statusText: "OK",
     headers: new Headers(),
     json: async () => data,
-    text: async () => typeof data === 'string' ? data : JSON.stringify(data),
-    blob: async () => new Blob([typeof data === 'string' ? data : JSON.stringify(data)]),
+    text: async () => (typeof data === "string" ? data : JSON.stringify(data)),
+    blob: async () =>
+      new Blob([typeof data === "string" ? data : JSON.stringify(data)]),
     arrayBuffer: async () => new ArrayBuffer(0),
     formData: async () => new FormData(),
     body: null,
@@ -446,7 +527,37 @@ export function mockErrorResponse(status: number, message: string): Response {
 }
 
 /**
- * Create a mock app with custom properties
+ * Create a mock app in raw API format with custom properties
+ */
+export function mockAppRaw(overrides: Partial<AppRaw> = {}): AppRaw {
+  return {
+    id: "app-test",
+    appStoreId: "io.test.cloudronapp",
+    installationState: "installed",
+    installationProgress: "",
+    runState: "running",
+    health: "healthy",
+    subdomain: "test",
+    domain: "example.com",
+    fqdn: "test.example.com",
+    manifest: {
+      id: "io.test.cloudronapp",
+      title: "Test App",
+      author: "Cloudron",
+      description: "Test application",
+      version: "1.0.0",
+    },
+    accessRestriction: null,
+    ports: null,
+    iconUrl: null,
+    memoryLimit: 268435456,
+    creationTime: "2024-01-01T00:00:00Z",
+    ...overrides,
+  }
+}
+
+/**
+ * Create a mock app with custom properties (normalized format)
  */
 export function mockApp(overrides: Partial<App> = {}): App {
   return {
@@ -512,10 +623,10 @@ export const mockUsers: User[] = [
     createdAt: "2024-01-03T00:00:00Z",
   },
   {
-    id: "user-guest-1",
-    email: "guest@example.com",
-    username: "guestuser",
-    role: "guest",
+    id: "user-manager-1",
+    email: "manager@example.com",
+    username: "manageruser",
+    role: "usermanager",
     createdAt: "2024-01-04T00:00:00Z",
   },
 ]

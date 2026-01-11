@@ -25,16 +25,20 @@ export class UpdatesApi {
 
   /**
    * Check for available Cloudron platform updates
-   * GET /api/v1/updates
+   * GET /api/v1/updater/updates
    * @returns Update information including availability and version
    */
   async checkUpdates(): Promise<UpdateInfo> {
-    return await this.http.get<UpdateInfo>("/api/v1/updates")
+    // Per OpenAPI spec: GET /updater/updates returns { updates: UpdateInfo }
+    const response = await this.http.get<{ updates: UpdateInfo }>(
+      "/api/v1/updater/updates",
+    )
+    return response.updates
   }
 
   /**
    * Apply available Cloudron platform update (DESTRUCTIVE OPERATION)
-   * POST /api/v1/updates
+   * POST /api/v1/updater/update
    * Performs pre-flight validation before proceeding
    * @returns Task ID for tracking update progress
    */
@@ -50,7 +54,10 @@ export class UpdatesApi {
       }
     }
 
-    const response = await this.http.post<{ taskId: string }>("/api/v1/updates")
+    // Per OpenAPI spec: POST /updater/update
+    const response = await this.http.post<{ taskId: string }>(
+      "/api/v1/updater/update",
+    )
 
     if (!response.taskId) {
       throw new CloudronError("Apply update response missing taskId")

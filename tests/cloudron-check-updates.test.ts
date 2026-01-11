@@ -42,10 +42,10 @@ describe("cloudron_check_updates tool", () => {
   // Test: Happy path - update available
   it("should return update info when update is available", async () => {
     global.fetch = createMockFetch({
-      "GET https://my.example.com/api/v1/updates": {
+      "GET https://my.example.com/api/v1/updater/updates": {
         ok: true,
         status: 200,
-        data: mockUpdateAvailable,
+        data: { updates: mockUpdateAvailable },
       },
     })
 
@@ -60,10 +60,10 @@ describe("cloudron_check_updates tool", () => {
   // Test: No update available
   it("should return update info when no update is available", async () => {
     global.fetch = createMockFetch({
-      "GET https://my.example.com/api/v1/updates": {
+      "GET https://my.example.com/api/v1/updater/updates": {
         ok: true,
         status: 200,
-        data: mockUpdateNotAvailable,
+        data: { updates: mockUpdateNotAvailable },
       },
     })
 
@@ -76,12 +76,14 @@ describe("cloudron_check_updates tool", () => {
 
   it("should handle update with version but no changelog", async () => {
     global.fetch = createMockFetch({
-      "GET https://my.example.com/api/v1/updates": {
+      "GET https://my.example.com/api/v1/updater/updates": {
         ok: true,
         status: 200,
         data: {
-          available: true,
-          version: "8.2.0",
+          updates: {
+            available: true,
+            version: "8.2.0",
+          },
         },
       },
     })
@@ -97,7 +99,7 @@ describe("cloudron_check_updates tool", () => {
   // Test: Error handling
   it("should handle authentication error", async () => {
     global.fetch = createMockFetch({
-      "GET https://my.example.com/api/v1/updates": {
+      "GET https://my.example.com/api/v1/updater/updates": {
         ok: false,
         status: 401,
         data: { message: "Invalid token" },
@@ -111,7 +113,7 @@ describe("cloudron_check_updates tool", () => {
 
   it("should handle server error", async () => {
     global.fetch = createMockFetch({
-      "GET https://my.example.com/api/v1/updates": {
+      "GET https://my.example.com/api/v1/updater/updates": {
         ok: false,
         status: 500,
         data: { message: "Internal server error" },

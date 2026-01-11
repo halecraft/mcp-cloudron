@@ -44,10 +44,10 @@ describe("cloudron_apply_update tool", () => {
   it("should apply update successfully when update is available", async () => {
     global.fetch = createMockFetch({
       // Check for updates
-      "GET https://my.example.com/api/v1/updates": {
+      "GET https://my.example.com/api/v1/updater/updates": {
         ok: true,
         status: 200,
-        data: mockUpdateAvailable,
+        data: { updates: mockUpdateAvailable },
       },
       // Check for recent backups
       "GET https://my.example.com/api/v1/backups": {
@@ -56,7 +56,7 @@ describe("cloudron_apply_update tool", () => {
         data: { backups: mockBackups },
       },
       // Apply update
-      "POST https://my.example.com/api/v1/updates": {
+      "POST https://my.example.com/api/v1/updater/update": {
         ok: true,
         status: 202,
         data: { taskId: "task-update-123" },
@@ -72,10 +72,10 @@ describe("cloudron_apply_update tool", () => {
   // Test: Error handling - no update available
   it("should reject when no update is available", async () => {
     global.fetch = createMockFetch({
-      "GET https://my.example.com/api/v1/updates": {
+      "GET https://my.example.com/api/v1/updater/updates": {
         ok: true,
         status: 200,
-        data: mockUpdateNotAvailable,
+        data: { updates: mockUpdateNotAvailable },
       },
       "GET https://my.example.com/api/v1/backups": {
         ok: true,
@@ -99,17 +99,17 @@ describe("cloudron_apply_update tool", () => {
     }))
 
     global.fetch = createMockFetch({
-      "GET https://my.example.com/api/v1/updates": {
+      "GET https://my.example.com/api/v1/updater/updates": {
         ok: true,
         status: 200,
-        data: mockUpdateAvailable,
+        data: { updates: mockUpdateAvailable },
       },
       "GET https://my.example.com/api/v1/backups": {
         ok: true,
         status: 200,
         data: { backups: oldBackups },
       },
-      "POST https://my.example.com/api/v1/updates": {
+      "POST https://my.example.com/api/v1/updater/update": {
         ok: true,
         status: 202,
         data: { taskId: "task-update-456" },
@@ -125,17 +125,17 @@ describe("cloudron_apply_update tool", () => {
 
   it("should handle missing taskId in response", async () => {
     global.fetch = createMockFetch({
-      "GET https://my.example.com/api/v1/updates": {
+      "GET https://my.example.com/api/v1/updater/updates": {
         ok: true,
         status: 200,
-        data: mockUpdateAvailable,
+        data: { updates: mockUpdateAvailable },
       },
       "GET https://my.example.com/api/v1/backups": {
         ok: true,
         status: 200,
         data: { backups: mockBackups },
       },
-      "POST https://my.example.com/api/v1/updates": {
+      "POST https://my.example.com/api/v1/updater/update": {
         ok: true,
         status: 202,
         data: {},
@@ -152,7 +152,7 @@ describe("cloudron_apply_update tool", () => {
   // Test: Error handling
   it("should handle authentication error", async () => {
     global.fetch = createMockFetch({
-      "GET https://my.example.com/api/v1/updates": {
+      "GET https://my.example.com/api/v1/updater/updates": {
         ok: false,
         status: 401,
         data: { message: "Invalid token" },
@@ -166,7 +166,7 @@ describe("cloudron_apply_update tool", () => {
 
   it("should handle server error during update check", async () => {
     global.fetch = createMockFetch({
-      "GET https://my.example.com/api/v1/updates": {
+      "GET https://my.example.com/api/v1/updater/updates": {
         ok: false,
         status: 500,
         data: { message: "Internal server error" },
@@ -180,17 +180,17 @@ describe("cloudron_apply_update tool", () => {
 
   it("should handle server error during apply", async () => {
     global.fetch = createMockFetch({
-      "GET https://my.example.com/api/v1/updates": {
+      "GET https://my.example.com/api/v1/updater/updates": {
         ok: true,
         status: 200,
-        data: mockUpdateAvailable,
+        data: { updates: mockUpdateAvailable },
       },
       "GET https://my.example.com/api/v1/backups": {
         ok: true,
         status: 200,
         data: { backups: mockBackups },
       },
-      "POST https://my.example.com/api/v1/updates": {
+      "POST https://my.example.com/api/v1/updater/update": {
         ok: false,
         status: 500,
         data: { message: "Update failed" },

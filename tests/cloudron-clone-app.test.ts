@@ -7,7 +7,7 @@ import {
   cleanupTestEnv,
   createMockFetch,
   createTestContext,
-  mockApps,
+  mockAppsRaw,
   setupTestEnv,
 } from "./helpers/cloudron-mock"
 import { assertHasTextContent, assertSuccess } from "./helpers/mcp-assert"
@@ -24,17 +24,17 @@ describe("cloudron_clone_app tool", () => {
   describe("Happy path", () => {
     it("should clone app with required parameters only", async () => {
       global.fetch = createMockFetch({
-        // Validation: get source app
+        // Validation: get source app (raw API format)
         "GET https://my.example.com/api/v1/apps/app-1": {
           ok: true,
           status: 200,
-          data: mockApps[0],
+          data: mockAppsRaw[0],
         },
-        // Validation: list apps to check target location
+        // Validation: list apps to check target location (raw API format)
         "GET https://my.example.com/api/v1/apps": {
           ok: true,
           status: 200,
-          data: { apps: mockApps },
+          data: { apps: mockAppsRaw },
         },
         // Clone operation
         "POST https://my.example.com/api/v1/apps/app-1/clone": {
@@ -62,12 +62,12 @@ describe("cloudron_clone_app tool", () => {
         "GET https://my.example.com/api/v1/apps/app-1": {
           ok: true,
           status: 200,
-          data: mockApps[0],
+          data: mockAppsRaw[0],
         },
         "GET https://my.example.com/api/v1/apps": {
           ok: true,
           status: 200,
-          data: { apps: mockApps },
+          data: { apps: mockAppsRaw },
         },
         "POST https://my.example.com/api/v1/apps/app-1/clone": {
           ok: true,
@@ -118,12 +118,12 @@ describe("cloudron_clone_app tool", () => {
         "GET https://my.example.com/api/v1/apps/app-1": {
           ok: true,
           status: 200,
-          data: mockApps[0], // WordPress at blog.example.com
+          data: mockAppsRaw[0], // WordPress at blog.example.com (raw API format)
         },
         "GET https://my.example.com/api/v1/apps": {
           ok: true,
           status: 200,
-          data: { apps: mockApps },
+          data: { apps: mockAppsRaw },
         },
       })
 

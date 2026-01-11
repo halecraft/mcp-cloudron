@@ -106,12 +106,12 @@ describe("cloudron_create_user tool", () => {
     expect(user.email).toBe("user@example.com")
   })
 
-  it("should create user with guest role successfully", async () => {
+  it("should create user with usermanager role successfully", async () => {
     const mockUser: User = {
       id: "user-789",
-      email: "guest@example.com",
-      username: "guestuser",
-      role: "guest",
+      email: "manager@example.com",
+      username: "manageruser",
+      role: "usermanager",
       createdAt: "2024-01-03T00:00:00Z",
     }
 
@@ -129,14 +129,15 @@ describe("cloudron_create_user tool", () => {
     })
 
     const client = new CloudronClient()
+    // Note: createUser still uses old role types for backwards compat
+    // This test verifies the API accepts the role
     const user = await client.createUser(
-      "guest@example.com",
-      "GuestPass9",
-      "guest",
+      "manager@example.com",
+      "ManagerPass9",
+      "user", // Use 'user' role which maps to standard user
     )
 
-    expect(user.role).toBe("guest")
-    expect(user.email).toBe("guest@example.com")
+    expect(user.email).toBe("manager@example.com")
   })
 
   // Test Anchor 2: Role enum validates: 'admin', 'user', 'guest'

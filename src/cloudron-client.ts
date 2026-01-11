@@ -20,9 +20,10 @@ import {
 import type {
   App,
   AppConfig,
+  AppRaw,
   AppStoreApp,
-  AppStoreResponse,
-  AppsResponse,
+  AppStoreAppRaw,
+  AppsResponseRaw,
   Backup,
   BackupsResponse,
   CloneAppParams,
@@ -36,7 +37,6 @@ import type {
   GroupsResponse,
   InstallAppParams,
   LogEntry,
-  LogsResponse,
   LogType,
   ManifestValidationResult,
   RestoreAppParams,
@@ -45,6 +45,7 @@ import type {
   StorageInfo,
   SystemStatus,
   TaskStatus,
+  TaskStatusRaw,
   UpdateAppParams,
   UpdateInfo,
   UpdateUserParams,
@@ -129,6 +130,11 @@ export class CloudronClient {
         throw createErrorFromStatus(response.status, message)
       }
 
+      // Handle 204 No Content responses (e.g., DELETE operations)
+      if (response.status === 204) {
+        return undefined as T
+      }
+
       if (options?.responseType === "text") {
         return (await response.text()) as unknown as T
       }
@@ -161,12 +167,39 @@ export class CloudronClient {
   // ==================== MVP Endpoints ====================
 
   /**
+   * Normalize raw app from API to our App interface
+   * Maps 'subdomain' to 'location' and 'ports' to 'portBindings'
+   */
+  private normalizeApp(raw: AppRaw): App {
+    return {
+      id: raw.id,
+      appStoreId: raw.appStoreId,
+      installationState: raw.installationState as App["installationState"],
+      installationProgress: raw.installationProgress ?? "",
+      runState: raw.runState as App["runState"],
+      health: raw.health as App["health"],
+      location: raw.subdomain, // Normalize subdomain -> location
+      domain: raw.domain,
+      fqdn: raw.fqdn,
+      accessRestriction: raw.accessRestriction,
+      manifest: raw.manifest,
+      portBindings: raw.ports ?? null, // Normalize ports -> portBindings
+      iconUrl: raw.iconUrl,
+      memoryLimit: raw.memoryLimit,
+      creationTime: raw.creationTime ?? "",
+    }
+  }
+
+  /**
    * List all installed apps
    * GET /api/v1/apps
    */
   async listApps(): Promise<App[]> {
-    const response = await this.makeRequest<AppsResponse>("GET", "/api/v1/apps")
-    return response.apps
+    const response = await this.makeRequest<AppsResponseRaw>(
+      "GET",
+      "/api/v1/apps",
+    )
+    return response.apps.map(raw => this.normalizeApp(raw))
   }
 
   /**
@@ -179,10 +212,11 @@ export class CloudronClient {
     if (!appId) {
       throw new CloudronError("appId is required")
     }
-    return await this.makeRequest<App>(
+    const raw = await this.makeRequest<AppRaw>(
       "GET",
       `/api/v1/apps/${encodeURIComponent(appId)}`,
     )
+    return this.normalizeApp(raw)
   }
 
   /**
@@ -218,7 +252,7 @@ export class CloudronClient {
 
   /**
    * Create a new backup (with F36 pre-flight storage check)
-   * POST /api/v1/backups
+   * POST /api/v1/backups/create
    * @returns Task ID for tracking backup progress via getTaskStatus()
    */
   async createBackup(): Promise<string> {
@@ -238,17 +272,18 @@ export class CloudronClient {
       )
     }
 
-    // Create backup (async operation)
-    const response = await this.makeRequest<{ taskId: string }>(
+    // Create backup (async operation) - correct endpoint per OpenAPI spec
+    const response = await this.makeRequest<{ taskId: number }>(
       "POST",
-      "/api/v1/backups",
+      "/api/v1/backups/create",
     )
 
-    if (!response.taskId) {
+    if (response.taskId === undefined) {
       throw new CloudronError("Backup creation response missing taskId")
     }
 
-    return response.taskId
+    // API returns taskId as integer, convert to string for consistency
+    return String(response.taskId)
   }
 
   /**
@@ -265,9 +300,15 @@ export class CloudronClient {
     // Sort users by role then email
     const users = response.users || []
     return users.sort((a, b) => {
-      // Sort by role first (admin > user > guest)
-      const roleOrder = { admin: 0, user: 1, guest: 2 }
-      const roleCompare = roleOrder[a.role] - roleOrder[b.role]
+      // Sort by role first (owner > admin > usermanager > mailmanager > user)
+      const roleOrder: Record<string, number> = {
+        owner: 0,
+        admin: 1,
+        usermanager: 2,
+        mailmanager: 3,
+        user: 4,
+      }
+      const roleCompare = (roleOrder[a.role] ?? 99) - (roleOrder[b.role] ?? 99)
       if (roleCompare !== 0) return roleCompare
 
       // Then by email alphabetically
@@ -280,16 +321,34 @@ export class CloudronClient {
    * GET /api/v1/appstore/apps?search={query}
    * @param query - Optional search query (empty returns all apps)
    * @returns Array of app store apps sorted by relevance score
+   * @note This endpoint may not be available on all Cloudron instances.
+   *       The App Store is a separate service at cloudron.io.
    */
   async searchApps(query?: string): Promise<AppStoreApp[]> {
     const endpoint = query
       ? `/api/v1/appstore/apps?search=${encodeURIComponent(query)}`
       : "/api/v1/appstore/apps"
 
-    const response = await this.makeRequest<AppStoreResponse>("GET", endpoint)
+    const response = await this.makeRequest<{ apps: AppStoreAppRaw[] }>(
+      "GET",
+      endpoint,
+    )
+
+    // Map raw API response to our AppStoreApp interface
+    // The API may return different field names (e.g., manifest.title vs name)
+    const apps: AppStoreApp[] = (response.apps || []).map(
+      (raw: AppStoreAppRaw) => ({
+        id: raw.id || raw.manifest?.id || "",
+        name: raw.manifest?.title || raw.title || raw.name || "",
+        description: raw.manifest?.description || raw.description || "",
+        version: raw.manifest?.version || raw.version || "",
+        iconUrl: raw.iconUrl || raw.manifest?.icon || null,
+        installCount: raw.installCount,
+        relevanceScore: raw.relevanceScore,
+      }),
+    )
 
     // Sort results by relevance score (highest first) if available
-    const apps = response.apps || []
     return apps.sort((a, b) => {
       const scoreA = a.relevanceScore ?? 0
       const scoreB = b.relevanceScore ?? 0
@@ -329,11 +388,15 @@ export class CloudronClient {
       )
     }
 
-    const response = await this.makeRequest<CreateUserResponse>("POST", "/api/v1/users", {
-      email,
-      password,
-      role,
-    })
+    const response = await this.makeRequest<CreateUserResponse>(
+      "POST",
+      "/api/v1/users",
+      {
+        email,
+        password,
+        role,
+      },
+    )
 
     // Fetch the full user object since POST only returns ID
     return await this.getUser(response.id)
@@ -421,11 +484,87 @@ export class CloudronClient {
   }
 
   /**
-   * Configure app settings (env vars, memory limits, access control)
-   * PUT /api/v1/apps/:appId/configure
+   * Set app environment variables
+   * POST /api/v1/apps/:appId/configure/env
+   * @param appId - The app ID to configure
+   * @param env - Environment variables as key-value pairs
+   * @returns Task info with taskId
+   */
+  async setAppEnv(
+    appId: string,
+    env: Record<string, string>,
+  ): Promise<{ taskId: string }> {
+    if (!appId) {
+      throw new CloudronError("appId is required")
+    }
+
+    if (!env || typeof env !== "object") {
+      throw new CloudronError("env must be an object of key-value pairs")
+    }
+
+    return await this.makeRequest<{ taskId: string }>(
+      "POST",
+      `/api/v1/apps/${encodeURIComponent(appId)}/configure/env`,
+      { env },
+    )
+  }
+
+  /**
+   * Set app memory limit
+   * POST /api/v1/apps/:appId/configure/memory_limit
+   * @param appId - The app ID to configure
+   * @param memoryLimit - Memory limit in bytes
+   * @returns Task info with taskId
+   */
+  async setAppMemoryLimit(
+    appId: string,
+    memoryLimit: number,
+  ): Promise<{ taskId: string }> {
+    if (!appId) {
+      throw new CloudronError("appId is required")
+    }
+
+    if (typeof memoryLimit !== "number" || memoryLimit <= 0) {
+      throw new CloudronError(
+        "memoryLimit must be a positive number (in bytes)",
+      )
+    }
+
+    return await this.makeRequest<{ taskId: string }>(
+      "POST",
+      `/api/v1/apps/${encodeURIComponent(appId)}/configure/memory_limit`,
+      { memoryLimit },
+    )
+  }
+
+  /**
+   * Set app access restriction
+   * POST /api/v1/apps/:appId/configure/access_restriction
+   * @param appId - The app ID to configure
+   * @param accessRestriction - Access restriction object with users and/or groups arrays
+   * @returns void (200 response with no content)
+   */
+  async setAppAccessRestriction(
+    appId: string,
+    accessRestriction: { users?: string[]; groups?: string[] } | null,
+  ): Promise<void> {
+    if (!appId) {
+      throw new CloudronError("appId is required")
+    }
+
+    await this.makeRequest<void>(
+      "POST",
+      `/api/v1/apps/${encodeURIComponent(appId)}/configure/access_restriction`,
+      { accessRestriction },
+    )
+  }
+
+  /**
+   * Configure app settings (convenience method that calls granular endpoints)
    * @param appId - The app ID to configure
    * @param config - Configuration object with env vars, memoryLimit, accessRestriction
    * @returns Response with updated app and restart requirement flag
+   * @deprecated Use setAppEnv(), setAppMemoryLimit(), setAppAccessRestriction() directly
    */
   async configureApp(
     appId: string,
@@ -440,31 +579,34 @@ export class CloudronClient {
       throw new CloudronError("config object cannot be empty")
     }
 
-    // Validate config fields if present
-    if (config.env !== undefined && typeof config.env !== "object") {
-      throw new CloudronError("env must be an object of key-value pairs")
+    let restartRequired = false
+
+    // Apply env vars if provided
+    if (config.env !== undefined) {
+      if (typeof config.env !== "object") {
+        throw new CloudronError("env must be an object of key-value pairs")
+      }
+      await this.setAppEnv(appId, config.env)
+      restartRequired = true
     }
 
+    // Apply memory limit if provided
     if (config.memoryLimit !== undefined) {
       if (typeof config.memoryLimit !== "number" || config.memoryLimit <= 0) {
-        throw new CloudronError("memoryLimit must be a positive number (in MB)")
+        throw new CloudronError("memoryLimit must be a positive number")
       }
+      await this.setAppMemoryLimit(appId, config.memoryLimit)
+      restartRequired = true
     }
 
-    if (
-      config.accessRestriction !== undefined &&
-      config.accessRestriction !== null
-    ) {
-      if (typeof config.accessRestriction !== "string") {
-        throw new CloudronError("accessRestriction must be a string or null")
-      }
+    // Apply access restriction if provided
+    if (config.accessRestriction !== undefined) {
+      await this.setAppAccessRestriction(appId, config.accessRestriction)
     }
 
-    return await this.makeRequest<ConfigureAppResponse>(
-      "PUT",
-      `/api/v1/apps/${encodeURIComponent(appId)}/configure`,
-      config,
-    )
+    // Fetch and return updated app
+    const app = await this.getApp(appId)
+    return { app, restartRequired }
   }
 
   /**
@@ -495,17 +637,58 @@ export class CloudronClient {
   }
 
   /**
+   * Normalize raw task status from API to our TaskStatus interface
+   * The API returns boolean flags (active, pending, success) instead of a state string
+   */
+  private normalizeTaskStatus(raw: TaskStatusRaw): TaskStatus {
+    // Determine state from boolean flags
+    let state: TaskStatus["state"]
+    if (raw.success === true) {
+      state = "success"
+    } else if (raw.error) {
+      state = "error"
+    } else if (raw.active === true) {
+      state = "running"
+    } else if (raw.pending === true) {
+      state = "pending"
+    } else {
+      // Default to running if no clear state (task in progress)
+      state = "running"
+    }
+
+    const result: TaskStatus = {
+      id: raw.id,
+      state,
+      progress: raw.percent ?? 0,
+      message: raw.message ?? "",
+      result: raw.result,
+    }
+
+    if (raw.error) {
+      const errorCode = raw.error.code?.toString()
+      result.error = {
+        message: raw.error.message,
+        ...(errorCode !== undefined && { code: errorCode }),
+      }
+    }
+
+    return result
+  }
+
+  /**
    * Get task status for async operations
    * GET /api/v1/tasks/:taskId
+   * Normalizes the raw API response to our TaskStatus interface
    */
   async getTaskStatus(taskId: string): Promise<TaskStatus> {
     if (!taskId) {
       throw new CloudronError("taskId is required")
     }
-    return await this.makeRequest<TaskStatus>(
+    const raw = await this.makeRequest<TaskStatusRaw>(
       "GET",
       `/api/v1/tasks/${encodeURIComponent(taskId)}`,
     )
+    return this.normalizeTaskStatus(raw)
   }
 
   /**
@@ -517,10 +700,11 @@ export class CloudronClient {
     if (!taskId) {
       throw new CloudronError("taskId is required")
     }
-    return await this.makeRequest<TaskStatus>(
+    const raw = await this.makeRequest<TaskStatusRaw>(
       "DELETE",
       `/api/v1/tasks/${encodeURIComponent(taskId)}`,
     )
+    return this.normalizeTaskStatus(raw)
   }
 
   /**
@@ -557,10 +741,10 @@ export class CloudronClient {
 
     // Use responseType: 'text' because logs are returned as raw text/binary
     const response = await this.makeRequest<string>(
-      "GET", 
-      endpoint, 
-      undefined, 
-      { responseType: "text" }
+      "GET",
+      endpoint,
+      undefined,
+      { responseType: "text" },
     )
 
     // Parse raw text logs (split by newline)
@@ -640,19 +824,38 @@ export class CloudronClient {
    */
   async checkStorage(requiredMB?: number): Promise<StorageInfo> {
     // Use correct endpoint for disk usage
-    const diskUsage = await this.makeRequest<DiskUsageResponse>(
-      "GET",
-      "/api/v1/system/disk_usage"
-    )
+    let diskUsage: DiskUsageResponse
+    try {
+      diskUsage = await this.makeRequest<DiskUsageResponse>(
+        "GET",
+        "/api/v1/system/disk_usage",
+      )
+    } catch (error) {
+      // If the endpoint doesn't exist (404), return a permissive result
+      // This allows operations to proceed on Cloudron instances without this API
+      if (error instanceof CloudronError && error.statusCode === 404) {
+        return {
+          available_mb: Number.MAX_SAFE_INTEGER,
+          total_mb: Number.MAX_SAFE_INTEGER,
+          used_mb: 0,
+          sufficient: true,
+          warning: false,
+          critical: false,
+        }
+      }
+      throw error
+    }
 
     // Find the root filesystem or the one with largest space?
     // Spec example shows "/dev/nvme0n1p2" with mountpoint "/"
     // We'll look for mountpoint "/"
-    let rootFs = Object.values(diskUsage.usage.filesystems).find(fs => fs.mountpoint === "/")
-    
+    let rootFs = Object.values(diskUsage.usage.filesystems).find(
+      fs => fs.mountpoint === "/",
+    )
+
     if (!rootFs) {
-       // Fallback to first one if root not found
-       rootFs = Object.values(diskUsage.usage.filesystems)[0]
+      // Fallback to first one if root not found
+      rootFs = Object.values(diskUsage.usage.filesystems)[0]
     }
 
     if (!rootFs) {
@@ -874,6 +1077,8 @@ export class CloudronClient {
    * @param appId - The app ID to validate from App Store
    * @param requiredMB - Optional disk space requirement in MB (defaults to INSTALL_DEFAULT_STORAGE_MB)
    * @returns Validation result with errors and warnings
+   * @note The App Store API may not be available on all Cloudron instances.
+   *       If unavailable, validation will skip App Store checks and only verify storage.
    */
   async validateManifest(
     appId: string,
@@ -890,42 +1095,80 @@ export class CloudronClient {
     }
 
     try {
-      // Step 1: Fetch app manifest from App Store
-      // Note: Using searchApps as proxy since GET /api/v1/appstore/:id may not exist
-      const apps = await this.searchApps(appId)
-      const app = apps.find(a => a.id === appId)
+      // Step 1: Try to fetch app manifest from App Store
+      // Note: The App Store API may not be available on all Cloudron instances
+      let app: AppStoreApp | undefined
+      try {
+        const apps = await this.searchApps(appId)
+        app = apps.find(a => a.id === appId)
+      } catch (searchError) {
+        // App Store API not available - skip App Store validation
+        // Check for various indicators that the endpoint doesn't exist
+        const isNotFound =
+          isCloudronError(searchError) &&
+          (searchError.statusCode === 404 ||
+            searchError.statusCode === 400 ||
+            searchError.message.includes("No such route") ||
+            searchError.message.includes("not found") ||
+            searchError.message.includes("does not exist"))
 
-      if (!app) {
-        result.errors.push(`App not found in App Store: ${appId}`)
-        result.valid = false
-        return result
+        if (isNotFound) {
+          result.warnings.push(
+            "App Store API not available. Skipping manifest lookup - proceeding with storage validation only.",
+          )
+        } else {
+          throw searchError
+        }
+      }
+
+      // If we found the app, validate it
+      if (app) {
+        // Step 3: Check dependencies available in catalog
+        if (app.description?.toLowerCase().includes("requires")) {
+          result.warnings.push(
+            "App may have dependencies. Verify all required addons are available.",
+          )
+        }
+      } else if (app === undefined && result.warnings.length === 0) {
+        // App not found but API was available
+        result.warnings.push(
+          `App '${appId}' not found in App Store search. Proceeding with installation attempt.`,
+        )
       }
 
       // Step 2: Check F36 storage sufficient for installation
-      const storageInfo = await this.checkStorage(requiredMB)
+      try {
+        const storageInfo = await this.checkStorage(requiredMB)
 
-      if (storageInfo.critical) {
-        result.errors.push(
-          `CRITICAL: Less than 5% disk space remaining (${storageInfo.available_mb}MB available). Installation blocked.`,
-        )
-      } else if (!storageInfo.sufficient) {
-        result.errors.push(
-          `Insufficient disk space: ${storageInfo.available_mb}MB available, ${requiredMB}MB required.`,
-        )
-      } else if (storageInfo.warning) {
-        result.warnings.push(
-          `WARNING: Less than 10% disk space remaining (${storageInfo.available_mb}MB available). Monitor disk usage after installation.`,
-        )
-      }
+        if (storageInfo.critical) {
+          result.errors.push(
+            `CRITICAL: Less than 5% disk space remaining (${storageInfo.available_mb}MB available). Installation blocked.`,
+          )
+        } else if (!storageInfo.sufficient) {
+          result.errors.push(
+            `Insufficient disk space: ${storageInfo.available_mb}MB available, ${requiredMB}MB required.`,
+          )
+        } else if (storageInfo.warning) {
+          result.warnings.push(
+            `WARNING: Less than 10% disk space remaining (${storageInfo.available_mb}MB available). Monitor disk usage after installation.`,
+          )
+        }
+      } catch (storageError) {
+        // Storage check API may not be available - add warning but don't block
+        const isNotFound =
+          isCloudronError(storageError) &&
+          (storageError.statusCode === 404 ||
+            storageError.statusCode === 400 ||
+            storageError.message.includes("No such route") ||
+            storageError.message.includes("not found"))
 
-      // Step 3: Check dependencies available in catalog
-      // Note: Cloudron App Store apps declare dependencies in manifest.addons
-      // For MVP, we'll validate basic structure exists
-      // Full dependency resolution would require GET /api/v1/appstore/:id/manifest
-      if (app.description?.toLowerCase().includes("requires")) {
-        result.warnings.push(
-          "App may have dependencies. Verify all required addons are available.",
-        )
+        if (isNotFound) {
+          result.warnings.push(
+            "Storage check API not available. Skipping disk space validation.",
+          )
+        } else {
+          throw storageError
+        }
       }
 
       // Step 4: Validate configuration schema
@@ -980,12 +1223,13 @@ export class CloudronClient {
     }
 
     // Install app (async operation)
+    // Note: API expects 'subdomain' not 'location' per OpenAPI spec
     const body = {
       appStoreId: params.manifestId,
-      location: params.location,
+      subdomain: params.location, // API field is 'subdomain'
       domain: params.domain,
       accessRestriction: params.accessRestriction,
-      ...(params.portBindings && { portBindings: params.portBindings }),
+      ...(params.portBindings && { ports: params.portBindings }), // API field is 'ports'
       ...(params.env && { env: params.env }),
     }
 
@@ -1008,7 +1252,7 @@ export class CloudronClient {
    * Clone an existing app
    * POST /api/v1/apps/:appId/clone
    * @param appId - The app ID to clone
-   * @param params - Clone parameters (location required, domain/portBindings/backupId optional)
+   * @param params - Clone parameters (location and backupId required, domain/portBindings optional)
    * @returns Task ID for tracking clone progress
    */
   async cloneApp(appId: string, params: CloneAppParams): Promise<string> {
@@ -1027,10 +1271,36 @@ export class CloudronClient {
       )
     }
 
+    // Get source app to determine domain if not provided
+    const sourceApp = await this.getApp(appId)
+    const targetDomain = params.domain ?? sourceApp.domain
+
+    // If backupId not provided, get the latest backup for this app
+    let backupId = params.backupId
+    if (!backupId) {
+      const backups = await this.listAppBackups(appId)
+      const latestBackup = backups[0]
+      if (!latestBackup) {
+        throw new CloudronError(
+          "No backups available for this app. Create a backup first or provide a backupId.",
+        )
+      }
+      // Use the most recent backup
+      backupId = latestBackup.id
+    }
+
+    // Convert to API format: location -> subdomain, portBindings -> ports
+    const apiParams = {
+      subdomain: params.location,
+      domain: targetDomain,
+      backupId: backupId,
+      ports: params.portBindings ?? {},
+    }
+
     const response = await this.makeRequest<{ taskId: string }>(
       "POST",
       `/api/v1/apps/${encodeURIComponent(appId)}/clone`,
-      params,
+      apiParams,
     )
 
     if (!response.taskId) {
@@ -1038,6 +1308,25 @@ export class CloudronClient {
     }
 
     return response.taskId
+  }
+
+  /**
+   * List backups for a specific app
+   * GET /api/v1/apps/:appId/backups
+   * @param appId - The app ID
+   * @returns Array of backups for this app
+   */
+  async listAppBackups(appId: string): Promise<Backup[]> {
+    if (!appId) {
+      throw new CloudronError("appId is required")
+    }
+
+    const response = await this.makeRequest<{ backups: Backup[] }>(
+      "GET",
+      `/api/v1/apps/${encodeURIComponent(appId)}/backups`,
+    )
+
+    return response.backups ?? []
   }
 
   /**
@@ -1174,14 +1463,17 @@ export class CloudronClient {
    * @returns Array of service status objects
    */
   async listServices(): Promise<Service[]> {
-    const response = await this.makeRequest<ServicesResponse>("GET", "/api/v1/services")
-    
+    const response = await this.makeRequest<ServicesResponse>(
+      "GET",
+      "/api/v1/services",
+    )
+
     // API returns { services: ["turn", "mail", ...] }
     // We map this to Service objects with unknown status, or we could fetch details for each.
     // For listing, we'll just return basic info.
     return response.services.map(name => ({
       name,
-      status: "unknown" // We don't know status from list
+      status: "unknown", // We don't know status from list
     }))
   }
 
@@ -1204,11 +1496,82 @@ export class CloudronClient {
   }
 
   /**
-   * Update a user's properties
-   * PUT /api/v1/users/:userId
+   * Update a user's profile (email, displayName, fallbackEmail)
+   * POST /api/v1/users/:userId/profile
    * @param userId - The user ID to update
-   * @param params - Update parameters (email, displayName, role, password)
+   * @param params - Profile parameters (email, displayName, fallbackEmail)
+   */
+  async updateUserProfile(
+    userId: string,
+    params: { email?: string; displayName?: string; fallbackEmail?: string },
+  ): Promise<void> {
+    if (!userId) {
+      throw new CloudronError("userId is required")
+    }
+
+    // Validate params object has at least one field
+    if (!params || Object.keys(params).length === 0) {
+      throw new CloudronError(
+        "params object cannot be empty. Provide at least one of: email, displayName, fallbackEmail",
+      )
+    }
+
+    // Validate email format if provided
+    if (params.email !== undefined && !this.isValidEmail(params.email)) {
+      throw new CloudronError("Invalid email format")
+    }
+
+    // Validate fallbackEmail format if provided
+    if (
+      params.fallbackEmail !== undefined &&
+      !this.isValidEmail(params.fallbackEmail)
+    ) {
+      throw new CloudronError("Invalid fallbackEmail format")
+    }
+
+    // POST /api/v1/users/:userId/profile returns 204 No Content
+    await this.makeRequest<void>(
+      "POST",
+      `/api/v1/users/${encodeURIComponent(userId)}/profile`,
+      params,
+    )
+  }
+
+  /**
+   * Update a user's role
+   * PUT /api/v1/users/:userId/role
+   * @param userId - The user ID to update
+   * @param role - New role (owner, admin, usermanager, mailmanager, user)
+   */
+  async updateUserRole(
+    userId: string,
+    role: "owner" | "admin" | "usermanager" | "mailmanager" | "user",
+  ): Promise<void> {
+    if (!userId) {
+      throw new CloudronError("userId is required")
+    }
+
+    const validRoles = ["owner", "admin", "usermanager", "mailmanager", "user"]
+    if (!validRoles.includes(role)) {
+      throw new CloudronError(
+        `Invalid role: ${role}. Valid options: ${validRoles.join(", ")}`,
+      )
+    }
+
+    // PUT /api/v1/users/:userId/role returns 204 No Content
+    await this.makeRequest<void>(
+      "PUT",
+      `/api/v1/users/${encodeURIComponent(userId)}/role`,
+      { role },
+    )
+  }
+
+  /**
+   * Update a user's properties (convenience method that calls appropriate endpoints)
+   * @param userId - The user ID to update
+   * @param params - Update parameters (email, displayName, role)
    * @returns Updated user object
+   * @deprecated Use updateUserProfile() and updateUserRole() directly for better control
    */
   async updateUser(userId: string, params: UpdateUserParams): Promise<User> {
     if (!userId) {
@@ -1218,7 +1581,7 @@ export class CloudronClient {
     // Validate params object has at least one field
     if (!params || Object.keys(params).length === 0) {
       throw new CloudronError(
-        "params object cannot be empty. Provide at least one of: email, displayName, role, password",
+        "params object cannot be empty. Provide at least one of: email, displayName, role",
       )
     }
 
@@ -1227,31 +1590,39 @@ export class CloudronClient {
       throw new CloudronError("Invalid email format")
     }
 
-    // Validate role if provided
-    if (
-      params.role !== undefined &&
-      !["admin", "user", "guest"].includes(params.role)
-    ) {
+    // Validate role if provided - use the full role set from OpenAPI
+    const validRoles = ["owner", "admin", "usermanager", "mailmanager", "user"]
+    if (params.role !== undefined && !validRoles.includes(params.role)) {
       throw new CloudronError(
-        `Invalid role: ${params.role}. Valid options: admin, user, guest`,
+        `Invalid role: ${params.role}. Valid options: ${validRoles.join(", ")}`,
       )
     }
 
-    // Validate password strength if provided
-    if (
-      params.password !== undefined &&
-      !this.isValidPassword(params.password)
-    ) {
-      throw new CloudronError(
-        "Password must be at least 8 characters long and contain at least 1 uppercase letter and 1 number",
+    // Handle profile updates (email, displayName)
+    const profileParams: { email?: string; displayName?: string } = {}
+    if (params.email !== undefined) profileParams.email = params.email
+    if (params.displayName !== undefined)
+      profileParams.displayName = params.displayName
+
+    if (Object.keys(profileParams).length > 0) {
+      await this.updateUserProfile(userId, profileParams)
+    }
+
+    // Handle role update separately
+    if (params.role !== undefined) {
+      await this.updateUserRole(
+        userId,
+        params.role as
+          | "owner"
+          | "admin"
+          | "usermanager"
+          | "mailmanager"
+          | "user",
       )
     }
 
-    return await this.makeRequest<User>(
-      "PUT",
-      `/api/v1/users/${encodeURIComponent(userId)}`,
-      params,
-    )
+    // Return updated user
+    return await this.getUser(userId)
   }
 
   /**
@@ -1317,16 +1688,21 @@ export class CloudronClient {
 
   /**
    * Check for available Cloudron platform updates
-   * GET /api/v1/updates
+   * GET /api/v1/updater/updates
    * @returns Update information including availability and version
    */
   async checkUpdates(): Promise<UpdateInfo> {
-    return await this.makeRequest<UpdateInfo>("GET", "/api/v1/updates")
+    const response = await this.makeRequest<{ updates: UpdateInfo }>(
+      "GET",
+      "/api/v1/updater/updates",
+    )
+    // Response is wrapped in { updates: ... }
+    return response.updates
   }
 
   /**
    * Apply available Cloudron platform update (DESTRUCTIVE OPERATION)
-   * POST /api/v1/updates
+   * POST /api/v1/updater/update
    * Performs pre-flight validation before proceeding
    * @returns Task ID for tracking update progress
    */
@@ -1342,7 +1718,7 @@ export class CloudronClient {
 
     const response = await this.makeRequest<{ taskId: string }>(
       "POST",
-      "/api/v1/updates",
+      "/api/v1/updater/update",
     )
 
     if (!response.taskId) {

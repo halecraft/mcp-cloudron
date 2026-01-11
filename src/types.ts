@@ -51,7 +51,8 @@ export interface InstallAppParams {
 }
 
 /**
- * Cloudron App representation
+ * Cloudron App representation (normalized)
+ * Note: API returns 'subdomain' but we normalize to 'location' for consistency
  */
 export interface App {
   id: string
@@ -66,7 +67,7 @@ export interface App {
   installationProgress: string
   runState: "running" | "stopped" | "dead"
   health: "healthy" | "unhealthy" | "unknown"
-  location: string
+  location: string // Normalized from 'subdomain' in API response
   domain: string
   fqdn: string
   accessRestriction: string | null
@@ -75,6 +76,35 @@ export interface App {
   iconUrl: string | null
   memoryLimit: number
   creationTime: string
+}
+
+/**
+ * Raw App from Cloudron API (before normalization)
+ * The API uses 'subdomain' instead of 'location'
+ */
+export interface AppRaw {
+  id: string
+  appStoreId: string
+  installationState: string
+  installationProgress?: string
+  runState: string
+  health: string
+  subdomain: string // API field name
+  domain: string
+  fqdn: string
+  accessRestriction: string | null
+  manifest: AppManifest
+  ports?: Record<string, number> | null // API uses 'ports' not 'portBindings'
+  iconUrl: string | null
+  memoryLimit: number
+  creationTime?: string
+}
+
+/**
+ * Raw API response wrapper for listing apps
+ */
+export interface AppsResponseRaw {
+  apps: AppRaw[]
 }
 
 /**
@@ -129,12 +159,15 @@ export interface CloudronStatus extends SystemStatus {
  */
 export interface DiskUsageResponse {
   usage: {
-    filesystems: Record<string, {
-      available: number
-      size: number
-      used: number
-      mountpoint: string
-    }>
+    filesystems: Record<
+      string,
+      {
+        available: number
+        size: number
+        used: number
+        mountpoint: string
+      }
+    >
   }
 }
 
@@ -151,7 +184,7 @@ export interface StorageInfo {
 }
 
 /**
- * Task status for async operations
+ * Task status for async operations (normalized from API response)
  */
 export interface TaskStatus {
   id: string
@@ -163,6 +196,27 @@ export interface TaskStatus {
     message: string
     code?: string
   }
+}
+
+/**
+ * Raw task status from Cloudron API
+ * The API returns boolean flags instead of a state string
+ */
+export interface TaskStatusRaw {
+  id: string
+  type?: string
+  percent?: number // 0-100
+  message?: string
+  active?: boolean // If the task is currently running
+  pending?: boolean // If the task is scheduled to run
+  success?: boolean // If the task succeeded
+  error?: {
+    message: string
+    code?: number | string
+  }
+  result?: unknown
+  creationTime?: string
+  ts?: string
 }
 
 /**
@@ -224,7 +278,7 @@ export interface BackupsResponse {
 }
 
 /**
- * App Store search result
+ * App Store search result (normalized)
  */
 export interface AppStoreApp {
   id: string
@@ -232,8 +286,30 @@ export interface AppStoreApp {
   description: string
   version: string
   iconUrl: string | null
+  installCount?: number | undefined
+  relevanceScore?: number | undefined
+}
+
+/**
+ * Raw App Store API response item (before normalization)
+ * The API may return different field structures depending on version
+ */
+export interface AppStoreAppRaw {
+  id?: string
+  name?: string
+  title?: string
+  description?: string
+  version?: string
+  iconUrl?: string
   installCount?: number
   relevanceScore?: number
+  manifest?: {
+    id?: string
+    title?: string
+    description?: string
+    version?: string
+    icon?: string
+  }
 }
 
 /**
@@ -250,7 +326,8 @@ export interface User {
   id: string
   email: string
   username: string
-  role: "admin" | "user" | "guest"
+  displayName?: string
+  role: UserRole
   createdAt: string
 }
 
@@ -290,12 +367,20 @@ export interface LogsResponse {
 }
 
 /**
+ * Access restriction configuration for apps
+ */
+export interface AccessRestriction {
+  users?: string[] // Array of user IDs allowed to access
+  groups?: string[] // Array of group IDs allowed to access
+}
+
+/**
  * App configuration object for updating app settings
  */
 export interface AppConfig {
   env?: Record<string, string> // Environment variables
-  memoryLimit?: number // Memory limit in MB
-  accessRestriction?: string | null // Access control settings
+  memoryLimit?: number // Memory limit in bytes
+  accessRestriction?: AccessRestriction | null // Access control settings (null = no restriction)
 }
 
 /**
@@ -358,13 +443,33 @@ export interface ServicesResponse {
 // ==================== User Management Types ====================
 
 /**
- * Parameters for updating a user
+ * Valid user roles per Cloudron OpenAPI spec
+ */
+export type UserRole =
+  | "owner"
+  | "admin"
+  | "usermanager"
+  | "mailmanager"
+  | "user"
+
+/**
+ * Parameters for updating a user's profile
+ * POST /api/v1/users/:userId/profile
+ */
+export interface UpdateUserProfileParams {
+  email?: string // Optional: new email
+  displayName?: string // Optional: display name
+  fallbackEmail?: string // Optional: fallback email for password resets
+}
+
+/**
+ * Parameters for updating a user (convenience interface)
+ * @deprecated Use UpdateUserProfileParams and updateUserRole() separately
  */
 export interface UpdateUserParams {
   email?: string // Optional: new email
   displayName?: string // Optional: display name
-  role?: "admin" | "user" | "guest" // Optional: new role
-  password?: string // Optional: new password
+  role?: UserRole // Optional: new role
 }
 
 // ==================== Group Types ====================

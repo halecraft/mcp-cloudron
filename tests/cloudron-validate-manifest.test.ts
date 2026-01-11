@@ -72,16 +72,36 @@ describe("cloudron_validate_manifest", () => {
       expect(mockFetch).toHaveBeenCalledTimes(2) // searchApps + checkStorage
     })
 
-    it("should return error for app not found in App Store", async () => {
-      mockFetch.mockResolvedValueOnce(mockSuccessResponse({ apps: [] })) // Empty search result
+    it("should return warning for app not found in App Store but still validate storage", async () => {
+      // Mock storage check response (sufficient storage)
+      const mockUsage = {
+        usage: {
+          filesystems: {
+            "/dev/root": {
+              available: 10000 * 1024 * 1024, // 10GB
+              size: 50000 * 1024 * 1024, // 50GB
+              used: 40000 * 1024 * 1024, // 40GB
+              mountpoint: "/",
+            },
+          },
+        },
+      }
+
+      mockFetch
+        .mockResolvedValueOnce(mockSuccessResponse({ apps: [] })) // Empty search result
+        .mockResolvedValueOnce(mockSuccessResponse(mockUsage)) // checkStorage
 
       const result = await client.validateManifest("io.nonexistent.app")
 
-      expect(result.valid).toBe(false)
-      expect(result.errors).toContain(
-        "App not found in App Store: io.nonexistent.app",
+      // App not found is now a warning, not an error (allows installation attempt)
+      expect(result.valid).toBe(true)
+      expect(result.warnings).toEqual(
+        expect.arrayContaining([
+          expect.stringContaining("io.nonexistent.app"),
+          expect.stringContaining("not found"),
+        ]),
       )
-      expect(mockFetch).toHaveBeenCalledTimes(1) // Only searchApps, no checkStorage
+      expect(mockFetch).toHaveBeenCalledTimes(2) // searchApps + checkStorage
     })
 
     it("should handle manifest fetch failures gracefully", async () => {

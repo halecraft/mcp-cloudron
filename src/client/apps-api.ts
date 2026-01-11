@@ -8,7 +8,8 @@ import { CloudronError } from "../errors.js"
 import type {
   App,
   AppConfig,
-  AppsResponse,
+  AppRaw,
+  AppsResponseRaw,
   CloneAppParams,
   ConfigureAppResponse,
   InstallAppParams,
@@ -61,12 +62,36 @@ export class AppsApi {
   ) {}
 
   /**
+   * Normalize raw app from API to our App interface
+   * Maps 'subdomain' to 'location' and 'ports' to 'portBindings'
+   */
+  private normalizeApp(raw: AppRaw): App {
+    return {
+      id: raw.id,
+      appStoreId: raw.appStoreId,
+      installationState: raw.installationState as App["installationState"],
+      installationProgress: raw.installationProgress ?? "",
+      runState: raw.runState as App["runState"],
+      health: raw.health as App["health"],
+      location: raw.subdomain, // Normalize subdomain -> location
+      domain: raw.domain,
+      fqdn: raw.fqdn,
+      accessRestriction: raw.accessRestriction,
+      manifest: raw.manifest,
+      portBindings: raw.ports ?? null, // Normalize ports -> portBindings
+      iconUrl: raw.iconUrl,
+      memoryLimit: raw.memoryLimit,
+      creationTime: raw.creationTime ?? "",
+    }
+  }
+
+  /**
    * List all installed apps
    * GET /api/v1/apps
    */
   async listApps(): Promise<App[]> {
-    const response = await this.http.get<AppsResponse>("/api/v1/apps")
-    return response.apps
+    const response = await this.http.get<AppsResponseRaw>("/api/v1/apps")
+    return response.apps.map(raw => this.normalizeApp(raw))
   }
 
   /**
@@ -79,7 +104,10 @@ export class AppsApi {
     if (!appId) {
       throw new CloudronError("appId is required")
     }
-    return await this.http.get<App>(`/api/v1/apps/${encodeURIComponent(appId)}`)
+    const raw = await this.http.get<AppRaw>(
+      `/api/v1/apps/${encodeURIComponent(appId)}`,
+    )
+    return this.normalizeApp(raw)
   }
 
   /**

@@ -4,7 +4,7 @@
  */
 
 import { CloudronClient } from "../../src/cloudron-client"
-import { generateTestId, waitForTask } from "./helpers"
+import { cleanupOldTestApps, generateTestId, waitForTask } from "./helpers"
 
 const CLOUDRON_BASE_URL = process.env.CLOUDRON_BASE_URL
 const CLOUDRON_API_TOKEN = process.env.CLOUDRON_API_TOKEN
@@ -17,12 +17,16 @@ describeIntegration("App Lifecycle Integration Tests", () => {
   let appId: string
   const testLocation = generateTestId("app")
 
-  beforeAll(() => {
+  beforeAll(async () => {
     client = new CloudronClient({
       baseUrl: CLOUDRON_BASE_URL!,
       token: CLOUDRON_API_TOKEN!,
     })
-  })
+
+    // Clean up any old test apps before running tests
+    console.log("Cleaning up old test apps...")
+    await cleanupOldTestApps(client)
+  }, 600000) // 10 minute timeout for cleanup
 
   afterAll(async () => {
     // Cleanup if test failed before uninstall
@@ -59,30 +63,67 @@ describeIntegration("App Lifecycle Integration Tests", () => {
 
     // Verify installation
     const apps = await client.listApps()
-    const installedApp = apps.find((a) => a.location === testLocation)
+    console.log(
+      `Looking for app with location '${testLocation}' among ${apps.length} apps`,
+    )
+    console.log(`Available locations: ${apps.map(a => a.location).join(", ")}`)
+    const installedApp = apps.find(a => a.location === testLocation)
+    if (!installedApp) {
+      // Try to find by partial match
+      const partialMatch = apps.find(a => a.location?.includes("mcp-test-app"))
+      if (partialMatch) {
+        console.log(
+          `Found partial match: ${partialMatch.location} (id: ${partialMatch.id})`,
+        )
+      }
+    }
     expect(installedApp).toBeDefined()
     expect(installedApp?.installationState).toBe("installed")
-    
+
     appId = installedApp!.id
   }, 600000) // 10 minute timeout for install
 
   it("should configure the app", async () => {
     expect(appId).toBeDefined()
-    
+
     const config = {
       env: {
-        TEST_VAR: "lifecycle_test_value"
-      }
+        TEST_VAR: "lifecycle_test_value",
+      },
     }
 
     const result = await client.configureApp(appId, config)
     expect(result.app.id).toBe(appId)
 
-    // Verify config change (if possible via getApp, otherwise just trust the call succeeded)
-    // Surfer might not expose env vars in getApp, but we can check if it's running
+    // If restart is required, wait for the app to be ready again
+    if (result.restartRequired) {
+      console.log(
+        "Config change requires restart, waiting for app to be ready...",
+      )
+      // Poll until app is in 'installed' state and 'running'
+      let attempts = 0
+      const maxAttempts = 60 // 60 * 3s = 3 minutes max
+      while (attempts < maxAttempts) {
+        const app = await client.getApp(appId)
+        if (
+          app.installationState === "installed" &&
+          app.runState === "running"
+        ) {
+          console.log("App is ready after config change")
+          break
+        }
+        console.log(
+          `Waiting for app... state=${app.installationState}, runState=${app.runState}`,
+        )
+        await new Promise(resolve => setTimeout(resolve, 3000))
+        attempts++
+      }
+    }
+
+    // Verify app is running
     const app = await client.getApp(appId)
     expect(app.runState).toBe("running")
-  })
+  }, 300000) // 5 minute timeout for config + restart
 
   it("should control the app (Stop -> Start -> Restart)", async () => {
     expect(appId).toBeDefined()
@@ -123,7 +164,7 @@ describeIntegration("App Lifecycle Integration Tests", () => {
     } catch (error: any) {
       expect(error.statusCode).toBe(404)
     }
-    
+
     // Clear appId so afterAll doesn't try to cleanup again
     appId = ""
   }, 300000)

@@ -19,11 +19,8 @@ export const systemHandlers: ToolRegistry = {
   cloudron_get_status: async (_args, ctx) => {
     const status = await ctx.system.getStatus()
     return textResponse(`Cloudron Status:
-  Name: ${status.cloudronName}
-  Version: ${status.version}
-  Admin URL: ${status.adminFqdn}
-  Provider: ${status.provider}
-  Demo Mode: ${status.isDemo}`)
+  Name: ${status.cloudronName ?? "N/A"}
+  Version: ${status.version}`)
   },
 
   cloudron_task_status: async (args, ctx) => {

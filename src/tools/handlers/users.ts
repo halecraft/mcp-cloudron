@@ -2,6 +2,7 @@
  * User-related tool handlers
  */
 
+import type { UserRole } from "../../types.js"
 import { formatUser, formatUserDetails } from "../formatters.js"
 import type { ToolRegistry } from "../registry.js"
 import { textResponse } from "../response.js"
@@ -45,15 +46,13 @@ export const userHandlers: ToolRegistry = {
   },
 
   cloudron_update_user: async (args, ctx) => {
-    const { userId, email, displayName, role, password } =
-      parseUpdateUserArgs(args)
+    const { userId, email, displayName, role } = parseUpdateUserArgs(args)
 
     // Build params object conditionally (exactOptionalPropertyTypes)
     const params: {
       email?: string
       displayName?: string
-      role?: "admin" | "user" | "guest"
-      password?: string
+      role?: UserRole
     } = {}
 
     if (email !== undefined) {
@@ -63,10 +62,8 @@ export const userHandlers: ToolRegistry = {
       params.displayName = displayName
     }
     if (role !== undefined) {
-      params.role = role
-    }
-    if (password !== undefined) {
-      params.password = password
+      // Cast to UserRole since parseUpdateUserArgs validates the role
+      params.role = role as UserRole
     }
 
     const user = await ctx.users.updateUser(userId, params)

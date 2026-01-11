@@ -4,7 +4,7 @@ describe("Integration Environment Check", () => {
   it("should have required environment variables", () => {
     const baseUrl = process.env.CLOUDRON_BASE_URL
     const token = process.env.CLOUDRON_API_TOKEN
-    
+
     if (!baseUrl || !token) {
       const msg = `
 ================================================================================

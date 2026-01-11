@@ -54,9 +54,9 @@ describe("cloudron_list_users tool", () => {
       },
       {
         id: "user-3",
-        email: "guest@example.com",
-        username: "guestuser",
-        role: "guest",
+        email: "manager@example.com",
+        username: "manageruser",
+        role: "usermanager",
         createdAt: "2024-01-03T00:00:00Z",
       },
     ]
@@ -74,8 +74,8 @@ describe("cloudron_list_users tool", () => {
 
     expect(users).toHaveLength(3)
     expect(users[0].role).toBe("admin")
-    expect(users[1].role).toBe("user")
-    expect(users[2].role).toBe("guest")
+    expect(users[1].role).toBe("usermanager")
+    expect(users[2].role).toBe("user")
     expect(users[0].email).toBe("admin@example.com")
   })
 
@@ -127,9 +127,9 @@ describe("cloudron_list_users tool", () => {
       },
       {
         id: "user-5",
-        email: "guest@example.com",
-        username: "guest",
-        role: "guest",
+        email: "manager@example.com",
+        username: "manager",
+        role: "usermanager",
         createdAt: "2024-01-05T00:00:00Z",
       },
     ]
@@ -145,13 +145,13 @@ describe("cloudron_list_users tool", () => {
     const client = new CloudronClient()
     const users = await client.listUsers()
 
-    // Should be sorted: admins (alphabetically), then users (alphabetically), then guests
+    // Should be sorted: owner > admin > usermanager > mailmanager > user (alphabetically within each)
     expect(users).toHaveLength(5)
     expect(users[0].email).toBe("admin1@example.com") // admin, alphabetically first
     expect(users[1].email).toBe("admin2@example.com") // admin, alphabetically second
-    expect(users[2].email).toBe("apple@example.com") // user, alphabetically first
-    expect(users[3].email).toBe("zebra@example.com") // user, alphabetically second
-    expect(users[4].email).toBe("guest@example.com") // guest
+    expect(users[2].email).toBe("manager@example.com") // usermanager
+    expect(users[3].email).toBe("apple@example.com") // user, alphabetically first
+    expect(users[4].email).toBe("zebra@example.com") // user, alphabetically second
   })
 
   it("should handle API authentication error", async () => {

@@ -69,6 +69,7 @@ export function createCloudronContext(): CloudronContext {
     getUser: (userId: string) => usersBasic.getUser(userId),
     listUsers: () => usersBasic.listUsers(),
     getStatus: () => system.getStatus(),
+    getDiskUsage: () => system.getDiskUsage(),
     listBackups: () => backups.listBackups(),
     checkUpdates: () => updatesBasic.checkUpdates(),
     searchApps: (query?: string) => appstore.searchApps(query),

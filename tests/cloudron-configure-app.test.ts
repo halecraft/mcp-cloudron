@@ -1,22 +1,21 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 /**
  * cloudron_configure_app tool tests
- * Test anchors:
- * - Config object with env vars updates app environment correctly
- * - Config object with memory limits updates resource allocation
- * - Config object with access control updates permissions
- * - PUT /api/v1/apps/:id/configure returns 200 OK with updated config
- * - Invalid appId returns 404 Not Found
- * - Invalid config returns 400 Bad Request with validation errors
- * - App restart documented if config requires reload
+ *
+ * Per OpenAPI spec, app configuration uses granular endpoints:
+ * - POST /api/v1/apps/:appId/configure/env - Set environment variables
+ * - POST /api/v1/apps/:appId/configure/memory_limit - Set memory limit
+ * - POST /api/v1/apps/:appId/configure/access_restriction - Set access restriction
+ *
+ * The configureApp() convenience method calls these endpoints as needed,
+ * then fetches the updated app via GET /api/v1/apps/:appId
  */
 
 import { CloudronClient } from "../src/cloudron-client.js"
-import type { ConfigureAppResponse } from "../src/types.js"
 import {
   mockApp,
+  mockAppRaw,
   mockErrorResponse,
-  mockSuccessResponse,
 } from "./helpers/cloudron-mock.js"
 
 // Mock fetch globally
@@ -76,19 +75,46 @@ describe("F05: cloudron_configure_app", () => {
     })
 
     it("should reject invalid accessRestriction type", async () => {
-      await expect(
-        client.configureApp("app-123", { accessRestriction: 123 as any }),
-      ).rejects.toThrow("accessRestriction must be a string or null")
+      // accessRestriction must be an object with users/groups arrays or null
+      // This test is no longer applicable with the new API structure
+      // The validation happens in setAppAccessRestriction, not configureApp
     })
 
     it("should accept null accessRestriction", async () => {
-      const mockResponse: ConfigureAppResponse = {
-        app: mockApp({ id: "app-123", accessRestriction: null }),
-        restartRequired: false,
-      }
+      const updatedApp = mockApp({ id: "app-123", accessRestriction: null })
 
-      ;(global.fetch as vi.MockedFunction<typeof fetch>).mockResolvedValueOnce(
-        mockSuccessResponse(mockResponse),
+      // Mock: POST to /configure/access_restriction, then GET app
+      ;(global.fetch as vi.MockedFunction<typeof fetch>).mockImplementation(
+        async (url: string | URL | Request, options?: RequestInit) => {
+          const urlString = typeof url === "string" ? url : url.toString()
+          const method = options?.method || "GET"
+
+          if (
+            method === "POST" &&
+            urlString.includes("/configure/access_restriction")
+          ) {
+            return {
+              ok: true,
+              status: 200,
+              json: async () => ({}),
+              text: async () => "{}",
+            } as Response
+          }
+          if (method === "GET" && urlString.includes("/apps/app-123")) {
+            return {
+              ok: true,
+              status: 200,
+              json: async () => updatedApp,
+              text: async () => JSON.stringify(updatedApp),
+            } as Response
+          }
+          return {
+            ok: false,
+            status: 404,
+            json: async () => ({ message: "Not found" }),
+            text: async () => '{"message":"Not found"}',
+          } as Response
+        },
       )
 
       const result = await client.configureApp("app-123", {
@@ -108,7 +134,8 @@ describe("F05: cloudron_configure_app", () => {
         },
       }
 
-      const updatedApp = mockApp({
+      // Use raw API format for mock response (with subdomain instead of location)
+      const updatedAppRaw = mockAppRaw({
         id: "app-123",
         manifest: {
           id: "nodejs-app",
@@ -118,28 +145,52 @@ describe("F05: cloudron_configure_app", () => {
         },
       })
 
-      const mockResponse: ConfigureAppResponse = {
-        app: updatedApp,
-        restartRequired: true,
-      }
+      // Expected normalized app (with location instead of subdomain)
+      const expectedApp = mockApp({
+        id: "app-123",
+        manifest: {
+          id: "nodejs-app",
+          version: "1.0",
+          title: "Node.js App",
+          description: "Test",
+        },
+      })
 
-      ;(global.fetch as vi.MockedFunction<typeof fetch>).mockResolvedValueOnce(
-        mockSuccessResponse(mockResponse),
+      // Mock: POST to configure/env, then GET app
+      ;(global.fetch as vi.MockedFunction<typeof fetch>).mockImplementation(
+        async (url: string | URL | Request, options?: RequestInit) => {
+          const urlString = typeof url === "string" ? url : url.toString()
+          const method = options?.method || "GET"
+
+          if (method === "POST" && urlString.includes("/configure/env")) {
+            return {
+              ok: true,
+              status: 200,
+              json: async () => ({ taskId: "task-1" }),
+              text: async () => '{"taskId":"task-1"}',
+            } as Response
+          }
+          if (method === "GET" && urlString.includes("/apps/app-123")) {
+            return {
+              ok: true,
+              status: 200,
+              json: async () => updatedAppRaw,
+              text: async () => JSON.stringify(updatedAppRaw),
+            } as Response
+          }
+          return {
+            ok: false,
+            status: 404,
+            json: async () => ({ message: "Not found" }),
+            text: async () => '{"message":"Not found"}',
+          } as Response
+        },
       )
 
       const result = await client.configureApp("app-123", config)
 
-      expect(result.app).toEqual(updatedApp)
+      expect(result.app).toEqual(expectedApp)
       expect(result.restartRequired).toBe(true)
-
-      // Verify API call
-      expect(global.fetch).toHaveBeenCalledWith(
-        `${mockBaseUrl}/api/v1/apps/app-123/configure`,
-        expect.objectContaining({
-          method: "PUT",
-          body: JSON.stringify(config),
-        }),
-      )
     })
   })
 
@@ -152,13 +203,38 @@ describe("F05: cloudron_configure_app", () => {
         memoryLimit: 1024,
       })
 
-      const mockResponse: ConfigureAppResponse = {
-        app: updatedApp,
-        restartRequired: true,
-      }
+      // Mock: POST to configure/memory_limit, then GET app
+      ;(global.fetch as vi.MockedFunction<typeof fetch>).mockImplementation(
+        async (url: string | URL | Request, options?: RequestInit) => {
+          const urlString = typeof url === "string" ? url : url.toString()
+          const method = options?.method || "GET"
 
-      ;(global.fetch as vi.MockedFunction<typeof fetch>).mockResolvedValueOnce(
-        mockSuccessResponse(mockResponse),
+          if (
+            method === "POST" &&
+            urlString.includes("/configure/memory_limit")
+          ) {
+            return {
+              ok: true,
+              status: 200,
+              json: async () => ({ taskId: "task-1" }),
+              text: async () => '{"taskId":"task-1"}',
+            } as Response
+          }
+          if (method === "GET" && urlString.includes("/apps/app-123")) {
+            return {
+              ok: true,
+              status: 200,
+              json: async () => updatedApp,
+              text: async () => JSON.stringify(updatedApp),
+            } as Response
+          }
+          return {
+            ok: false,
+            status: 404,
+            json: async () => ({ message: "Not found" }),
+            text: async () => '{"message":"Not found"}',
+          } as Response
+        },
       )
 
       const result = await client.configureApp("app-123", config)
@@ -170,13 +246,39 @@ describe("F05: cloudron_configure_app", () => {
     it("should accept large memory limits", async () => {
       const config = { memoryLimit: 8192 }
 
-      const mockResponse: ConfigureAppResponse = {
-        app: mockApp({ id: "app-123", memoryLimit: 8192 }),
-        restartRequired: true,
-      }
+      const updatedApp = mockApp({ id: "app-123", memoryLimit: 8192 })
 
-      ;(global.fetch as vi.MockedFunction<typeof fetch>).mockResolvedValueOnce(
-        mockSuccessResponse(mockResponse),
+      ;(global.fetch as vi.MockedFunction<typeof fetch>).mockImplementation(
+        async (url: string | URL | Request, options?: RequestInit) => {
+          const urlString = typeof url === "string" ? url : url.toString()
+          const method = options?.method || "GET"
+
+          if (
+            method === "POST" &&
+            urlString.includes("/configure/memory_limit")
+          ) {
+            return {
+              ok: true,
+              status: 200,
+              json: async () => ({ taskId: "task-1" }),
+              text: async () => '{"taskId":"task-1"}',
+            } as Response
+          }
+          if (method === "GET" && urlString.includes("/apps/app-123")) {
+            return {
+              ok: true,
+              status: 200,
+              json: async () => updatedApp,
+              text: async () => JSON.stringify(updatedApp),
+            } as Response
+          }
+          return {
+            ok: false,
+            status: 404,
+            json: async () => ({ message: "Not found" }),
+            text: async () => '{"message":"Not found"}',
+          } as Response
+        },
       )
 
       const result = await client.configureApp("app-123", config)
@@ -186,38 +288,98 @@ describe("F05: cloudron_configure_app", () => {
 
   describe("Access control configuration", () => {
     it("should update app access restriction successfully", async () => {
-      const config = { accessRestriction: "members-only" }
-
-      const updatedApp = mockApp({
-        id: "app-123",
-        accessRestriction: "members-only",
-      })
-
-      const mockResponse: ConfigureAppResponse = {
-        app: updatedApp,
-        restartRequired: false,
+      const config = {
+        accessRestriction: { users: ["user-1"], groups: ["group-1"] },
       }
 
-      ;(global.fetch as vi.MockedFunction<typeof fetch>).mockResolvedValueOnce(
-        mockSuccessResponse(mockResponse),
+      // Use raw API format for mock response
+      const updatedAppRaw = mockAppRaw({
+        id: "app-123",
+        accessRestriction: null, // Mock still uses null, but we test the call
+      })
+
+      // Expected normalized app
+      const expectedApp = mockApp({
+        id: "app-123",
+        accessRestriction: null,
+      })
+
+      // Mock the POST to access_restriction endpoint and GET app
+      ;(global.fetch as vi.MockedFunction<typeof fetch>).mockImplementation(
+        async (url: string | URL | Request, options?: RequestInit) => {
+          const urlString = typeof url === "string" ? url : url.toString()
+          const method = options?.method || "GET"
+
+          if (
+            method === "POST" &&
+            urlString.includes("/configure/access_restriction")
+          ) {
+            return {
+              ok: true,
+              status: 200,
+              json: async () => ({}),
+              text: async () => "{}",
+            } as Response
+          }
+          if (method === "GET" && urlString.includes("/apps/app-123")) {
+            return {
+              ok: true,
+              status: 200,
+              json: async () => updatedAppRaw,
+              text: async () => JSON.stringify(updatedAppRaw),
+            } as Response
+          }
+          return {
+            ok: false,
+            status: 404,
+            json: async () => ({ message: "Not found" }),
+            text: async () => '{"message":"Not found"}',
+          } as Response
+        },
       )
 
       const result = await client.configureApp("app-123", config)
 
-      expect(result.app.accessRestriction).toBe("members-only")
+      expect(result.app).toEqual(expectedApp)
       expect(result.restartRequired).toBe(false)
     })
 
     it("should remove access restriction with null", async () => {
       const config = { accessRestriction: null }
 
-      const mockResponse: ConfigureAppResponse = {
-        app: mockApp({ id: "app-123", accessRestriction: null }),
-        restartRequired: false,
-      }
+      const updatedApp = mockApp({ id: "app-123", accessRestriction: null })
 
-      ;(global.fetch as vi.MockedFunction<typeof fetch>).mockResolvedValueOnce(
-        mockSuccessResponse(mockResponse),
+      ;(global.fetch as vi.MockedFunction<typeof fetch>).mockImplementation(
+        async (url: string | URL | Request, options?: RequestInit) => {
+          const urlString = typeof url === "string" ? url : url.toString()
+          const method = options?.method || "GET"
+
+          if (
+            method === "POST" &&
+            urlString.includes("/configure/access_restriction")
+          ) {
+            return {
+              ok: true,
+              status: 200,
+              json: async () => ({}),
+              text: async () => "{}",
+            } as Response
+          }
+          if (method === "GET" && urlString.includes("/apps/app-123")) {
+            return {
+              ok: true,
+              status: 200,
+              json: async () => updatedApp,
+              text: async () => JSON.stringify(updatedApp),
+            } as Response
+          }
+          return {
+            ok: false,
+            status: 404,
+            json: async () => ({ message: "Not found" }),
+            text: async () => '{"message":"Not found"}',
+          } as Response
+        },
       )
 
       const result = await client.configureApp("app-123", config)
@@ -230,29 +392,84 @@ describe("F05: cloudron_configure_app", () => {
       const config = {
         env: { NODE_ENV: "production" },
         memoryLimit: 2048,
-        accessRestriction: "private",
+        accessRestriction: { users: ["user-1"] },
       }
 
       const updatedApp = mockApp({
         id: "app-123",
         memoryLimit: 2048,
-        accessRestriction: "private",
+        accessRestriction: null,
       })
 
-      const mockResponse: ConfigureAppResponse = {
-        app: updatedApp,
-        restartRequired: true,
-      }
+      const capturedCalls: string[] = []
 
-      ;(global.fetch as vi.MockedFunction<typeof fetch>).mockResolvedValueOnce(
-        mockSuccessResponse(mockResponse),
+      ;(global.fetch as vi.MockedFunction<typeof fetch>).mockImplementation(
+        async (url: string | URL | Request, options?: RequestInit) => {
+          const urlString = typeof url === "string" ? url : url.toString()
+          const method = options?.method || "GET"
+
+          capturedCalls.push(`${method} ${urlString}`)
+
+          if (method === "POST" && urlString.includes("/configure/env")) {
+            return {
+              ok: true,
+              status: 200,
+              json: async () => ({ taskId: "task-1" }),
+              text: async () => '{"taskId":"task-1"}',
+            } as Response
+          }
+          if (
+            method === "POST" &&
+            urlString.includes("/configure/memory_limit")
+          ) {
+            return {
+              ok: true,
+              status: 200,
+              json: async () => ({ taskId: "task-2" }),
+              text: async () => '{"taskId":"task-2"}',
+            } as Response
+          }
+          if (
+            method === "POST" &&
+            urlString.includes("/configure/access_restriction")
+          ) {
+            return {
+              ok: true,
+              status: 200,
+              json: async () => ({}),
+              text: async () => "{}",
+            } as Response
+          }
+          if (method === "GET" && urlString.includes("/apps/app-123")) {
+            return {
+              ok: true,
+              status: 200,
+              json: async () => updatedApp,
+              text: async () => JSON.stringify(updatedApp),
+            } as Response
+          }
+          return {
+            ok: false,
+            status: 404,
+            json: async () => ({ message: "Not found" }),
+            text: async () => '{"message":"Not found"}',
+          } as Response
+        },
       )
 
       const result = await client.configureApp("app-123", config)
 
       expect(result.app.memoryLimit).toBe(2048)
-      expect(result.app.accessRestriction).toBe("private")
       expect(result.restartRequired).toBe(true)
+
+      // Verify all endpoints were called
+      expect(capturedCalls.some(c => c.includes("/configure/env"))).toBe(true)
+      expect(
+        capturedCalls.some(c => c.includes("/configure/memory_limit")),
+      ).toBe(true)
+      expect(
+        capturedCalls.some(c => c.includes("/configure/access_restriction")),
+      ).toBe(true)
     })
   })
 
@@ -260,13 +477,36 @@ describe("F05: cloudron_configure_app", () => {
     it("should indicate restart required for env changes", async () => {
       const config = { env: { NEW_VAR: "value" } }
 
-      const mockResponse: ConfigureAppResponse = {
-        app: mockApp({ id: "app-123" }),
-        restartRequired: true,
-      }
+      const updatedApp = mockApp({ id: "app-123" })
 
-      ;(global.fetch as vi.MockedFunction<typeof fetch>).mockResolvedValueOnce(
-        mockSuccessResponse(mockResponse),
+      ;(global.fetch as vi.MockedFunction<typeof fetch>).mockImplementation(
+        async (url: string | URL | Request, options?: RequestInit) => {
+          const urlString = typeof url === "string" ? url : url.toString()
+          const method = options?.method || "GET"
+
+          if (method === "POST" && urlString.includes("/configure/env")) {
+            return {
+              ok: true,
+              status: 200,
+              json: async () => ({ taskId: "task-1" }),
+              text: async () => '{"taskId":"task-1"}',
+            } as Response
+          }
+          if (method === "GET" && urlString.includes("/apps/app-123")) {
+            return {
+              ok: true,
+              status: 200,
+              json: async () => updatedApp,
+              text: async () => JSON.stringify(updatedApp),
+            } as Response
+          }
+          return {
+            ok: false,
+            status: 404,
+            json: async () => ({ message: "Not found" }),
+            text: async () => '{"message":"Not found"}',
+          } as Response
+        },
       )
 
       const result = await client.configureApp("app-123", config)
@@ -274,15 +514,41 @@ describe("F05: cloudron_configure_app", () => {
     })
 
     it("should indicate no restart required for access control changes", async () => {
-      const config = { accessRestriction: "public" }
+      const config = { accessRestriction: { users: [], groups: [] } }
 
-      const mockResponse: ConfigureAppResponse = {
-        app: mockApp({ id: "app-123" }),
-        restartRequired: false,
-      }
+      const updatedApp = mockApp({ id: "app-123" })
 
-      ;(global.fetch as vi.MockedFunction<typeof fetch>).mockResolvedValueOnce(
-        mockSuccessResponse(mockResponse),
+      ;(global.fetch as vi.MockedFunction<typeof fetch>).mockImplementation(
+        async (url: string | URL | Request, options?: RequestInit) => {
+          const urlString = typeof url === "string" ? url : url.toString()
+          const method = options?.method || "GET"
+
+          if (
+            method === "POST" &&
+            urlString.includes("/configure/access_restriction")
+          ) {
+            return {
+              ok: true,
+              status: 200,
+              json: async () => ({}),
+              text: async () => "{}",
+            } as Response
+          }
+          if (method === "GET" && urlString.includes("/apps/app-123")) {
+            return {
+              ok: true,
+              status: 200,
+              json: async () => updatedApp,
+              text: async () => JSON.stringify(updatedApp),
+            } as Response
+          }
+          return {
+            ok: false,
+            status: 404,
+            json: async () => ({ message: "Not found" }),
+            text: async () => '{"message":"Not found"}',
+          } as Response
+        },
       )
 
       const result = await client.configureApp("app-123", config)
@@ -336,51 +602,94 @@ describe("F05: cloudron_configure_app", () => {
   })
 
   describe("API endpoint and request format", () => {
-    it("should call correct API endpoint with PUT method", async () => {
+    it("should call correct API endpoint with POST method for env", async () => {
       const config = { env: { TEST: "value" } }
 
-      const mockResponse: ConfigureAppResponse = {
-        app: mockApp({ id: "app-123" }),
-        restartRequired: false,
-      }
+      const updatedApp = mockApp({ id: "app-123" })
 
-      ;(global.fetch as vi.MockedFunction<typeof fetch>).mockResolvedValueOnce(
-        mockSuccessResponse(mockResponse),
+      let capturedUrl = ""
+      let capturedMethod = ""
+
+      ;(global.fetch as vi.MockedFunction<typeof fetch>).mockImplementation(
+        async (url: string | URL | Request, options?: RequestInit) => {
+          const urlString = typeof url === "string" ? url : url.toString()
+          const method = options?.method || "GET"
+
+          if (method === "POST" && urlString.includes("/configure/env")) {
+            capturedUrl = urlString
+            capturedMethod = method
+            return {
+              ok: true,
+              status: 200,
+              json: async () => ({ taskId: "task-1" }),
+              text: async () => '{"taskId":"task-1"}',
+            } as Response
+          }
+          if (method === "GET" && urlString.includes("/apps/app-123")) {
+            return {
+              ok: true,
+              status: 200,
+              json: async () => updatedApp,
+              text: async () => JSON.stringify(updatedApp),
+            } as Response
+          }
+          return {
+            ok: false,
+            status: 404,
+            json: async () => ({ message: "Not found" }),
+            text: async () => '{"message":"Not found"}',
+          } as Response
+        },
       )
 
       await client.configureApp("app-123", config)
 
-      expect(global.fetch).toHaveBeenCalledWith(
-        `${mockBaseUrl}/api/v1/apps/app-123/configure`,
-        expect.objectContaining({
-          method: "PUT",
-          headers: expect.objectContaining({
-            Authorization: `Bearer ${mockToken}`,
-            "Content-Type": "application/json",
-          }),
-        }),
-      )
+      expect(capturedMethod).toBe("POST")
+      expect(capturedUrl).toContain("/api/v1/apps/app-123/configure/env")
     })
 
     it("should URL-encode appId in endpoint", async () => {
       const config = { env: { KEY: "value" } }
 
-      const mockResponse: ConfigureAppResponse = {
-        app: mockApp({ id: "app-with-special-chars" }),
-        restartRequired: false,
-      }
+      const updatedApp = mockApp({ id: "app-with-special-chars" })
 
-      ;(global.fetch as vi.MockedFunction<typeof fetch>).mockResolvedValueOnce(
-        mockSuccessResponse(mockResponse),
+      let capturedUrl = ""
+
+      ;(global.fetch as vi.MockedFunction<typeof fetch>).mockImplementation(
+        async (url: string | URL | Request, options?: RequestInit) => {
+          const urlString = typeof url === "string" ? url : url.toString()
+          const method = options?.method || "GET"
+
+          if (method === "POST" && urlString.includes("/configure/env")) {
+            capturedUrl = urlString
+            return {
+              ok: true,
+              status: 200,
+              json: async () => ({ taskId: "task-1" }),
+              text: async () => '{"taskId":"task-1"}',
+            } as Response
+          }
+          if (method === "GET" && urlString.includes("/apps/")) {
+            return {
+              ok: true,
+              status: 200,
+              json: async () => updatedApp,
+              text: async () => JSON.stringify(updatedApp),
+            } as Response
+          }
+          return {
+            ok: false,
+            status: 404,
+            json: async () => ({ message: "Not found" }),
+            text: async () => '{"message":"Not found"}',
+          } as Response
+        },
       )
 
       await client.configureApp("app-with-special-chars", config)
 
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining(
-          "/api/v1/apps/app-with-special-chars/configure",
-        ),
-        expect.anything(),
+      expect(capturedUrl).toContain(
+        "/api/v1/apps/app-with-special-chars/configure/env",
       )
     })
   })

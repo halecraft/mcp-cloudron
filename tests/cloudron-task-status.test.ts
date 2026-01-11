@@ -13,7 +13,7 @@ import {
  */
 
 import { CloudronClient } from "../src/cloudron-client"
-import type { TaskStatus } from "../src/types"
+import type { TaskStatusRaw } from "../src/types"
 import {
   cleanupTestEnv,
   createMockFetch,
@@ -151,7 +151,7 @@ describe("cloudron_task_status tool", () => {
     ]
 
     for (const state of states) {
-      let mockData: TaskStatus
+      let mockData: TaskStatusRaw
       switch (state) {
         case "pending":
           mockData = mockTaskStatusPending

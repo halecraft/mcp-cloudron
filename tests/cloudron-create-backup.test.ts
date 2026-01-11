@@ -48,7 +48,7 @@ describe("cloudron_create_backup tool", () => {
         status: 200,
         data: mockDiskUsage,
       },
-      "POST https://my.example.com/api/v1/backups": {
+      "POST https://my.example.com/api/v1/backups/create": {
         ok: true,
         status: 202,
         data: { taskId: "task-backup-12345" },
@@ -138,7 +138,7 @@ describe("cloudron_create_backup tool", () => {
         status: 200,
         data: mockDiskUsage,
       },
-      "POST https://my.example.com/api/v1/backups": {
+      "POST https://my.example.com/api/v1/backups/create": {
         ok: true,
         status: 202,
         data: { taskId: "task-async-backup-001" },
@@ -160,7 +160,7 @@ describe("cloudron_create_backup tool", () => {
         status: 200,
         data: mockDiskUsage,
       },
-      "POST https://my.example.com/api/v1/backups": {
+      "POST https://my.example.com/api/v1/backups/create": {
         ok: true,
         status: 202,
         data: {}, // Missing taskId
@@ -180,7 +180,7 @@ describe("cloudron_create_backup tool", () => {
         status: 200,
         data: mockDiskUsage,
       },
-      "POST https://my.example.com/api/v1/backups": {
+      "POST https://my.example.com/api/v1/backups/create": {
         ok: false,
         status: 401,
         data: { message: "Invalid token" },
@@ -199,7 +199,7 @@ describe("cloudron_create_backup tool", () => {
         status: 200,
         data: mockDiskUsage,
       },
-      "POST https://my.example.com/api/v1/backups": {
+      "POST https://my.example.com/api/v1/backups/create": {
         ok: false,
         status: 500,
         data: { message: "Backup service unavailable" },
@@ -232,7 +232,7 @@ describe("cloudron_create_backup tool", () => {
 
     // Verify POST /api/v1/backups called
     expect(mockFetch).toHaveBeenCalledWith(
-      "https://my.example.com/api/v1/backups",
+      "https://my.example.com/api/v1/backups/create",
       expect.objectContaining({
         method: "POST",
         headers: expect.objectContaining({
@@ -263,7 +263,7 @@ describe("cloudron_create_backup tool", () => {
         status: 200,
         data: warningDiskUsage,
       },
-      "POST https://my.example.com/api/v1/backups": {
+      "POST https://my.example.com/api/v1/backups/create": {
         ok: true,
         status: 202,
         data: { taskId: "task-warning-123" },

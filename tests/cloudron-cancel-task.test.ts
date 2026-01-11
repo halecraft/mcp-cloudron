@@ -50,8 +50,10 @@ describe("cloudron_cancel_task tool", () => {
     const taskStatus = await client.cancelTask("task-123")
 
     expect(taskStatus.id).toBe("task-123")
-    expect(taskStatus.state).toBe("cancelled")
+    // Cloudron API represents cancelled tasks as error state with cancellation message
+    expect(taskStatus.state).toBe("error")
     expect(taskStatus.message).toBe("Task cancelled by user request")
+    expect(taskStatus.error?.code).toBe("cancelled")
   })
 
   it("should handle 404 for invalid task ID", async () => {
@@ -92,9 +94,9 @@ describe("cloudron_cancel_task tool", () => {
     await expect(client.cancelTask("")).rejects.toThrow("taskId is required")
   })
 
-  it("should verify task state transitions to cancelled", async () => {
+  it("should verify task state transitions to cancelled (error state)", async () => {
     // First GET returns running state
-    // Then DELETE returns cancelled state
+    // Then DELETE returns cancelled state (represented as error with cancelled code)
     global.fetch = vi.fn(
       (url: string | URL | Request, options?: RequestInit) => {
         const urlString = typeof url === "string" ? url : url.toString()
@@ -126,7 +128,9 @@ describe("cloudron_cancel_task tool", () => {
     const client = new CloudronClient()
     const taskStatus = await client.cancelTask("task-123")
 
-    expect(taskStatus.state).toBe("cancelled")
+    // Cloudron API represents cancelled tasks as error state
+    expect(taskStatus.state).toBe("error")
+    expect(taskStatus.error?.code).toBe("cancelled")
   })
 
   it("should verify cancelled tasks cleanup resources", async () => {
@@ -146,7 +150,8 @@ describe("cloudron_cancel_task tool", () => {
     const client = new CloudronClient()
     const taskStatus = await client.cancelTask("task-backup")
 
-    expect(taskStatus.state).toBe("cancelled")
+    // Cloudron API represents cancelled tasks as error state
+    expect(taskStatus.state).toBe("error")
     expect(taskStatus.message).toContain("Partial backup deleted")
   })
 

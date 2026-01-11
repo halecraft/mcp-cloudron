@@ -88,7 +88,9 @@ describe("cloudron_install_app", () => {
       expect(taskId).toMatch(/^task-/)
     })
 
-    it("should reject installation when validation fails (app not found)", async () => {
+    it("should proceed with installation even when app not found in App Store (with warning)", async () => {
+      // App not found is now a warning, not an error - installation proceeds
+      // This allows installing apps that may not be in the search index
       global.fetch = createMockFetch({
         "GET https://my.example.com/api/v1/appstore/apps?search=io.nonexistent.app":
           {
@@ -96,34 +98,37 @@ describe("cloudron_install_app", () => {
             status: 200,
             data: { apps: [] }, // App not found
           },
+        "GET https://my.example.com/api/v1/system/disk_usage": {
+          ok: true,
+          status: 200,
+          data: mockDiskUsage,
+        },
+        "POST https://my.example.com/api/v1/apps": {
+          ok: true,
+          status: 202,
+          data: { taskId: "task-install-unknown-app" },
+        },
       })
 
-      const client = new CloudronClient()
+      const consoleWarnSpy = vi
+        .spyOn(console, "warn")
+        .mockImplementation(() => {})
 
-      await expect(
-        client.installApp({
-          manifestId: "io.nonexistent.app",
-          location: "myapp",
-          domain: "example.com",
-          accessRestriction: null,
-        }),
-      ).rejects.toThrow(CloudronError)
-      await expect(
-        client.installApp({
-          manifestId: "io.nonexistent.app",
-          location: "myapp",
-          domain: "example.com",
-          accessRestriction: null,
-        }),
-      ).rejects.toThrow(/Pre-flight validation failed/)
-      await expect(
-        client.installApp({
-          manifestId: "io.nonexistent.app",
-          location: "myapp",
-          domain: "example.com",
-          accessRestriction: null,
-        }),
-      ).rejects.toThrow(/App not found in App Store/)
+      const client = new CloudronClient()
+      const taskId = await client.installApp({
+        manifestId: "io.nonexistent.app",
+        location: "myapp",
+        domain: "example.com",
+        accessRestriction: null,
+      })
+
+      // Installation should succeed
+      expect(taskId).toBe("task-install-unknown-app")
+
+      // But warnings should be logged
+      expect(consoleWarnSpy).toHaveBeenCalled()
+
+      consoleWarnSpy.mockRestore()
     })
 
     it("should reject installation when storage check fails", async () => {
@@ -194,12 +199,33 @@ describe("cloudron_install_app", () => {
       ).rejects.toThrow(/disk space/)
     })
 
-    it("should NOT call installation API when pre-flight validation fails", async () => {
-      const mockFetch = vi.fn().mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        json: async () => ({ apps: [] }), // App not found
-      })
+    it("should NOT call installation API when pre-flight validation fails (insufficient storage)", async () => {
+      // Use insufficient storage to trigger validation failure
+      const lowDiskUsage = {
+        usage: {
+          filesystems: {
+            "/dev/root": {
+              available: 100 * 1024 * 1024, // 100MB (insufficient)
+              size: 10737418240, // 10GB
+              used: 10637418240,
+              mountpoint: "/",
+            },
+          },
+        },
+      }
+
+      const mockFetch = vi
+        .fn()
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          json: async () => ({ apps: [] }), // App not found (warning only)
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          json: async () => lowDiskUsage, // Insufficient storage (error)
+        })
 
       global.fetch = mockFetch as any
 
@@ -212,12 +238,18 @@ describe("cloudron_install_app", () => {
           domain: "example.com",
           accessRestriction: null,
         }),
-      ).rejects.toThrow()
+      ).rejects.toThrow(/Pre-flight validation failed/)
 
-      // Verify only ONE API call made (GET appstore), NOT installation POST
-      expect(mockFetch).toHaveBeenCalledTimes(1)
-      expect(mockFetch).toHaveBeenCalledWith(
+      // Verify TWO API calls made (GET appstore + GET disk_usage), NOT installation POST
+      expect(mockFetch).toHaveBeenCalledTimes(2)
+      expect(mockFetch).toHaveBeenNthCalledWith(
+        1,
         expect.stringContaining("/api/v1/appstore"),
+        expect.any(Object),
+      )
+      expect(mockFetch).toHaveBeenNthCalledWith(
+        2,
+        expect.stringContaining("/api/v1/system/disk_usage"),
         expect.any(Object),
       )
     })
@@ -321,11 +353,11 @@ describe("cloudron_install_app", () => {
       const requestBody = JSON.parse(installCall?.[1].body)
       expect(requestBody).toEqual({
         appStoreId: "io.example.app",
-        location: "myapp",
+        subdomain: "myapp", // API field is 'subdomain' not 'location'
         domain: "example.com",
         accessRestriction: "admin",
         env: { MY_VAR: "value123", ANOTHER: "test" },
-        portBindings: { "8080": 8080 },
+        ports: { "8080": 8080 }, // API field is 'ports' not 'portBindings'
       })
     })
 

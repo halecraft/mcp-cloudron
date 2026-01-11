@@ -114,10 +114,70 @@ export class UsersApi {
   }
 
   /**
-   * Update a user's properties
-   * PUT /api/v1/users/:userId
+   * Update a user's profile (email, displayName)
+   * POST /api/v1/users/:userId/profile
    * @param userId - The user ID to update
-   * @param params - Update parameters (email, displayName, role, password)
+   * @param params - Profile parameters (email, displayName)
+   */
+  async updateUserProfile(
+    userId: string,
+    params: { email?: string; displayName?: string },
+  ): Promise<void> {
+    if (!userId) {
+      throw new CloudronError("userId is required")
+    }
+
+    // Validate params object has at least one field
+    if (!params || Object.keys(params).length === 0) {
+      throw new CloudronError(
+        "params object cannot be empty. Provide at least one of: email, displayName",
+      )
+    }
+
+    // Validate email format if provided
+    if (params.email !== undefined && !isValidEmail(params.email)) {
+      throw new CloudronError("Invalid email format")
+    }
+
+    // POST /api/v1/users/:userId/profile returns 204 No Content
+    await this.http.post<void>(
+      `/api/v1/users/${encodeURIComponent(userId)}/profile`,
+      params,
+    )
+  }
+
+  /**
+   * Update a user's role
+   * PUT /api/v1/users/:userId/role
+   * @param userId - The user ID to update
+   * @param role - New role (owner, admin, usermanager, mailmanager, user)
+   */
+  async updateUserRole(
+    userId: string,
+    role: "owner" | "admin" | "usermanager" | "mailmanager" | "user",
+  ): Promise<void> {
+    if (!userId) {
+      throw new CloudronError("userId is required")
+    }
+
+    const validRoles = ["owner", "admin", "usermanager", "mailmanager", "user"]
+    if (!validRoles.includes(role)) {
+      throw new CloudronError(
+        `Invalid role: ${role}. Valid options: ${validRoles.join(", ")}`,
+      )
+    }
+
+    // PUT /api/v1/users/:userId/role returns 204 No Content
+    await this.http.put<void>(
+      `/api/v1/users/${encodeURIComponent(userId)}/role`,
+      { role },
+    )
+  }
+
+  /**
+   * Update a user's properties (convenience method)
+   * @param userId - The user ID to update
+   * @param params - Update parameters (email, displayName, role)
    * @returns Updated user object
    */
   async updateUser(userId: string, params: UpdateUserParams): Promise<User> {
@@ -128,7 +188,7 @@ export class UsersApi {
     // Validate params object has at least one field
     if (!params || Object.keys(params).length === 0) {
       throw new CloudronError(
-        "params object cannot be empty. Provide at least one of: email, displayName, role, password",
+        "params object cannot be empty. Provide at least one of: email, displayName, role",
       )
     }
 
@@ -137,24 +197,31 @@ export class UsersApi {
       throw new CloudronError("Invalid email format")
     }
 
-    // Validate role if provided
-    if (params.role !== undefined && !isValidRole(params.role)) {
+    // Validate role if provided - use the full role set from OpenAPI
+    const validRoles = ["owner", "admin", "usermanager", "mailmanager", "user"]
+    if (params.role !== undefined && !validRoles.includes(params.role)) {
       throw new CloudronError(
-        `Invalid role: ${params.role}. Valid options: admin, user, guest`,
+        `Invalid role: ${params.role}. Valid options: ${validRoles.join(", ")}`,
       )
     }
 
-    // Validate password strength if provided
-    if (params.password !== undefined && !isValidPassword(params.password)) {
-      throw new CloudronError(
-        "Password must be at least 8 characters long and contain at least 1 uppercase letter and 1 number",
-      )
+    // Handle profile updates (email, displayName)
+    const profileParams: { email?: string; displayName?: string } = {}
+    if (params.email !== undefined) profileParams.email = params.email
+    if (params.displayName !== undefined)
+      profileParams.displayName = params.displayName
+
+    if (Object.keys(profileParams).length > 0) {
+      await this.updateUserProfile(userId, profileParams)
     }
 
-    return await this.http.put<User>(
-      `/api/v1/users/${encodeURIComponent(userId)}`,
-      params,
-    )
+    // Handle role update separately
+    if (params.role !== undefined) {
+      await this.updateUserRole(userId, params.role)
+    }
+
+    // Return updated user
+    return await this.getUser(userId)
   }
 
   /**

@@ -15,7 +15,7 @@ const describeIntegration =
 describeIntegration("User & Group Management Integration Tests", () => {
   let client: CloudronClient
   let userId: string
-  let groupId: string
+  let _groupId: string
   const testEmail = `test-${Date.now()}@example.com`
   const testPassword = "Password123!"
 
@@ -52,14 +52,14 @@ describeIntegration("User & Group Management Integration Tests", () => {
   it("should update the user", async () => {
     expect(userId).toBeDefined()
     const updatedUser = await client.updateUser(userId, {
-      role: "guest"
+      displayName: "Updated Test User",
     })
-    
+
     expect(updatedUser.id).toBe(userId)
-    
+
     // Verify update via get
     const user = await client.getUser(userId)
-    expect(user.role).toBe("guest")
+    expect(user.displayName).toBe("Updated Test User")
   })
 
   it("should create a group", async () => {
@@ -67,7 +67,7 @@ describeIntegration("User & Group Management Integration Tests", () => {
     const group = await client.createGroup({ name: groupName })
     expect(group).toHaveProperty("id")
     expect(group.name).toBe(groupName)
-    groupId = group.id
+    _groupId = group.id
   })
 
   it("should delete the user", async () => {
