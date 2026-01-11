@@ -4,13 +4,17 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![MCP](https://img.shields.io/badge/MCP-Compatible-blue.svg)](https://modelcontextprotocol.io)
 
-MCP server for [Cloudron](https://cloudron.io) instance management. List apps, get status, and manage your self-hosted applications through the Model Context Protocol.
+MCP server for [Cloudron](https://cloudron.io) instance management. Manage apps, backups, users, and more through the Model Context Protocol.
 
 ## Features
 
-- **List Applications**: Get all installed apps with status, health, and memory usage
-- **Get App Details**: Retrieve detailed information about specific applications
-- **Instance Status**: Check Cloudron version, provider, and configuration
+- **App Management** - List, install, uninstall, start, stop, restart, clone, repair, update, and backup applications
+- **Backup Operations** - List and create instance backups
+- **User Management** - List, create, update, and delete users with role assignment
+- **Group Management** - List and create groups for access control
+- **System Monitoring** - Check instance status, storage, services, and platform updates
+- **Pre-flight Safety** - Validation checks before destructive operations
+- **Async Task Tracking** - Monitor and cancel long-running operations
 
 ## Installation
 
@@ -39,7 +43,8 @@ npx @halecraft/mcp-cloudron
 2. Go to **Settings → API Tokens**
 3. Click **Create API Token**
 4. Give it a name (e.g., "MCP Server")
-5. Copy the generated token
+5. Select **Read and Write** permissions
+6. Copy the generated token
 
 ## Usage with Claude Desktop
 
@@ -50,7 +55,7 @@ Add to your Claude Desktop configuration (`claude_desktop_config.json`):
   "mcpServers": {
     "cloudron": {
       "command": "npx",
-      "args": ["@halecraft/mcp-cloudron"],
+      "args": ["-y", "@halecraft/mcp-cloudron"],
       "env": {
         "CLOUDRON_BASE_URL": "https://your-cloudron-instance.com",
         "CLOUDRON_API_TOKEN": "your-api-token"
@@ -60,77 +65,90 @@ Add to your Claude Desktop configuration (`claude_desktop_config.json`):
 }
 ```
 
-## Usage with Docker MCP Gateway
-
-Add to your Docker MCP config (`~/.docker/mcp/config.yaml`):
-
-```yaml
-mcpServers:
-  cloudron:
-    command: npx
-    args: ["@halecraft/mcp-cloudron"]
-    env:
-      CLOUDRON_BASE_URL: "https://your-cloudron-instance.com"
-      CLOUDRON_API_TOKEN: "your-api-token"
-```
-
 ## Available Tools
 
-### cloudron_list_apps
+### App Management
 
-List all installed applications on the Cloudron instance.
+| Tool | Description |
+|------|-------------|
+| `cloudron_list_apps` | List all installed applications with status and health |
+| `cloudron_get_app` | Get detailed information about a specific application |
+| `cloudron_control_app` | Start, stop, or restart an application |
+| `cloudron_configure_app` | Update environment variables, memory limits, access control |
+| `cloudron_install_app` | Install an application from the App Store |
+| `cloudron_uninstall_app` | Uninstall an application (with pre-flight validation) |
+| `cloudron_clone_app` | Clone an application to a new location |
+| `cloudron_repair_app` | Repair a broken application |
+| `cloudron_update_app` | Update an application to a newer version |
+| `cloudron_restore_app` | Restore an application from a backup |
+| `cloudron_backup_app` | Create a backup of a specific application |
 
-**Parameters**: None
+### App Store
 
-**Returns**: List of apps with name, domain, ID, state, health, and memory usage.
+| Tool | Description |
+|------|-------------|
+| `cloudron_search_apps` | Search the Cloudron App Store |
+| `cloudron_validate_manifest` | Validate an app before installation |
 
-**Example output**:
+### Backups
 
-```
-Found 3 apps:
+| Tool | Description |
+|------|-------------|
+| `cloudron_list_backups` | List all available backups |
+| `cloudron_create_backup` | Create a new instance backup |
 
-WordPress (blog.example.com)
-  ID: abc123-def456
-  State: installed
-  Health: healthy
-  Memory: 512 MB
+### Users
 
-GitLab (git.example.com)
-  ID: xyz789-uvw012
-  State: installed
-  Health: healthy
-  Memory: 4096 MB
-```
+| Tool | Description |
+|------|-------------|
+| `cloudron_list_users` | List all users |
+| `cloudron_get_user` | Get details for a specific user |
+| `cloudron_create_user` | Create a new user with role assignment |
+| `cloudron_update_user` | Update user properties (email, role, password) |
+| `cloudron_delete_user` | Delete a user (with pre-flight validation) |
 
-### cloudron_get_app
+### Groups
 
-Get detailed information about a specific application.
+| Tool | Description |
+|------|-------------|
+| `cloudron_list_groups` | List all groups |
+| `cloudron_create_group` | Create a new group |
 
-**Parameters**:
-| Name | Type | Required | Description |
-|------|------|----------|-------------|
-| `appId` | string | Yes | The unique identifier of the application |
+### System
 
-**Returns**: App details including name, domain, state, health, and memory.
+| Tool | Description |
+|------|-------------|
+| `cloudron_get_status` | Get Cloudron instance status and version |
+| `cloudron_check_storage` | Check available disk space |
+| `cloudron_list_services` | List platform services (MySQL, PostgreSQL, etc.) |
+| `cloudron_list_domains` | List configured domains |
+| `cloudron_get_logs` | Retrieve application or service logs |
 
-### cloudron_get_status
+### Tasks
 
-Get the current status and configuration of the Cloudron instance.
+| Tool | Description |
+|------|-------------|
+| `cloudron_task_status` | Check status of an async operation |
+| `cloudron_cancel_task` | Cancel a running operation |
+| `cloudron_validate_operation` | Pre-flight validation for destructive operations |
 
-**Parameters**: None
+### Updates
 
-**Returns**: Instance information including name, version, admin URL, provider, and demo mode status.
+| Tool | Description |
+|------|-------------|
+| `cloudron_check_updates` | Check for Cloudron platform updates |
+| `cloudron_apply_update` | Apply a platform update |
 
-**Example output**:
+## Example Usage
 
-```
-Cloudron Status:
-  Name: My Cloudron
-  Version: 9.0.13
-  Admin URL: my.cloudron.io
-  Provider: digitalocean
-  Demo Mode: false
-```
+Once configured, you can ask Claude to manage your Cloudron instance:
+
+- "List all my Cloudron apps"
+- "What's the status of my Cloudron instance?"
+- "Install Nextcloud on cloud.mydomain.com"
+- "Create a backup of my instance"
+- "Show me the logs for my WordPress app"
+- "Create a new admin user with email admin@example.com"
 
 ## Development
 
@@ -139,66 +157,40 @@ Cloudron Status:
 ```bash
 git clone https://github.com/halecraft/mcp-cloudron.git
 cd mcp-cloudron
-npm install
+pnpm install
 ```
 
 ### Build
 
 ```bash
-npm run build
+pnpm build
 ```
 
-### Run locally
+### Run Locally
 
 ```bash
 export CLOUDRON_BASE_URL="https://your-instance.com"
 export CLOUDRON_API_TOKEN="your-token"
-npm start
+pnpm start
 ```
 
 ### Test
 
 ```bash
-npm test
+pnpm test              # Unit tests
+pnpm test:integration  # Integration tests (requires real Cloudron)
+pnpm verify            # All checks (format, tests, types)
 ```
 
 ## API Reference
 
-The server uses the [Cloudron REST API](https://docs.cloudron.io/api/). Currently implemented endpoints:
+This server wraps the [Cloudron REST API](https://docs.cloudron.io/api/). See [TECHNICAL.md](TECHNICAL.md) for detailed architecture documentation and API coverage analysis.
 
-- `GET /api/v1/apps` - List all applications
-- `GET /api/v1/apps/:id` - Get application by ID
-- `GET /api/v1/cloudron/status` - Get instance status
+## Known Limitations
 
-## Changelog
-
-### v0.2.0 (2025-12-26)
-
-**New Features**:
-
-- 15 new MCP tools across app management, backups, users, infrastructure
-- Pre-flight validation for destructive operations (F37)
-- Storage checks before data creation (F36)
-- Async task tracking and cancellation (F34, F35)
-
-**Critical Bug Fixes**:
-
-- F23b: Corrected endpoint path and added required domain parameter
-- F04: Fixed HTTP method (DELETE → POST) for uninstall operation
-- Both bugs discovered via real API testing (mock tests validated nothing)
-
-**Testing**:
-
-- Real Cloudron API integration testing
-- Validated against live instance
-- All 16 tools tested with actual API calls
-
-## Roadmap
-
-Future versions may include:
-
-- [ ] Domain configuration
-- [ ] App installation from App Store
+- `cloudron_configure_app` - May return 404 on some Cloudron versions
+- `cloudron_get_logs` - Returns raw text format
+- Pagination not exposed for list operations
 
 ## Community
 
@@ -206,10 +198,11 @@ Future versions may include:
 - 🐛 [Issue Tracker](https://github.com/halecraft/mcp-cloudron/issues) - Report bugs
 - 💡 [Feature Requests](https://github.com/halecraft/mcp-cloudron/issues/new?labels=enhancement) - Suggest improvements
 
-### Related Projects
+## Related Projects
 
 - [Model Context Protocol](https://modelcontextprotocol.io) - MCP documentation
 - [Cloudron](https://cloudron.io) - Self-hosted app platform
+- [MCP TypeScript SDK](https://github.com/modelcontextprotocol/typescript-sdk)
 
 ## License
 
@@ -218,9 +211,3 @@ MIT - See [LICENSE](LICENSE) for details.
 ## Contributing
 
 Contributions welcome! Please open an issue or submit a pull request.
-
-## Related
-
-- [Cloudron Documentation](https://docs.cloudron.io/)
-- [Model Context Protocol](https://modelcontextprotocol.io/)
-- [MCP TypeScript SDK](https://github.com/modelcontextprotocol/typescript-sdk)

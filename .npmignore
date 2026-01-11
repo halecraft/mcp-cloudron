@@ -1,22 +1,29 @@
-# Source files
+# Source files (dist/ is published)
 src/
 tsconfig.json
 
-# Development files
+# Tests
+tests/
+vitest.config.ts
+coverage/
+
+# Development configuration
 .env
 .env.example
 .mcp.json
-.claude/
-.serena/
+biome.json
 
-# Documentation (keep README)
-TESTING.md
+# Documentation (README is kept)
+TECHNICAL.md
 QUICK_START.md
-PHASE_2_3_SUMMARY.md
+AGENTS.md
+docs/
 
-# Test files
-**/*.test.ts
-**/test*.ts
+# Plans and internal docs
+.plans/
+
+# Scripts
+scripts/
 
 # Git
 .git/
@@ -25,7 +32,21 @@ PHASE_2_3_SUMMARY.md
 # IDE
 .vscode/
 .idea/
+*.swp
+*.swo
 
-# Temp
+# Claude/AI tooling
+.claude/
+.serena/
+
+# Temp and logs
 tmp/
 *.log
+
+# Lock files (consumers use their own)
+pnpm-lock.yaml
+package-lock.json
+
+# OS files
+.DS_Store
+Thumbs.db
