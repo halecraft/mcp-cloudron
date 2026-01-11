@@ -77,8 +77,7 @@ We are now ready to install the app on Cloudron.
 # be sure to be in the app directory
 $ cd tutorial-nodejs-app
 
-$ cloudron install --image username/nodejs-app:1.0.0
-Location: app.example.com
+$ cloudron install --image username/nodejs-app:1.0.0 --location app.example.com
 App is being installed.
 
  => Starting ...

@@ -197,13 +197,13 @@ function getOverviewContent(): string {
    cloudron build
    
    # Install on Cloudron
-   cloudron install --image username/app:tag
+   cloudron install --location app.example.com --image username/app:tag
    
    # View logs
-   cloudron logs -f
+   cloudron logs --app app.example.com
    
    # Update after changes
-   cloudron update --image username/app:newtag
+   cloudron update --app app.example.com --image docker.halecraft.org/relm:1.0.1
    \`\`\`
 
 4. **Key Concepts**
@@ -334,6 +334,8 @@ Always start with the Cloudron base image:
 \`\`\`dockerfile
 FROM cloudron/base:5.0.0@sha256:04fd70dbd8ad6149c19de39e35718e024417c3e01dc9c6637eaf4a41ec4e596c
 \`\`\`
+
+RSS feed of official base images is at https://git.cloudron.io/platform/docker-base-image/-/tags?format=atom
 
 ## Example Dockerfile (Rocket.Chat)
 
