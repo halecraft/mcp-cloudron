@@ -702,4 +702,21 @@ export const TOOLS = [
       required: [],
     },
   },
+  // ==================== Git Fetch Tool ====================
+  {
+    name: "cloudron_fetch_package_example",
+    description:
+      "Fetch real package examples from git.cloudron.io. Finds the repository for a given App Store ID and returns the content of key files (CloudronManifest.json, Dockerfile, start.sh).",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        appId: {
+          type: "string",
+          description:
+            "The App Store ID to fetch (e.g., 'com.electerious.ackee')",
+        },
+      },
+      required: ["appId"],
+    },
+  },
 ]

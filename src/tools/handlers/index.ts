@@ -7,6 +7,7 @@ import { appHandlers } from "./apps.js"
 import { appstoreHandlers } from "./appstore.js"
 import { backupHandlers } from "./backups.js"
 import { domainHandlers } from "./domains.js"
+import { gitFetchHandlers } from "./git-fetch.js"
 import { groupHandlers } from "./groups.js"
 import { logHandlers } from "./logs.js"
 import { packageValidationHandlers } from "./package-validation.js"
@@ -23,6 +24,7 @@ export {
   appstoreHandlers,
   backupHandlers,
   domainHandlers,
+  gitFetchHandlers,
   groupHandlers,
   logHandlers,
   packageValidationHandlers,
@@ -40,6 +42,7 @@ export const allHandlers: ToolRegistry = createRegistry(
   appstoreHandlers,
   backupHandlers,
   domainHandlers,
+  gitFetchHandlers,
   groupHandlers,
   logHandlers,
   packageValidationHandlers,

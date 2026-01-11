@@ -120,39 +120,39 @@ This leads to:
   - Test each error condition
   - Test warning conditions
 
-### Milestone 3: Git Repository Integration 🟡 (Deferred)
+### Milestone 3: Git Repository Integration ✅
 
 **Goal**: Create `cloudron_fetch_package_example` tool to fetch real packages from git.cloudron.io.
 
-**Status**: Deferred to future iteration. Research completed - git.cloudron.io uses GitLab with packages under the "packages" group. Raw file URLs follow pattern: `https://git.cloudron.io/packages/{repo-name}/-/raw/main/{filename}`
+**Status**: Completed.
 
-- 🟡 Task 3.1: Research git.cloudron.io API/structure
+- ✅ Task 3.1: Research git.cloudron.io API/structure
   - ✅ Determined GitLab-based structure
   - ✅ Identified packages group at git.cloudron.io/packages
-  - 🔴 Map appStoreId to repository names
-  - 🔴 Identify file paths for key package files
+  - ✅ Map appStoreId to repository names (via dynamic search)
+  - ✅ Identify file paths for key package files
 
-- 🔴 Task 3.2: Create `src/git/cloudron-git-client.ts`
+- ✅ Task 3.2: Create `src/git/cloudron-git-client.ts`
   - Fetch CloudronManifest.json from repository
   - Fetch Dockerfile
   - Fetch start.sh
   - Handle rate limiting and errors
 
-- 🔴 Task 3.3: Create package index in `src/git/package-index.ts`
+- ✅ Task 3.3: Create package index in `src/git/package-index.ts`
   - Map common app types to example repositories
   - Categorize by: app type, addons used, auth method
   - Enable searching by criteria
 
-- 🔴 Task 3.4: Create `src/tools/handlers/git-fetch.ts` tool handler
+- ✅ Task 3.4: Create `src/tools/handlers/git-fetch.ts` tool handler
   - Input: appStoreId OR search criteria (appType, addons, authMethod)
   - Fetch and return package files
   - Include metadata about the package
 
-- 🔴 Task 3.5: Add tool definition to `src/tools/definitions.ts`
+- ✅ Task 3.5: Add tool definition to `src/tools/definitions.ts`
 
-- 🔴 Task 3.6: Register handler in `src/tools/handlers/index.ts`
+- ✅ Task 3.6: Register handler in `src/tools/handlers/index.ts`
 
-- 🔴 Task 3.7: Write unit tests with mocked git responses
+- ✅ Task 3.7: Write unit tests with mocked git responses
   - Test successful fetch
   - Test error handling (404, rate limit)
   - Test search functionality
