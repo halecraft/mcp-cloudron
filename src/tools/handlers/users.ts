@@ -27,8 +27,16 @@ export const userHandlers: ToolRegistry = {
   },
 
   cloudron_create_user: async (args, ctx) => {
-    const { email, password, role } = parseCreateUserArgs(args)
-    const user = await ctx.users.createUser(email, password, role)
+    const { email, username, password, role, displayName, fallbackEmail } =
+      parseCreateUserArgs(args)
+    const user = await ctx.users.createUser(
+      email,
+      username,
+      password,
+      role,
+      displayName,
+      fallbackEmail,
+    )
 
     return textResponse(`User created successfully:
   ID: ${user.id}

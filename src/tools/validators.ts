@@ -129,8 +129,11 @@ export interface GetLogsArgs {
 
 export interface CreateUserArgs {
   email: string
+  username: string
   password: string
-  role: "admin" | "user" | "guest"
+  role: "owner" | "admin" | "usermanager" | "mailmanager" | "user"
+  displayName?: string
+  fallbackEmail?: string
 }
 
 export interface InstallAppArgs {
@@ -345,24 +348,46 @@ export function parseGetLogsArgs(args: unknown): GetLogsArgs {
  */
 export function parseCreateUserArgs(args: unknown): CreateUserArgs {
   assertObject(args, "arguments")
-  const { email, password, role } = args
+  const { email, username, password, role, displayName, fallbackEmail } = args
 
   assertNonEmptyString(email, "email")
+  assertNonEmptyString(username, "username")
   assertNonEmptyString(password, "password")
   assertNonEmptyString(role, "role")
 
-  const validRoles = ["admin", "user", "guest"] as const
+  const validRoles = [
+    "owner",
+    "admin",
+    "usermanager",
+    "mailmanager",
+    "user",
+  ] as const
   if (!validRoles.includes(role as (typeof validRoles)[number])) {
     throw new CloudronError(
       `Invalid role: ${role}. Valid options: ${validRoles.join(", ")}`,
     )
   }
 
-  return {
+  // Build result with required fields
+  const result: CreateUserArgs = {
     email,
+    username,
     password,
-    role: role as "admin" | "user" | "guest",
+    role: role as "owner" | "admin" | "usermanager" | "mailmanager" | "user",
   }
+
+  // Add optional fields if provided
+  if (displayName !== undefined) {
+    assertNonEmptyString(displayName, "displayName")
+    result.displayName = displayName
+  }
+
+  if (fallbackEmail !== undefined) {
+    assertNonEmptyString(fallbackEmail, "fallbackEmail")
+    result.fallbackEmail = fallbackEmail
+  }
+
+  return result
 }
 
 /**
