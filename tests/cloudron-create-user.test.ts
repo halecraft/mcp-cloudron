@@ -63,12 +63,14 @@ describe("cloudron_create_user tool", () => {
     const client = new CloudronClient()
     const user = await client.createUser(
       "admin@example.com",
+      "admin",
       "Password123",
       "admin",
     )
 
     expect(user.id).toBe("user-123")
     expect(user.email).toBe("admin@example.com")
+    expect(user.username).toBe("admin")
     expect(user.role).toBe("admin")
     expect(user.createdAt).toBe("2024-01-01T00:00:00Z")
   })
@@ -98,12 +100,14 @@ describe("cloudron_create_user tool", () => {
     const client = new CloudronClient()
     const user = await client.createUser(
       "user@example.com",
+      "normaluser",
       "SecurePass1",
       "user",
     )
 
     expect(user.role).toBe("user")
     expect(user.email).toBe("user@example.com")
+    expect(user.username).toBe("normaluser")
   })
 
   it("should create user with usermanager role successfully", async () => {
@@ -129,25 +133,31 @@ describe("cloudron_create_user tool", () => {
     })
 
     const client = new CloudronClient()
-    // Note: createUser still uses old role types for backwards compat
-    // This test verifies the API accepts the role
     const user = await client.createUser(
       "manager@example.com",
+      "manageruser",
       "ManagerPass9",
-      "user", // Use 'user' role which maps to standard user
+      "usermanager",
     )
 
     expect(user.email).toBe("manager@example.com")
+    expect(user.username).toBe("manageruser")
+    expect(user.role).toBe("usermanager")
   })
 
-  // Test Anchor 2: Role enum validates: 'admin', 'user', 'guest'
+  // Test Anchor 2: Role enum validates: 'owner', 'admin', 'usermanager', 'mailmanager', 'user'
   it("should reject invalid role with clear error message", async () => {
     const client = new CloudronClient()
 
     await expect(
-      client.createUser("test@example.com", "Password123", "superadmin" as any),
+      client.createUser(
+        "test@example.com",
+        "testuser",
+        "Password123",
+        "superadmin" as any,
+      ),
     ).rejects.toThrow(
-      "Invalid role: superadmin. Valid options: admin, user, guest",
+      "Invalid role: superadmin. Valid options: owner, admin, usermanager, mailmanager, user",
     )
   })
 
@@ -156,7 +166,7 @@ describe("cloudron_create_user tool", () => {
     const client = new CloudronClient()
 
     await expect(
-      client.createUser("test@example.com", "Pass1", "user"),
+      client.createUser("test@example.com", "testuser", "Pass1", "user"),
     ).rejects.toThrow(
       "Password must be at least 8 characters long and contain at least 1 uppercase letter and 1 number",
     )
@@ -166,7 +176,7 @@ describe("cloudron_create_user tool", () => {
     const client = new CloudronClient()
 
     await expect(
-      client.createUser("test@example.com", "password123", "user"),
+      client.createUser("test@example.com", "testuser", "password123", "user"),
     ).rejects.toThrow(
       "Password must be at least 8 characters long and contain at least 1 uppercase letter and 1 number",
     )
@@ -176,7 +186,7 @@ describe("cloudron_create_user tool", () => {
     const client = new CloudronClient()
 
     await expect(
-      client.createUser("test@example.com", "PasswordABC", "user"),
+      client.createUser("test@example.com", "testuser", "PasswordABC", "user"),
     ).rejects.toThrow(
       "Password must be at least 8 characters long and contain at least 1 uppercase letter and 1 number",
     )
@@ -207,6 +217,7 @@ describe("cloudron_create_user tool", () => {
     const client = new CloudronClient()
     const user = await client.createUser(
       "valid@example.com",
+      "validuser",
       "Password1",
       "user",
     )
@@ -219,7 +230,7 @@ describe("cloudron_create_user tool", () => {
     const client = new CloudronClient()
 
     await expect(
-      client.createUser("not-an-email", "Password123", "user"),
+      client.createUser("not-an-email", "testuser", "Password123", "user"),
     ).rejects.toThrow("Invalid email format")
   })
 
@@ -227,7 +238,7 @@ describe("cloudron_create_user tool", () => {
     const client = new CloudronClient()
 
     await expect(
-      client.createUser("notemail.com", "Password123", "user"),
+      client.createUser("notemail.com", "testuser", "Password123", "user"),
     ).rejects.toThrow("Invalid email format")
   })
 
@@ -235,7 +246,7 @@ describe("cloudron_create_user tool", () => {
     const client = new CloudronClient()
 
     await expect(
-      client.createUser("user@", "Password123", "user"),
+      client.createUser("user@", "testuser", "Password123", "user"),
     ).rejects.toThrow("Invalid email format")
   })
 
@@ -264,6 +275,7 @@ describe("cloudron_create_user tool", () => {
     const client = new CloudronClient()
     const user = await client.createUser(
       "user.name+tag@example.co.uk",
+      "username",
       "Password123",
       "user",
     )
@@ -284,7 +296,12 @@ describe("cloudron_create_user tool", () => {
     const client = new CloudronClient()
 
     await expect(
-      client.createUser("duplicate@example.com", "Password123", "user"),
+      client.createUser(
+        "duplicate@example.com",
+        "duplicateuser",
+        "Password123",
+        "user",
+      ),
     ).rejects.toThrow("User with email already exists")
   })
 
@@ -329,11 +346,13 @@ describe("cloudron_create_user tool", () => {
     })
 
     const client = new CloudronClient()
-    await client.createUser("atomic@example.com", "Password123", "admin")
+    await client.createUser("atomic@example.com", "atomic", "Password123", "admin")
 
     expect(capturedRequestBody).toEqual({
       email: "atomic@example.com",
+      username: "atomic",
       password: "Password123",
+      displayName: "atomic",
       role: "admin",
     })
   })
@@ -364,6 +383,7 @@ describe("cloudron_create_user tool", () => {
     const client = new CloudronClient()
     const user = await client.createUser(
       "created@example.com",
+      "created",
       "Password123",
       "user",
     )
@@ -384,7 +404,7 @@ describe("cloudron_create_user tool", () => {
     const client = new CloudronClient()
 
     await expect(
-      client.createUser("test@example.com", "Password123", "user"),
+      client.createUser("test@example.com", "testuser", "Password123", "user"),
     ).rejects.toThrow("Invalid token")
   })
 
@@ -400,7 +420,7 @@ describe("cloudron_create_user tool", () => {
     const client = new CloudronClient()
 
     await expect(
-      client.createUser("test@example.com", "Password123", "user"),
+      client.createUser("test@example.com", "testuser", "Password123", "user"),
     ).rejects.toThrow("Internal server error")
   })
 
@@ -412,7 +432,7 @@ describe("cloudron_create_user tool", () => {
     const client = new CloudronClient()
 
     await expect(
-      client.createUser("test@example.com", "Password123", "user"),
+      client.createUser("test@example.com", "testuser", "Password123", "user"),
     ).rejects.toThrow("Network error")
   })
 })

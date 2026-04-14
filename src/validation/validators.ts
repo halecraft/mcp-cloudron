@@ -50,6 +50,14 @@ export function isPositiveNumber(value: unknown): value is number {
  * @param role - Role to validate
  * @returns true if role is valid
  */
-export function isValidRole(role: unknown): role is "admin" | "user" | "guest" {
-  return role === "admin" || role === "user" || role === "guest"
+export function isValidRole(
+  role: unknown,
+): role is "owner" | "admin" | "usermanager" | "mailmanager" | "user" {
+  return (
+    role === "owner" ||
+    role === "admin" ||
+    role === "usermanager" ||
+    role === "mailmanager" ||
+    role === "user"
+  )
 }

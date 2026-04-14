@@ -236,18 +236,30 @@ export const TOOLS = [
           type: "string",
           description: "User email address (must be valid format)",
         },
+        username: {
+          type: "string",
+          description: "Username for login (alphanumeric, lowercase recommended)",
+        },
         password: {
           type: "string",
           description: "User password (8+ characters, 1 uppercase, 1 number)",
         },
+        displayName: {
+          type: "string",
+          description: "Display name for the user (defaults to username if not provided)",
+        },
         role: {
           type: "string",
-          enum: ["admin", "user", "guest"],
+          enum: ["owner", "admin", "usermanager", "mailmanager", "user"],
           description:
-            "User role: admin (full access), user (standard access), or guest (limited access)",
+            "User role: owner (platform owner), admin (full access), usermanager (manage users), mailmanager (manage mail), user (standard access)",
+        },
+        fallbackEmail: {
+          type: "string",
+          description: "Password recovery email (optional)",
         },
       },
-      required: ["email", "password", "role"],
+      required: ["email", "username", "password", "role"],
     },
   },
   {

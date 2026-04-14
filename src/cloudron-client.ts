@@ -360,18 +360,29 @@ export class CloudronClient {
    * Create a new user with role assignment (atomic operation)
    * POST /api/v1/users
    * @param email - User email address
+   * @param username - Username for login
    * @param password - User password (must meet strength requirements)
-   * @param role - User role: 'admin', 'user', or 'guest'
+   * @param role - User role: 'owner', 'admin', 'usermanager', 'mailmanager', or 'user'
+   * @param displayName - Display name (defaults to username if not provided)
+   * @param fallbackEmail - Password recovery email (optional)
    * @returns Created user object
    */
   async createUser(
     email: string,
+    username: string,
     password: string,
-    role: "admin" | "user" | "guest",
+    role: "owner" | "admin" | "usermanager" | "mailmanager" | "user",
+    displayName?: string,
+    fallbackEmail?: string,
   ): Promise<User> {
     // Validate email format
     if (!email || !this.isValidEmail(email)) {
       throw new CloudronError("Invalid email format")
+    }
+
+    // Validate username
+    if (!username || username.trim().length === 0) {
+      throw new CloudronError("Username is required")
     }
 
     // Validate password strength (8+ chars, 1 uppercase, 1 number)
@@ -382,20 +393,50 @@ export class CloudronClient {
     }
 
     // Validate role enum
-    if (!["admin", "user", "guest"].includes(role)) {
+    if (
+      !["owner", "admin", "usermanager", "mailmanager", "user"].includes(role)
+    ) {
       throw new CloudronError(
-        `Invalid role: ${role}. Valid options: admin, user, guest`,
+        `Invalid role: ${role}. Valid options: owner, admin, usermanager, mailmanager, user`,
       )
+    }
+
+    // Validate fallbackEmail if provided
+    if (fallbackEmail && !this.isValidEmail(fallbackEmail)) {
+      throw new CloudronError("Invalid fallback email format")
+    }
+
+    // Build request body
+    const requestBody: {
+      email: string
+      username: string
+      password: string
+      role: string
+      displayName?: string
+      fallbackEmail?: string
+    } = {
+      email,
+      username,
+      password,
+      role,
+    }
+
+    // Add optional fields if provided
+    if (displayName) {
+      requestBody.displayName = displayName
+    } else {
+      // Default displayName to username if not provided
+      requestBody.displayName = username
+    }
+
+    if (fallbackEmail) {
+      requestBody.fallbackEmail = fallbackEmail
     }
 
     const response = await this.makeRequest<CreateUserResponse>(
       "POST",
       "/api/v1/users",
-      {
-        email,
-        password,
-        role,
-      },
+      requestBody,
     )
 
     // Fetch the full user object since POST only returns ID
