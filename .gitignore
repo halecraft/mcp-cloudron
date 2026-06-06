@@ -10,3 +10,4 @@ tests/**/*.map
 *.d.mts
 *.d.mts.map
 coverage/
+.jj-plan

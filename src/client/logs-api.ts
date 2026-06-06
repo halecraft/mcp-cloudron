@@ -5,8 +5,9 @@
 
 import { MAX_LOG_LINES } from "../config.js"
 import { CloudronError } from "../errors.js"
-import type { LogEntry, LogsResponse, LogType } from "../types.js"
+import type { LogEntry, LogType } from "../types.js"
 import type { HttpClient } from "./http-client.js"
+import { parseLogLine } from "./parse-log-line.js"
 
 /**
  * Logs API for Cloudron log retrieval
@@ -46,7 +47,7 @@ export class LogsApi {
         ? `/api/v1/apps/${encodeURIComponent(resourceId)}/logs?lines=${clampedLines}`
         : `/api/v1/services/${encodeURIComponent(resourceId)}/logs?lines=${clampedLines}`
 
-    const response = await this.http.get<LogsResponse>(endpoint)
+    const response = await this.http.get<{ logs: string[] }>(endpoint)
 
     // Parse and format log entries
     return this.parseLogEntries(response.logs || [])
@@ -57,62 +58,6 @@ export class LogsApi {
    * Attempts to extract timestamp and severity level from log lines
    */
   parseLogEntries(logLines: string[]): LogEntry[] {
-    return logLines.map(line => {
-      // Try to parse common log formats:
-      // 1. ISO timestamp at start: "2025-12-24T12:00:00Z [INFO] message"
-      // 2. Syslog format: "Dec 24 12:00:00 host service[pid]: message"
-      // 3. Simple format: "[INFO] message"
-      // 4. Plain text: "message"
-
-      const isoMatch = line.match(
-        /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z?)\s+\[?(\w+)\]?\s*(.*)$/,
-      )
-      if (isoMatch?.[1] && isoMatch[2] && isoMatch[3]) {
-        return {
-          timestamp: isoMatch[1],
-          severity: isoMatch[2].toUpperCase(),
-          message: isoMatch[3].trim(),
-        }
-      }
-
-      const syslogMatch = line.match(
-        /^(\w{3}\s+\d{1,2}\s+\d{2}:\d{2}:\d{2})\s+.*?\[\d+\]:\s*\[?(\w+)\]?\s*(.*)$/,
-      )
-      if (syslogMatch?.[1] && syslogMatch[2] && syslogMatch[3]) {
-        return {
-          timestamp: syslogMatch[1],
-          severity: syslogMatch[2].toUpperCase(),
-          message: syslogMatch[3].trim(),
-        }
-      }
-
-      const simpleMatch = line.match(/^\[?(\w+)\]?\s+(.*)$/)
-      if (
-        simpleMatch?.[1] &&
-        simpleMatch[2] &&
-        [
-          "DEBUG",
-          "INFO",
-          "WARN",
-          "WARNING",
-          "ERROR",
-          "FATAL",
-          "TRACE",
-        ].includes(simpleMatch[1].toUpperCase())
-      ) {
-        return {
-          timestamp: new Date().toISOString(),
-          severity: simpleMatch[1].toUpperCase(),
-          message: simpleMatch[2].trim(),
-        }
-      }
-
-      // Fallback: plain text log line
-      return {
-        timestamp: new Date().toISOString(),
-        severity: "INFO",
-        message: line.trim(),
-      }
-    })
+    return logLines.map(parseLogLine)
   }
 }

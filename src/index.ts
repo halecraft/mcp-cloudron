@@ -19,8 +19,6 @@ export {
   UpdatesApi,
   UsersApi,
 } from "./client/index.js"
-// Legacy client (deprecated - use client modules instead)
-export { CloudronClient } from "./cloudron-client.js"
 // Errors
 export {
   CloudronAuthError,

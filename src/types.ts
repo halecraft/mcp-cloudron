@@ -360,13 +360,6 @@ export interface LogEntry {
 }
 
 /**
- * API response wrapper for logs
- */
-export interface LogsResponse {
-  logs: string[]
-}
-
-/**
  * Access restriction configuration for apps
  */
 export interface AccessRestriction {

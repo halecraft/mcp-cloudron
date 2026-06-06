@@ -26,10 +26,26 @@
 src/
 ├── server.ts           # MCP server entry point (stdio transport)
 ├── index.ts            # Library exports for programmatic use
-├── cloudron-client.ts  # HTTP client for Cloudron REST API
 ├── config.ts           # Centralized configuration constants
 ├── errors.ts           # Custom error classes
 ├── types.ts            # TypeScript type definitions
+├── client/             # HTTP client and per-domain API modules
+│   ├── http-client.ts  # Base HTTP functionality (auth, timeout, errors)
+│   ├── apps-api.ts     # App management operations
+│   ├── users-api.ts    # User management operations
+│   ├── backups-api.ts  # Backup operations
+│   ├── groups-api.ts   # Group management operations
+│   ├── system-api.ts   # System/status operations
+│   ├── tasks-api.ts    # Async task tracking
+│   ├── logs-api.ts     # Log retrieval
+│   ├── updates-api.ts  # Platform updates
+│   ├── appstore-api.ts # App store search
+│   ├── context.ts      # CloudronContext aggregator + factory
+│   └── index.ts        # Barrel export
+├── validation/         # Pure validation functions and services
+│   ├── validators.ts   # isValidEmail, isValidPassword, etc.
+│   ├── validation-service.ts # Operation pre-flight validators
+│   └── index.ts        # Barrel export
 └── tools/
     ├── definitions.ts  # MCP tool schemas (JSON Schema)
     ├── registry.ts     # Tool handler registry pattern
@@ -89,74 +105,38 @@ When a `CallToolRequest` arrives:
 2. Execute handler with parsed arguments and client
 3. Return MCP response (text content or error)
 
-## CloudronClient
+## API Client Architecture
 
-The [`CloudronClient`](src/cloudron-client.ts) class wraps all Cloudron API interactions.
+The Cloudron API is accessed through a modular client architecture under [`src/client/`](src/client/):
 
-### Configuration
-
-```typescript
-constructor(config?: Partial<CloudronClientConfig>) {
-  const baseUrl = config?.baseUrl ?? process.env.CLOUDRON_BASE_URL
-  const token = config?.token ?? process.env.CLOUDRON_API_TOKEN
-  // ... validation
-}
-```
-
-Supports both:
-
-- **Environment variables:** `CLOUDRON_BASE_URL`, `CLOUDRON_API_TOKEN`
-- **Dependency injection:** Pass config object (used in tests)
+- **[`HttpClient`](src/client/http-client.ts)** — Base HTTP layer with Bearer auth, timeout (default 30s), and error mapping
+- **Domain-specific API modules** — Each wraps a Cloudron API surface (e.g., `AppsApi`, `UsersApi`)
+- **[`CloudronContext`](src/client/context.ts)** — Aggregates all API modules; created via `createCloudronContext()` from env vars
 
 ### HTTP Layer
 
-The private [`makeRequest()`](src/cloudron-client.ts:73) method handles:
+The [`HttpClient`](src/client/http-client.ts) class handles:
 
 - Bearer token authentication
 - Request timeout (configurable, default 30s)
 - JSON serialization/deserialization
 - Error mapping via [`createErrorFromStatus()`](src/errors.ts:88)
 
-**Note:** Retry logic is explicitly deferred to "Phase 3" per code comments.
+**Note:** Retry logic is deferred to a future phase.
 
-### API Methods
+### API Modules
 
-| Method                      | Endpoint                        | Description              |
-| --------------------------- | ------------------------------- | ------------------------ |
-| `listApps()`                | GET /api/v1/apps                | List installed apps      |
-| `getApp(id)`                | GET /api/v1/apps/:id            | Get app details          |
-| `getStatus()`               | GET /api/v1/cloudron/status     | System status            |
-| `listBackups()`             | GET /api/v1/backups             | List backups             |
-| `createBackup()`            | POST /api/v1/backups            | Create backup (async)    |
-| `listUsers()`               | GET /api/v1/users               | List users               |
-| `getUser(id)`               | GET /api/v1/users/:id           | Get specific user        |
-| `createUser()`              | POST /api/v1/users              | Create user              |
-| `updateUser(id, params)`    | PUT /api/v1/users/:id           | Update user              |
-| `deleteUser(id)`            | DELETE /api/v1/users/:id        | Delete user              |
-| `listGroups()`              | GET /api/v1/groups              | List groups              |
-| `createGroup(params)`       | POST /api/v1/groups             | Create group             |
-| `listDomains()`             | GET /api/v1/domains             | List domains             |
-| `searchApps(query)`         | GET /api/v1/appstore/apps       | Search App Store         |
-| `startApp(id)`              | POST /api/v1/apps/:id/start     | Start app (async)        |
-| `stopApp(id)`               | POST /api/v1/apps/:id/stop      | Stop app (async)         |
-| `restartApp(id)`            | POST /api/v1/apps/:id/restart   | Restart app (async)      |
-| `configureApp(id, config)`  | PUT /api/v1/apps/:id/configure  | Update app config        |
-| `uninstallApp(id)`          | POST /api/v1/apps/:id/uninstall | Uninstall app (async)    |
-| `installApp(params)`        | POST /api/v1/apps               | Install app (async)      |
-| `cloneApp(id, params)`      | POST /api/v1/apps/:id/clone     | Clone app (async)        |
-| `repairApp(id)`             | POST /api/v1/apps/:id/repair    | Repair app (async)       |
-| `restoreApp(id, params)`    | POST /api/v1/apps/:id/restore   | Restore app (async)      |
-| `updateApp(id, params?)`    | POST /api/v1/apps/:id/update    | Update app (async)       |
-| `backupApp(id)`             | POST /api/v1/apps/:id/backup    | Backup single app (async)|
-| `listServices()`            | GET /api/v1/services            | List platform services   |
-| `checkUpdates()`            | GET /api/v1/updates             | Check for updates        |
-| `applyUpdate()`             | POST /api/v1/updates            | Apply update (async)     |
-| `getTaskStatus(id)`         | GET /api/v1/tasks/:id           | Check async task         |
-| `cancelTask(id)`            | DELETE /api/v1/tasks/:id        | Cancel async task        |
-| `getLogs(id, type, lines)`  | GET /api/v1/apps/:id/logs       | Get logs                 |
-| `checkStorage(requiredMB)`  | GET /api/v1/cloudron/status     | Check disk space         |
-| `validateOperation(op, id)` | (composite)                     | Pre-flight validation    |
-| `validateManifest(appId)`   | (composite)                     | Manifest validation      |
+| Module | Key Methods | Endpoints |
+| ------ | ----------- | --------- |
+| `AppsApi` | `listApps`, `getApp`, `startApp`, `stopApp`, `restartApp`, `installApp`, `uninstallApp`, `configureApp`, `cloneApp`, `repairApp`, `restoreApp`, `updateApp`, `backupApp` | `/api/v1/apps/*` |
+| `UsersApi` | `listUsers`, `getUser`, `createUser`, `updateUser`, `deleteUser` | `/api/v1/users/*` |
+| `BackupsApi` | `listBackups`, `createBackup`, `backupApp` | `/api/v1/backups/*` |
+| `GroupsApi` | `listGroups`, `createGroup` | `/api/v1/groups/*` |
+| `SystemApi` | `getStatus`, `getDiskUsage`, `checkStorage`, `listDomains`, `listServices` | `/api/v1/cloudron/status`, `/api/v1/system/*`, etc. |
+| `TasksApi` | `getTaskStatus`, `cancelTask` | `/api/v1/tasks/*` |
+| `LogsApi` | `getLogs` | `/api/v1/apps/:id/logs`, `/api/v1/services/:id/logs` |
+| `UpdatesApi` | `checkUpdates`, `applyUpdate` | `/api/v1/updater/*` |
+| `AppStoreApi` | `searchApps` | `/api/v1/appstore/*` |
 
 ## Pre-flight Safety Checks
 
@@ -329,28 +309,31 @@ Two test projects:
 
 ### Test Pattern
 
+Tests exercise production code paths through handlers via `createTestContext()`:
+
 ```typescript
 describe("cloudron_list_apps tool", () => {
-  beforeAll(() => {
-    setupTestEnv(); // Set CLOUDRON_BASE_URL, CLOUDRON_API_TOKEN
-  });
+  beforeAll(() => setupTestEnv());
 
   it("should list all installed apps", async () => {
     global.fetch = createMockFetch({
       "GET https://my.example.com/api/v1/apps": {
-        ok: true,
-        status: 200,
+        ok: true, status: 200,
         data: { apps: mockApps },
       },
     });
 
-    const client = new CloudronClient();
-    const apps = await client.listApps();
+    const ctx = createTestContext();
+    const response = await appHandlers.cloudron_list_apps({}, ctx);
 
-    expect(apps.length).toBe(3);
+    assertSuccess(response);
+    expect(assertHasTextContent(response)).toContain("WordPress");
   });
 });
 ```
+
+HTTP-layer error handling is tested once in [`tests/client/http-client.test.ts`](tests/client/http-client.test.ts) rather than per-endpoint.
+Pure functions (like [`parseLogLine`](src/client/parse-log-line.ts)) are tested directly in [`tests/client/parse-log-line.test.ts`](tests/client/parse-log-line.test.ts).
 
 ### Integration Tests
 

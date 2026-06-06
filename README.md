@@ -251,7 +251,6 @@ This server wraps the [Cloudron REST API](https://docs.cloudron.io/api/). See [T
 ## Known Limitations
 
 - `cloudron_configure_app` - May return 404 on some Cloudron versions
-- `cloudron_get_logs` - Returns raw text format
 - Pagination not exposed for list operations
 
 ## Community
