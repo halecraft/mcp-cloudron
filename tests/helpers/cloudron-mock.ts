@@ -24,6 +24,7 @@ import type {
   DiskUsageResponse,
   Group,
   Service,
+  ServicesResponse,
   TaskStatusRaw,
   UpdateInfo,
   User,
@@ -249,43 +250,49 @@ export const mockBackups: Backup[] = [
 
 export const mockServices: Service[] = [
   {
-    name: "mysql",
+    id: "mysql",
+    name: "MySQL",
     status: "unknown",
     version: "8.0.35",
     memory: 536870912, // 512MB
   },
   {
-    name: "postgresql",
+    id: "postgresql",
+    name: "PostgreSQL",
     status: "unknown",
     version: "15.4",
     memory: 268435456, // 256MB
   },
   {
-    name: "mongodb",
+    id: "mongodb",
+    name: "MongoDB",
     status: "unknown",
     version: "6.0.12",
   },
   {
-    name: "mail",
+    id: "mail",
+    name: "Mail",
     status: "unknown",
     version: "1.0.0",
     memory: 134217728, // 128MB
   },
   {
-    name: "redis",
+    id: "redis",
+    name: "Redis",
     status: "unknown",
     version: "7.2.3",
     error: "Connection refused",
   },
 ]
 
-export const mockServiceNames = [
-  "mysql",
-  "postgresql",
-  "mongodb",
-  "mail",
-  "redis",
-]
+/**
+ * Matches the real /api/v1/services response shape:
+ *   { services: [{ id, name }, ...] }
+ * Use as the `data` field when mocking GET /api/v1/services.
+ */
+export const mockServicesResponse: ServicesResponse = {
+  services: mockServices.map(s => ({ id: s.id, name: s.name })),
+}
 
 /**
  * Mock response configuration

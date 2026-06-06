@@ -238,7 +238,8 @@ export const TOOLS = [
         },
         username: {
           type: "string",
-          description: "Username for login (alphanumeric, lowercase recommended)",
+          description:
+            "Username for login (alphanumeric, lowercase recommended)",
         },
         password: {
           type: "string",
@@ -246,7 +247,8 @@ export const TOOLS = [
         },
         displayName: {
           type: "string",
-          description: "Display name for the user (defaults to username if not provided)",
+          description:
+            "Display name for the user (defaults to username if not provided)",
         },
         role: {
           type: "string",

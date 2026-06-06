@@ -71,6 +71,41 @@ describe("System & Groups & Updates Handlers", () => {
     })
   })
 
+  describe("cloudron_list_services", () => {
+    it("should map the {id, name} objects returned by /api/v1/services into Service[]", async () => {
+      // Real Cloudron returns objects, not strings. Regression test for
+      // ServicesResponse type / listServices() mapping bug.
+      global.fetch = createMockFetch({
+        "GET https://my.example.com/api/v1/services": {
+          ok: true,
+          status: 200,
+          data: {
+            services: [
+              { id: "mysql", name: "MySQL" },
+              { id: "postgresql", name: "PostgreSQL" },
+              {
+                id: "redis:5aa61658-e4cb-4804-83a7-34a5160ab5a7",
+                name: "Redis 5aa61658-e4cb-4804-83a7-34a5160ab5a7",
+              },
+            ],
+          },
+        },
+      })
+      const ctx = createTestContext()
+      const services = await ctx.system.listServices()
+
+      expect(services).toHaveLength(3)
+      expect(services[0]).toMatchObject({
+        id: "mysql",
+        name: "MySQL",
+        status: "unknown",
+      })
+      expect(services[2]?.id).toBe("redis:5aa61658-e4cb-4804-83a7-34a5160ab5a7")
+      // The display name must be a string, not an embedded {id, name} object.
+      expect(typeof services[0]?.name).toBe("string")
+    })
+  })
+
   describe("cloudron_list_groups", () => {
     it("should return formatted list of groups", async () => {
       global.fetch = createMockFetch({

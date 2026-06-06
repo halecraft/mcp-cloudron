@@ -237,6 +237,7 @@ export function formatService(service: Service, index: number): string {
           : "❓"
 
   let text = `${index + 1}. ${service.name} ${statusIcon}
+  ID: ${service.id}
   Status: ${service.status}`
 
   if (service.version) {

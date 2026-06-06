@@ -109,7 +109,8 @@ export class SystemApi {
    */
   async listServices(): Promise<Service[]> {
     const response = await this.http.get<ServicesResponse>("/api/v1/services")
-    return response.services.map(name => ({
+    return response.services.map(({ id, name }) => ({
+      id,
       name,
       status: "unknown",
     }))

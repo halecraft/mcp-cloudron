@@ -419,6 +419,9 @@ export interface UpdateAppParams {
  * Platform service status
  */
 export interface Service {
+  /** Stable identifier used by /api/v1/services/:id/logs (e.g. "mysql", "redis:<uuid>") */
+  id: string
+  /** Display name (e.g. "MySQL") */
   name: string
   status: "running" | "stopped" | "error" | "unknown"
   memory?: number // Memory usage in bytes
@@ -427,10 +430,13 @@ export interface Service {
 }
 
 /**
- * API response wrapper for listing services
+ * API response wrapper for listing services.
+ *
+ * Cloudron returns objects, not bare strings:
+ *   { services: [{ id: "mysql", name: "MySQL" }, ...] }
  */
 export interface ServicesResponse {
-  services: string[]
+  services: Array<{ id: string; name: string }>
 }
 
 // ==================== User Management Types ====================
