@@ -1,9 +1,28 @@
+import { readFileSync } from "node:fs"
+import { resolve } from "node:path"
+import { parse } from "dotenv"
 import { defineConfig } from "vitest/config"
+
+// Load .env into a plain object so vitest can inject it via `test.env`.
+// Using dotenv directly (instead of the dotenv-cli wrapper) means every
+// vitest invocation picks up the file — CLI runs, IDE runners, and debug
+// sessions alike — without needing a script wrapper.
+function loadDotenv(file: string): Record<string, string> {
+  try {
+    return parse(readFileSync(resolve(process.cwd(), file)))
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException).code === "ENOENT") return {}
+    throw err
+  }
+}
+
+const dotenv = { ...loadDotenv(".env"), ...loadDotenv(".env.local") }
 
 export default defineConfig({
   test: {
     globals: true,
     environment: "node",
+    env: dotenv,
     projects: [
       {
         extends: true,

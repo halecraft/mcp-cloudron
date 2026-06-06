@@ -666,6 +666,15 @@ Tokens can be:
 - **Readonly** - Only GET operations
 - **Read and Write** - Full access
 
+### Logs API
+
+The logs endpoints (`GET /api/v1/apps/:id/logs`, `GET /api/v1/services/:id/logs`) return `Content-Type: application/x-logs`. The response format depends on the `format` query parameter:
+
+- `format=json` (default): **NDJSON** — each line is a separate JSON object with `realtimeTimestamp` and `message` fields
+- `format=short`: plain text log lines
+
+The client fetches raw text and parses each line individually, trying NDJSON first then falling back to regex patterns (ISO timestamp, syslog, bracket severity, plain text).
+
 ## Future Considerations
 
 Based on code comments and structure:
@@ -682,6 +691,6 @@ Based on code comments and structure:
 
 6. **Pagination:** The Cloudron API supports `page` and `per_page` query parameters for list endpoints. Current implementation doesn't expose pagination controls.
 
-7. **Streaming Logs:** The API supports SSE (Server-Sent Events) for real-time log streaming. Current implementation only fetches static log snapshots.
+7. **Streaming Logs:** The API supports SSE (Server-Sent Events) for real-time log streaming. Current implementation only fetches static log snapshots (NDJSON format, parsed correctly).
 
 8. **Group Management:** Only list and create are implemented. Update and delete group operations are not yet available.

@@ -334,10 +334,7 @@ export function parseGetLogsArgs(args: unknown): GetLogsArgs {
 
   if (lines !== undefined) {
     assertNumber(lines, "lines")
-    if (lines < 1 || lines > 1000) {
-      throw new CloudronError("lines must be between 1 and 1000")
-    }
-    result.lines = lines
+    result.lines = Math.max(1, Math.min(1000, lines))
   }
 
   return result

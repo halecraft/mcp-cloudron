@@ -69,7 +69,7 @@ export class HttpClient {
     method: "GET" | "POST" | "PUT" | "DELETE",
     endpoint: string,
     body?: unknown,
-    options?: { timeout?: number },
+    options?: { timeout?: number; responseType?: "json" | "text" },
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`
     const timeout = options?.timeout ?? this.timeout
@@ -109,6 +109,10 @@ export class HttpClient {
         throw createErrorFromStatus(response.status, message)
       }
 
+      if (options?.responseType === "text") {
+        return (await response.text()) as unknown as T
+      }
+
       return (await response.json()) as T
     } catch (error) {
       clearTimeout(timeoutId)
@@ -137,7 +141,10 @@ export class HttpClient {
   /**
    * GET request helper
    */
-  async get<T>(endpoint: string, options?: { timeout?: number }): Promise<T> {
+  async get<T>(
+    endpoint: string,
+    options?: { timeout?: number; responseType?: "json" | "text" },
+  ): Promise<T> {
     return this.request<T>("GET", endpoint, undefined, options)
   }
 

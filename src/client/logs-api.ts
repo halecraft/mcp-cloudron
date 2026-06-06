@@ -47,10 +47,12 @@ export class LogsApi {
         ? `/api/v1/apps/${encodeURIComponent(resourceId)}/logs?lines=${clampedLines}`
         : `/api/v1/services/${encodeURIComponent(resourceId)}/logs?lines=${clampedLines}`
 
-    const response = await this.http.get<{ logs: string[] }>(endpoint)
+    // Logs API returns raw text (NDJSON by default), not JSON
+    const text = await this.http.get<string>(endpoint, { responseType: "text" })
 
-    // Parse and format log entries
-    return this.parseLogEntries(response.logs || [])
+    // Split raw text into lines, filtering empty lines
+    const logLines = text.split("\n").filter(line => line.trim().length > 0)
+    return this.parseLogEntries(logLines)
   }
 
   /**
